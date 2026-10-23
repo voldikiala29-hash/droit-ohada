@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang=fr><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Test Salle de Garde</title></head>
+<body style="background:#111;color:#fff;font-family:sans-serif;padding:20px">
+<h1>TEST DEPLOIEMENT OK</h1>
+<p>Si tu vois ce message, GitHub Pages marche.</p>
+<p id="count"></p>
+<script>
+fetch('./cases_202.json').then(r=>r.json()).then(j=>{
+  document.getElementById('count').textContent = 'cases_202.json trouvé: ' + (Array.isArray(j)? j.length : Object.keys(j).length) + ' entrées';
+}).catch(e=>{ document.getElementById('count').textContent='Erreur cases_202.json: '+e; });
+</script>
+</body></html>
