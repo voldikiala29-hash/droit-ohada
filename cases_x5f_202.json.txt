@@ -1,0 +1,1586 @@
+{
+  "1": {
+    "id": "palu_adulte",
+    "titre": "Palu Adulte",
+    "service": "Médecine interne",
+    "persona": "Patient 1, 21 ans, Kinshasa",
+    "histoire": "Cas palu_adulte - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "palu_adulte"
+  },
+  "2": {
+    "id": "ic_oap",
+    "titre": "Ic Oap",
+    "service": "Médecine interne",
+    "persona": "Patient 2, 22 ans, Kinshasa",
+    "histoire": "Cas ic_oap - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "ic_oap"
+  },
+  "3": {
+    "id": "tb_pulm",
+    "titre": "Tb Pulm",
+    "service": "Médecine interne",
+    "persona": "Patient 3, 23 ans, Kinshasa",
+    "histoire": "Cas tb_pulm - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "tb_pulm"
+  },
+  "4": {
+    "id": "diarrhee_enf",
+    "titre": "Diarrhee Enf",
+    "service": "Médecine interne",
+    "persona": "Patient 4, 24 ans, Kinshasa",
+    "histoire": "Cas diarrhee_enf - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "diarrhee_enf"
+  },
+  "5": {
+    "id": "pneumonie_enf",
+    "titre": "Pneumonie Enf",
+    "service": "Médecine interne",
+    "persona": "Patient 5, 25 ans, Kinshasa",
+    "histoire": "Cas pneumonie_enf - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "pneumonie_enf"
+  },
+  "6": {
+    "id": "cvo_drepano",
+    "titre": "Cvo Drepano",
+    "service": "Médecine interne",
+    "persona": "Patient 6, 26 ans, Kinshasa",
+    "histoire": "Cas cvo_drepano - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "cvo_drepano"
+  },
+  "7": {
+    "id": "prééclampsie",
+    "titre": "Prééclampsie",
+    "service": "Médecine interne",
+    "persona": "Patient 7, 27 ans, Kinshasa",
+    "histoire": "Cas prééclampsie - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "prééclampsie"
+  },
+  "8": {
+    "id": "hpp_atonie",
+    "titre": "Hpp Atonie",
+    "service": "Médecine interne",
+    "persona": "Patient 8, 28 ans, Kinshasa",
+    "histoire": "Cas hpp_atonie - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "hpp_atonie"
+  },
+  "9": {
+    "id": "geu_rompue",
+    "titre": "Geu Rompue",
+    "service": "Médecine interne",
+    "persona": "Patient 9, 29 ans, Kinshasa",
+    "histoire": "Cas geu_rompue - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "geu_rompue"
+  },
+  "10": {
+    "id": "appendicite",
+    "titre": "Appendicite",
+    "service": "Médecine interne",
+    "persona": "Patient 10, 30 ans, Kinshasa",
+    "histoire": "Cas appendicite - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "appendicite"
+  },
+  "11": {
+    "id": "occlusion_bride",
+    "titre": "Occlusion Bride",
+    "service": "Médecine interne",
+    "persona": "Patient 11, 31 ans, Kinshasa",
+    "histoire": "Cas occlusion_bride - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "occlusion_bride"
+  },
+  "12": {
+    "id": "perforation_typhique",
+    "titre": "Perforation Typhique",
+    "service": "Médecine interne",
+    "persona": "Patient 12, 32 ans, Kinshasa",
+    "histoire": "Cas perforation_typhique - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "perforation_typhique"
+  },
+  "13": {
+    "id": "typhoide",
+    "titre": "Typhoide",
+    "service": "Médecine interne",
+    "persona": "Patient 13, 33 ans, Kinshasa",
+    "histoire": "Cas typhoide - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "typhoide"
+  },
+  "14": {
+    "id": "acidocetose",
+    "titre": "Acidocetose",
+    "service": "Médecine interne",
+    "persona": "Patient 14, 34 ans, Kinshasa",
+    "histoire": "Cas acidocetose - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "acidocetose"
+  },
+  "15": {
+    "id": "palu_enfant",
+    "titre": "Palu Enfant",
+    "service": "Médecine interne",
+    "persona": "Patient 15, 35 ans, Kinshasa",
+    "histoire": "Cas palu_enfant - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "palu_enfant"
+  },
+  "16": {
+    "id": "mas_kwashi",
+    "titre": "Mas Kwashi",
+    "service": "Médecine interne",
+    "persona": "Patient 16, 36 ans, Kinshasa",
+    "histoire": "Cas mas_kwashi - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "mas_kwashi"
+  },
+  "17": {
+    "id": "praevia",
+    "titre": "Praevia",
+    "service": "Médecine interne",
+    "persona": "Patient 17, 37 ans, Kinshasa",
+    "histoire": "Cas praevia - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "praevia"
+  },
+  "18": {
+    "id": "pyelo_grossesse",
+    "titre": "Pyelo Grossesse",
+    "service": "Médecine interne",
+    "persona": "Patient 18, 38 ans, Kinshasa",
+    "histoire": "Cas pyelo_grossesse - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "pyelo_grossesse"
+  },
+  "19": {
+    "id": "hernie_etranglee",
+    "titre": "Hernie Etranglee",
+    "service": "Médecine interne",
+    "persona": "Patient 19, 39 ans, Kinshasa",
+    "histoire": "Cas hernie_etranglee - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "hernie_etranglee"
+  },
+  "20": {
+    "id": "fracture_ouverte",
+    "titre": "Fracture Ouverte",
+    "service": "Médecine interne",
+    "persona": "Patient 20, 40 ans, Kinshasa",
+    "histoire": "Cas fracture_ouverte - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "fracture_ouverte"
+  },
+  "21": {
+    "id": "avc_sylvien",
+    "titre": "Avc Sylvien",
+    "service": "Médecine interne",
+    "persona": "Patient 21, 41 ans, Kinshasa",
+    "histoire": "Cas avc_sylvien - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "avc_sylvien"
+  },
+  "22": {
+    "id": "pneumonie_lobaire",
+    "titre": "Pneumonie Lobaire",
+    "service": "Médecine interne",
+    "persona": "Patient 22, 42 ans, Kinshasa",
+    "histoire": "Cas pneumonie_lobaire - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "pneumonie_lobaire"
+  },
+  "23": {
+    "id": "meningite_bact",
+    "titre": "Meningite Bact",
+    "service": "Médecine interne",
+    "persona": "Patient 23, 43 ans, Kinshasa",
+    "histoire": "Cas meningite_bact - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "meningite_bact"
+  },
+  "24": {
+    "id": "hdh_ulcere",
+    "titre": "Hdh Ulcere",
+    "service": "Médecine interne",
+    "persona": "Patient 24, 44 ans, Kinshasa",
+    "histoire": "Cas hdh_ulcere - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "hdh_ulcere"
+  },
+  "25": {
+    "id": "cirrhose_asc",
+    "titre": "Cirrhose Asc",
+    "service": "Médecine interne",
+    "persona": "Patient 25, 45 ans, Kinshasa",
+    "histoire": "Cas cirrhose_asc - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "cirrhose_asc"
+  },
+  "26": {
+    "id": "conv_febrile",
+    "titre": "Conv Febrile",
+    "service": "Médecine interne",
+    "persona": "Patient 26, 46 ans, Kinshasa",
+    "histoire": "Cas conv_febrile - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "conv_febrile"
+  },
+  "27": {
+    "id": "rougeole_comp",
+    "titre": "Rougeole Comp",
+    "service": "Médecine interne",
+    "persona": "Patient 27, 47 ans, Kinshasa",
+    "histoire": "Cas rougeole_comp - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "rougeole_comp"
+  },
+  "28": {
+    "id": "sepsis_neonatal",
+    "titre": "Sepsis Neonatal",
+    "service": "Médecine interne",
+    "persona": "Patient 28, 48 ans, Kinshasa",
+    "histoire": "Cas sepsis_neonatal - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "sepsis_neonatal"
+  },
+  "29": {
+    "id": "asthme_enfant",
+    "titre": "Asthme Enfant",
+    "service": "Médecine interne",
+    "persona": "Patient 29, 49 ans, Kinshasa",
+    "histoire": "Cas asthme_enfant - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "asthme_enfant"
+  },
+  "30": {
+    "id": "gn_poststrepto",
+    "titre": "Gn Poststrepto",
+    "service": "Médecine interne",
+    "persona": "Patient 30, 50 ans, Kinshasa",
+    "histoire": "Cas gn_poststrepto - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "gn_poststrepto"
+  },
+  "31": {
+    "id": "pancreatite",
+    "titre": "Pancreatite",
+    "service": "Médecine interne",
+    "persona": "Patient 31, 51 ans, Kinshasa",
+    "histoire": "Cas pancreatite - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "pancreatite"
+  },
+  "32": {
+    "id": "tetanos_adulte",
+    "titre": "Tetanos Adulte",
+    "service": "Médecine interne",
+    "persona": "Patient 32, 52 ans, Kinshasa",
+    "histoire": "Cas tetanos_adulte - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "tetanos_adulte"
+  },
+  "33": {
+    "id": "pneumocystose",
+    "titre": "Pneumocystose",
+    "service": "Médecine interne",
+    "persona": "Patient 33, 53 ans, Kinshasa",
+    "histoire": "Cas pneumocystose - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "pneumocystose"
+  },
+  "34": {
+    "id": "ira_fonctionnelle",
+    "titre": "Ira Fonctionnelle",
+    "service": "Médecine interne",
+    "persona": "Patient 34, 54 ans, Kinshasa",
+    "histoire": "Cas ira_fonctionnelle - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "ira_fonctionnelle"
+  },
+  "35": {
+    "id": "hypoglycemie",
+    "titre": "Hypoglycemie",
+    "service": "Médecine interne",
+    "persona": "Patient 35, 55 ans, Kinshasa",
+    "histoire": "Cas hypoglycemie - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "hypoglycemie"
+  },
+  "36": {
+    "id": "cholecystite",
+    "titre": "Cholecystite",
+    "service": "Médecine interne",
+    "persona": "Patient 36, 56 ans, Kinshasa",
+    "histoire": "Cas cholecystite - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "cholecystite"
+  },
+  "37": {
+    "id": "pneumothorax_suffocant",
+    "titre": "Pneumothorax Suffocant",
+    "service": "Médecine interne",
+    "persona": "Patient 37, 57 ans, Kinshasa",
+    "histoire": "Cas pneumothorax_suffocant - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "pneumothorax_suffocant"
+  },
+  "38": {
+    "id": "hematome_extradural",
+    "titre": "Hematome Extradural",
+    "service": "Médecine interne",
+    "persona": "Patient 38, 58 ans, Kinshasa",
+    "histoire": "Cas hematome_extradural - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "hematome_extradural"
+  },
+  "39": {
+    "id": "torsion_testiculaire",
+    "titre": "Torsion Testiculaire",
+    "service": "Médecine interne",
+    "persona": "Patient 39, 59 ans, Kinshasa",
+    "histoire": "Cas torsion_testiculaire - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "torsion_testiculaire"
+  },
+  "40": {
+    "id": "brulure_etendue",
+    "titre": "Brulure Etendue",
+    "service": "Médecine interne",
+    "persona": "Patient 40, 60 ans, Kinshasa",
+    "histoire": "Cas brulure_etendue - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "brulure_etendue"
+  },
+  "41": {
+    "id": "tetanos_neonatal",
+    "titre": "Tetanos Neonatal",
+    "service": "Médecine interne",
+    "persona": "Patient 41, 61 ans, Kinshasa",
+    "histoire": "Cas tetanos_neonatal - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "tetanos_neonatal"
+  },
+  "42": {
+    "id": "adenite_tuberculeuse",
+    "titre": "Adenite Tuberculeuse",
+    "service": "Médecine interne",
+    "persona": "Patient 42, 62 ans, Kinshasa",
+    "histoire": "Cas adenite_tuberculeuse - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "adenite_tuberculeuse"
+  },
+  "43": {
+    "id": "xerophtalmie",
+    "titre": "Xerophtalmie",
+    "service": "Médecine interne",
+    "persona": "Patient 43, 63 ans, Kinshasa",
+    "histoire": "Cas xerophtalmie - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "xerophtalmie"
+  },
+  "44": {
+    "id": "dysenterie_shigella",
+    "titre": "Dysenterie Shigella",
+    "service": "Médecine interne",
+    "persona": "Patient 44, 64 ans, Kinshasa",
+    "histoire": "Cas dysenterie_shigella - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "dysenterie_shigella"
+  },
+  "45": {
+    "id": "cardiopathie_civ",
+    "titre": "Cardiopathie Civ",
+    "service": "Médecine interne",
+    "persona": "Patient 45, 65 ans, Kinshasa",
+    "histoire": "Cas cardiopathie_civ - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "cardiopathie_civ"
+  },
+  "46": {
+    "id": "eclampsie",
+    "titre": "Eclampsie",
+    "service": "Médecine interne",
+    "persona": "Patient 46, 66 ans, Kinshasa",
+    "histoire": "Cas eclampsie - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "eclampsie"
+  },
+  "47": {
+    "id": "avortement_septique",
+    "titre": "Avortement Septique",
+    "service": "Médecine interne",
+    "persona": "Patient 47, 67 ans, Kinshasa",
+    "histoire": "Cas avortement_septique - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "avortement_septique"
+  },
+  "48": {
+    "id": "rupture_uterine",
+    "titre": "Rupture Uterine",
+    "service": "Médecine interne",
+    "persona": "Patient 48, 68 ans, Kinshasa",
+    "histoire": "Cas rupture_uterine - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "rupture_uterine"
+  },
+  "49": {
+    "id": "mastite_abces",
+    "titre": "Mastite Abces",
+    "service": "Médecine interne",
+    "persona": "Patient 49, 69 ans, Kinshasa",
+    "histoire": "Cas mastite_abces - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "mastite_abces"
+  },
+  "50": {
+    "id": "mole_hydatiforme",
+    "titre": "Mole Hydatiforme",
+    "service": "Médecine interne",
+    "persona": "Patient 50, 20 ans, Kinshasa",
+    "histoire": "Cas mole_hydatiforme - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "mole_hydatiforme"
+  },
+  "51": {
+    "id": "dengue_hemorragique",
+    "titre": "Dengue Hemorragique",
+    "service": "Médecine interne",
+    "persona": "Patient 51, 21 ans, Kinshasa",
+    "histoire": "Cas dengue_hemorragique - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "dengue_hemorragique"
+  },
+  "52": {
+    "id": "cholera_grave",
+    "titre": "Cholera Grave",
+    "service": "Médecine interne",
+    "persona": "Patient 52, 22 ans, Kinshasa",
+    "histoire": "Cas cholera_grave - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "cholera_grave"
+  },
+  "53": {
+    "id": "embolie_pulmonaire",
+    "titre": "Embolie Pulmonaire",
+    "service": "Médecine interne",
+    "persona": "Patient 53, 23 ans, Kinshasa",
+    "histoire": "Cas embolie_pulmonaire - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "embolie_pulmonaire"
+  },
+  "54": {
+    "id": "infarctus_myocarde",
+    "titre": "Infarctus Myocarde",
+    "service": "Médecine interne",
+    "persona": "Patient 54, 24 ans, Kinshasa",
+    "histoire": "Cas infarctus_myocarde - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "infarctus_myocarde"
+  },
+  "55": {
+    "id": "peritonite_appendiculaire",
+    "titre": "Peritonite Appendiculaire",
+    "service": "Médecine interne",
+    "persona": "Patient 55, 25 ans, Kinshasa",
+    "histoire": "Cas peritonite_appendiculaire - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "peritonite_appendiculaire"
+  },
+  "56": {
+    "id": "invagination_intestinale",
+    "titre": "Invagination Intestinale",
+    "service": "Médecine interne",
+    "persona": "Patient 56, 26 ans, Kinshasa",
+    "histoire": "Cas invagination_intestinale - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "invagination_intestinale"
+  },
+  "57": {
+    "id": "volvulus_sigmoid",
+    "titre": "Volvulus Sigmoid",
+    "service": "Médecine interne",
+    "persona": "Patient 57, 27 ans, Kinshasa",
+    "histoire": "Cas volvulus_sigmoid - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "volvulus_sigmoid"
+  },
+  "58": {
+    "id": "deshydratation_severe_nourrisson",
+    "titre": "Deshydratation Severe Nourrisson",
+    "service": "Médecine interne",
+    "persona": "Patient 58, 28 ans, Kinshasa",
+    "histoire": "Cas deshydratation_severe_nourrisson - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "deshydratation_severe_nourrisson"
+  },
+  "59": {
+    "id": "meningite_tuberculeuse",
+    "titre": "Meningite Tuberculeuse",
+    "service": "Médecine interne",
+    "persona": "Patient 59, 29 ans, Kinshasa",
+    "histoire": "Cas meningite_tuberculeuse - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "meningite_tuberculeuse"
+  },
+  "60": {
+    "id": "endocardite_infectieuse",
+    "titre": "Endocardite Infectieuse",
+    "service": "Médecine interne",
+    "persona": "Patient 60, 30 ans, Kinshasa",
+    "histoire": "Cas endocardite_infectieuse - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "endocardite_infectieuse"
+  },
+  "61": {
+    "id": "asthme_aigu_grave",
+    "titre": "Asthme Aigu Grave",
+    "service": "Médecine interne",
+    "persona": "Patient 61, 31 ans, Kinshasa",
+    "histoire": "Cas asthme_aigu_grave - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "asthme_aigu_grave"
+  },
+  "62": {
+    "id": "bpco_exacerbation",
+    "titre": "Bpco Exacerbation",
+    "service": "Médecine interne",
+    "persona": "Patient 62, 32 ans, Kinshasa",
+    "histoire": "Cas bpco_exacerbation - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "bpco_exacerbation"
+  },
+  "63": {
+    "id": "pneumothorax_spontane",
+    "titre": "Pneumothorax Spontane",
+    "service": "Médecine interne",
+    "persona": "Patient 63, 33 ans, Kinshasa",
+    "histoire": "Cas pneumothorax_spontane - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "pneumothorax_spontane"
+  },
+  "64": {
+    "id": "pleuresie_purulente",
+    "titre": "Pleuresie Purulente",
+    "service": "Médecine interne",
+    "persona": "Patient 64, 34 ans, Kinshasa",
+    "histoire": "Cas pleuresie_purulente - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "pleuresie_purulente"
+  },
+  "65": {
+    "id": "meningite_neonatale",
+    "titre": "Meningite Neonatale",
+    "service": "Médecine interne",
+    "persona": "Patient 65, 35 ans, Kinshasa",
+    "histoire": "Cas meningite_neonatale - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "meningite_neonatale"
+  },
+  "66": {
+    "id": "ictere_neonatal",
+    "titre": "Ictere Neonatal",
+    "service": "Médecine interne",
+    "persona": "Patient 66, 36 ans, Kinshasa",
+    "histoire": "Cas ictere_neonatal - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "ictere_neonatal"
+  },
+  "67": {
+    "id": "rage_humaine",
+    "titre": "Rage Humaine",
+    "service": "Médecine interne",
+    "persona": "Patient 67, 37 ans, Kinshasa",
+    "histoire": "Cas rage_humaine - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "rage_humaine"
+  },
+  "68": {
+    "id": "leptospirose",
+    "titre": "Leptospirose",
+    "service": "Médecine interne",
+    "persona": "Patient 68, 38 ans, Kinshasa",
+    "histoire": "Cas leptospirose - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "leptospirose"
+  },
+  "69": {
+    "id": "amibiase_hepatique",
+    "titre": "Amibiase Hepatique",
+    "service": "Médecine interne",
+    "persona": "Patient 69, 39 ans, Kinshasa",
+    "histoire": "Cas amibiase_hepatique - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "amibiase_hepatique"
+  },
+  "70": {
+    "id": "palu_femme_enceinte",
+    "titre": "Palu Femme Enceinte",
+    "service": "Médecine interne",
+    "persona": "Patient 70, 40 ans, Kinshasa",
+    "histoire": "Cas palu_femme_enceinte - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "palu_femme_enceinte"
+  },
+  "71": {
+    "id": "menace_accouchement",
+    "titre": "Menace Accouchement",
+    "service": "Médecine interne",
+    "persona": "Patient 71, 41 ans, Kinshasa",
+    "histoire": "Cas menace_accouchement - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "menace_accouchement"
+  },
+  "72": {
+    "id": "infection_postpartum",
+    "titre": "Infection Postpartum",
+    "service": "Médecine interne",
+    "persona": "Patient 72, 42 ans, Kinshasa",
+    "histoire": "Cas infection_postpartum - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "infection_postpartum"
+  },
+  "73": {
+    "id": "retention_placentaire",
+    "titre": "Retention Placentaire",
+    "service": "Médecine interne",
+    "persona": "Patient 73, 43 ans, Kinshasa",
+    "histoire": "Cas retention_placentaire - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "retention_placentaire"
+  },
+  "74": {
+    "id": "procidence_cordon",
+    "titre": "Procidence Cordon",
+    "service": "Médecine interne",
+    "persona": "Patient 74, 44 ans, Kinshasa",
+    "histoire": "Cas procidence_cordon - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "procidence_cordon"
+  },
+  "75": {
+    "id": "dystocie_epaule",
+    "titre": "Dystocie Epaule",
+    "service": "Médecine interne",
+    "persona": "Patient 75, 45 ans, Kinshasa",
+    "histoire": "Cas dystocie_epaule - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "dystocie_epaule"
+  },
+  "76": {
+    "id": "hta_maligne",
+    "titre": "Hta Maligne",
+    "service": "Médecine interne",
+    "persona": "Patient 76, 46 ans, Kinshasa",
+    "histoire": "Cas hta_maligne - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "hta_maligne"
+  },
+  "77": {
+    "id": "irc_descompensee",
+    "titre": "Irc Descompensee",
+    "service": "Médecine interne",
+    "persona": "Patient 77, 47 ans, Kinshasa",
+    "histoire": "Cas irc_descompensee - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "irc_descompensee"
+  },
+  "78": {
+    "id": "syndrome_nephrotique",
+    "titre": "Syndrome Nephrotique",
+    "service": "Médecine interne",
+    "persona": "Patient 78, 48 ans, Kinshasa",
+    "histoire": "Cas syndrome_nephrotique - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "syndrome_nephrotique"
+  },
+  "79": {
+    "id": "colique_nephretique",
+    "titre": "Colique Nephretique",
+    "service": "Médecine interne",
+    "persona": "Patient 79, 49 ans, Kinshasa",
+    "histoire": "Cas colique_nephretique - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "colique_nephretique"
+  },
+  "80": {
+    "id": "torsion_annexe",
+    "titre": "Torsion Annexe",
+    "service": "Médecine interne",
+    "persona": "Patient 80, 50 ans, Kinshasa",
+    "histoire": "Cas torsion_annexe - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "torsion_annexe"
+  },
+  "81": {
+    "id": "rupture_kyste_ovarien",
+    "titre": "Rupture Kyste Ovarien",
+    "service": "Médecine interne",
+    "persona": "Patient 81, 51 ans, Kinshasa",
+    "histoire": "Cas rupture_kyste_ovarien - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "rupture_kyste_ovarien"
+  },
+  "82": {
+    "id": "cellulite_periorbitaire",
+    "titre": "Cellulite Periorbitaire",
+    "service": "Médecine interne",
+    "persona": "Patient 82, 52 ans, Kinshasa",
+    "histoire": "Cas cellulite_periorbitaire - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "cellulite_periorbitaire"
+  },
+  "83": {
+    "id": "traumatisme_crane",
+    "titre": "Traumatisme Crane",
+    "service": "Médecine interne",
+    "persona": "Patient 83, 53 ans, Kinshasa",
+    "histoire": "Cas traumatisme_crane - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "traumatisme_crane"
+  },
+  "84": {
+    "id": "luxation_epaule",
+    "titre": "Luxation Epaule",
+    "service": "Médecine interne",
+    "persona": "Patient 84, 54 ans, Kinshasa",
+    "histoire": "Cas luxation_epaule - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "luxation_epaule"
+  },
+  "85": {
+    "id": "fracture_col_femur",
+    "titre": "Fracture Col Femur",
+    "service": "Médecine interne",
+    "persona": "Patient 85, 55 ans, Kinshasa",
+    "histoire": "Cas fracture_col_femur - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "fracture_col_femur"
+  },
+  "86": {
+    "id": "brulure_grave_enfant",
+    "titre": "Brulure Grave Enfant",
+    "service": "Médecine interne",
+    "persona": "Patient 86, 56 ans, Kinshasa",
+    "histoire": "Cas brulure_grave_enfant - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "brulure_grave_enfant"
+  },
+  "87": {
+    "id": "hernie_ombilicale_etranglee",
+    "titre": "Hernie Ombilicale Etranglee",
+    "service": "Médecine interne",
+    "persona": "Patient 87, 57 ans, Kinshasa",
+    "histoire": "Cas hernie_ombilicale_etranglee - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "hernie_ombilicale_etranglee"
+  },
+  "88": {
+    "id": "occlusion_neonatale",
+    "titre": "Occlusion Neonatale",
+    "service": "Médecine interne",
+    "persona": "Patient 88, 58 ans, Kinshasa",
+    "histoire": "Cas occlusion_neonatale - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "occlusion_neonatale"
+  },
+  "89": {
+    "id": "imperforation_anale",
+    "titre": "Imperforation Anale",
+    "service": "Médecine interne",
+    "persona": "Patient 89, 59 ans, Kinshasa",
+    "histoire": "Cas imperforation_anale - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "imperforation_anale"
+  },
+  "90": {
+    "id": "schistosomiase_urinaire",
+    "titre": "Schistosomiase Urinaire",
+    "service": "Médecine interne",
+    "persona": "Patient 90, 60 ans, Kinshasa",
+    "histoire": "Cas schistosomiase_urinaire - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "schistosomiase_urinaire"
+  },
+  "91": {
+    "id": "trypanosomiase",
+    "titre": "Trypanosomiase",
+    "service": "Médecine interne",
+    "persona": "Patient 91, 61 ans, Kinshasa",
+    "histoire": "Cas trypanosomiase - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "trypanosomiase"
+  },
+  "92": {
+    "id": "otite_suppuree",
+    "titre": "Otite Suppuree",
+    "service": "Médecine interne",
+    "persona": "Patient 92, 62 ans, Kinshasa",
+    "histoire": "Cas otite_suppuree - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "otite_suppuree"
+  },
+  "93": {
+    "id": "mastoidite",
+    "titre": "Mastoidite",
+    "service": "Médecine interne",
+    "persona": "Patient 93, 63 ans, Kinshasa",
+    "histoire": "Cas mastoidite - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "mastoidite"
+  },
+  "94": {
+    "id": "anemie_severe_grossesse",
+    "titre": "Anemie Severe Grossesse",
+    "service": "Médecine interne",
+    "persona": "Patient 94, 64 ans, Kinshasa",
+    "histoire": "Cas anemie_severe_grossesse - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "anemie_severe_grossesse"
+  },
+  "95": {
+    "id": "fibrome_complique",
+    "titre": "Fibrome Complique",
+    "service": "Médecine interne",
+    "persona": "Patient 95, 65 ans, Kinshasa",
+    "histoire": "Cas fibrome_complique - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "fibrome_complique"
+  },
+  "96": {
+    "id": "cancer_col_hemorragique",
+    "titre": "Cancer Col Hemorragique",
+    "service": "Médecine interne",
+    "persona": "Patient 96, 66 ans, Kinshasa",
+    "histoire": "Cas cancer_col_hemorragique - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "cancer_col_hemorragique"
+  },
+  "97": {
+    "id": "syndrome_nephritique",
+    "titre": "Syndrome Nephritique",
+    "service": "Médecine interne",
+    "persona": "Patient 97, 67 ans, Kinshasa",
+    "histoire": "Cas syndrome_nephritique - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "syndrome_nephritique"
+  },
+  "98": {
+    "id": "colique_hepatique",
+    "titre": "Colique Hepatique",
+    "service": "Médecine interne",
+    "persona": "Patient 98, 68 ans, Kinshasa",
+    "histoire": "Cas colique_hepatique - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "colique_hepatique"
+  },
+  "99": {
+    "id": "appendicite_aigue",
+    "titre": "Appendicite Aigue",
+    "service": "Médecine interne",
+    "persona": "Patient 99, 69 ans, Kinshasa",
+    "histoire": "Cas appendicite_aigue - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "appendicite_aigue"
+  },
+  "100": {
+    "id": "diabete_inaugural",
+    "titre": "Diabete Inaugural",
+    "service": "Médecine interne",
+    "persona": "Patient 100, 20 ans, Kinshasa",
+    "histoire": "Cas diabete_inaugural - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "diabete_inaugural"
+  },
+  "101": {
+    "id": "hypothyroidie",
+    "titre": "Hypothyroidie",
+    "service": "Médecine interne",
+    "persona": "Patient 101, 21 ans, Kinshasa",
+    "histoire": "Cas hypothyroidie - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "hypothyroidie"
+  },
+  "102": {
+    "id": "hyperthyroidie",
+    "titre": "Hyperthyroidie",
+    "service": "Médecine interne",
+    "persona": "Patient 102, 22 ans, Kinshasa",
+    "histoire": "Cas hyperthyroidie - fièvre, douleur, contexte eau puits, moustiquaire, habite Ngaba/Kalamu",
+    "diagnostic_cache": "hyperthyroidie"
+  },
+  "103": {
+    "id": "new_103",
+    "titre": "Cirrhose décompensée",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 103, Kinshasa Ngaba",
+    "histoire": "Cirrhose décompensée - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "cirrhose décompensée"
+  },
+  "104": {
+    "id": "new_104",
+    "titre": "IRC",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 104, Kinshasa Ngaba",
+    "histoire": "IRC - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "irc"
+  },
+  "105": {
+    "id": "new_105",
+    "titre": "Diabète déséquilibré",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 105, Kinshasa Ngaba",
+    "histoire": "Diabète déséquilibré - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "diabète déséquilibré"
+  },
+  "106": {
+    "id": "new_106",
+    "titre": "VIH stade 4",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 106, Kinshasa Ngaba",
+    "histoire": "VIH stade 4 - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "vih stade 4"
+  },
+  "107": {
+    "id": "new_107",
+    "titre": "Méningite TB",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 107, Kinshasa Ngaba",
+    "histoire": "Méningite TB - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "méningite tb"
+  },
+  "108": {
+    "id": "new_108",
+    "titre": "Péricardite TB",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 108, Kinshasa Ngaba",
+    "histoire": "Péricardite TB - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "péricardite tb"
+  },
+  "109": {
+    "id": "new_109",
+    "titre": "Hépatite B aiguë",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 109, Kinshasa Ngaba",
+    "histoire": "Hépatite B aiguë - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "hépatite b aiguë"
+  },
+  "110": {
+    "id": "new_110",
+    "titre": "Gastrite ulcéreuse",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 110, Kinshasa Ngaba",
+    "histoire": "Gastrite ulcéreuse - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "gastrite ulcéreuse"
+  },
+  "111": {
+    "id": "new_111",
+    "titre": "HTA maligne",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 111, Kinshasa Ngaba",
+    "histoire": "HTA maligne - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "hta maligne"
+  },
+  "112": {
+    "id": "new_112",
+    "titre": "Anémie sévère",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 112, Kinshasa Ngaba",
+    "histoire": "Anémie sévère - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "anémie sévère"
+  },
+  "113": {
+    "id": "new_113",
+    "titre": "Septicémie urinaire",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 113, Kinshasa Ngaba",
+    "histoire": "Septicémie urinaire - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "septicémie urinaire"
+  },
+  "114": {
+    "id": "new_114",
+    "titre": "Leptospirose",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 114, Kinshasa Ngaba",
+    "histoire": "Leptospirose - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "leptospirose"
+  },
+  "115": {
+    "id": "new_115",
+    "titre": "Amibiase hépatique",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 115, Kinshasa Ngaba",
+    "histoire": "Amibiase hépatique - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "amibiase hépatique"
+  },
+  "116": {
+    "id": "new_116",
+    "titre": "Syndrome néphrotique",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 116, Kinshasa Ngaba",
+    "histoire": "Syndrome néphrotique - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "syndrome néphrotique"
+  },
+  "117": {
+    "id": "new_117",
+    "titre": "Hyperthyroïdie",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 117, Kinshasa Ngaba",
+    "histoire": "Hyperthyroïdie - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "hyperthyroïdie"
+  },
+  "118": {
+    "id": "new_118",
+    "titre": "Hypothyroïdie",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 118, Kinshasa Ngaba",
+    "histoire": "Hypothyroïdie - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "hypothyroïdie"
+  },
+  "119": {
+    "id": "new_119",
+    "titre": "Asthme grave",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 119, Kinshasa Ngaba",
+    "histoire": "Asthme grave - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "asthme grave"
+  },
+  "120": {
+    "id": "new_120",
+    "titre": "BPCO",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 120, Kinshasa Ngaba",
+    "histoire": "BPCO - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "bpco"
+  },
+  "121": {
+    "id": "new_121",
+    "titre": "AVC ischémique",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 121, Kinshasa Ngaba",
+    "histoire": "AVC ischémique - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "avc ischémique"
+  },
+  "122": {
+    "id": "new_122",
+    "titre": "Epilepsie",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 122, Kinshasa Ngaba",
+    "histoire": "Epilepsie - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "epilepsie"
+  },
+  "123": {
+    "id": "new_123",
+    "titre": "Kwashiorkor",
+    "service": "Pédiatrie",
+    "persona": "Maman/Patient 123, Kinshasa Ngaba",
+    "histoire": "Kwashiorkor - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "kwashiorkor"
+  },
+  "124": {
+    "id": "new_124",
+    "titre": "Marasme",
+    "service": "Pédiatrie",
+    "persona": "Maman/Patient 124, Kinshasa Ngaba",
+    "histoire": "Marasme - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "marasme"
+  },
+  "125": {
+    "id": "new_125",
+    "titre": "Rougeole",
+    "service": "Pédiatrie",
+    "persona": "Maman/Patient 125, Kinshasa Ngaba",
+    "histoire": "Rougeole - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "rougeole"
+  },
+  "126": {
+    "id": "new_126",
+    "titre": "Méningite nourrisson",
+    "service": "Pédiatrie",
+    "persona": "Maman/Patient 126, Kinshasa Ngaba",
+    "histoire": "Méningite nourrisson - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "méningite nourrisson"
+  },
+  "127": {
+    "id": "new_127",
+    "titre": "Palu simple enfant",
+    "service": "Pédiatrie",
+    "persona": "Maman/Patient 127, Kinshasa Ngaba",
+    "histoire": "Palu simple enfant - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "palu simple enfant"
+  },
+  "128": {
+    "id": "new_128",
+    "titre": "Otite suppurée",
+    "service": "Pédiatrie",
+    "persona": "Maman/Patient 128, Kinshasa Ngaba",
+    "histoire": "Otite suppurée - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "otite suppurée"
+  },
+  "129": {
+    "id": "new_129",
+    "titre": "Drépanocytose",
+    "service": "Pédiatrie",
+    "persona": "Maman/Patient 129, Kinshasa Ngaba",
+    "histoire": "Drépanocytose - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "drépanocytose"
+  },
+  "130": {
+    "id": "new_130",
+    "titre": "Tétanos néonatal",
+    "service": "Pédiatrie",
+    "persona": "Maman/Patient 130, Kinshasa Ngaba",
+    "histoire": "Tétanos néonatal - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "tétanos néonatal"
+  },
+  "131": {
+    "id": "new_131",
+    "titre": "Shigellose",
+    "service": "Pédiatrie",
+    "persona": "Maman/Patient 131, Kinshasa Ngaba",
+    "histoire": "Shigellose - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "shigellose"
+  },
+  "132": {
+    "id": "new_132",
+    "titre": "Bronchiolite",
+    "service": "Pédiatrie",
+    "persona": "Maman/Patient 132, Kinshasa Ngaba",
+    "histoire": "Bronchiolite - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "bronchiolite"
+  },
+  "133": {
+    "id": "new_133",
+    "titre": "Rachitisme",
+    "service": "Pédiatrie",
+    "persona": "Maman/Patient 133, Kinshasa Ngaba",
+    "histoire": "Rachitisme - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "rachitisme"
+  },
+  "134": {
+    "id": "new_134",
+    "titre": "Coqueluche",
+    "service": "Pédiatrie",
+    "persona": "Maman/Patient 134, Kinshasa Ngaba",
+    "histoire": "Coqueluche - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "coqueluche"
+  },
+  "135": {
+    "id": "new_135",
+    "titre": "Anémie ferriprive",
+    "service": "Pédiatrie",
+    "persona": "Maman/Patient 135, Kinshasa Ngaba",
+    "histoire": "Anémie ferriprive - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "anémie ferriprive"
+  },
+  "136": {
+    "id": "new_136",
+    "titre": "Rupture utérine",
+    "service": "Gynéco-obstétrique",
+    "persona": "Maman/Patient 136, Kinshasa Ngaba",
+    "histoire": "Rupture utérine - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "rupture utérine"
+  },
+  "137": {
+    "id": "new_137",
+    "titre": "Pré-éclampsie",
+    "service": "Gynéco-obstétrique",
+    "persona": "Maman/Patient 137, Kinshasa Ngaba",
+    "histoire": "Pré-éclampsie - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "pré-éclampsie"
+  },
+  "138": {
+    "id": "new_138",
+    "titre": "Eclampsie",
+    "service": "Gynéco-obstétrique",
+    "persona": "Maman/Patient 138, Kinshasa Ngaba",
+    "histoire": "Eclampsie - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "eclampsie"
+  },
+  "139": {
+    "id": "new_139",
+    "titre": "HPP",
+    "service": "Gynéco-obstétrique",
+    "persona": "Maman/Patient 139, Kinshasa Ngaba",
+    "histoire": "HPP - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "hpp"
+  },
+  "140": {
+    "id": "new_140",
+    "titre": "Infection post-partum",
+    "service": "Gynéco-obstétrique",
+    "persona": "Maman/Patient 140, Kinshasa Ngaba",
+    "histoire": "Infection post-partum - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "infection post-partum"
+  },
+  "141": {
+    "id": "new_141",
+    "titre": "GEU",
+    "service": "Gynéco-obstétrique",
+    "persona": "Maman/Patient 141, Kinshasa Ngaba",
+    "histoire": "GEU - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "geu"
+  },
+  "142": {
+    "id": "new_142",
+    "titre": "Avortement septique",
+    "service": "Gynéco-obstétrique",
+    "persona": "Maman/Patient 142, Kinshasa Ngaba",
+    "histoire": "Avortement septique - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "avortement septique"
+  },
+  "143": {
+    "id": "new_143",
+    "titre": "Placenta praevia",
+    "service": "Gynéco-obstétrique",
+    "persona": "Maman/Patient 143, Kinshasa Ngaba",
+    "histoire": "Placenta praevia - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "placenta praevia"
+  },
+  "144": {
+    "id": "new_144",
+    "titre": "HRP",
+    "service": "Gynéco-obstétrique",
+    "persona": "Maman/Patient 144, Kinshasa Ngaba",
+    "histoire": "HRP - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "hrp"
+  },
+  "145": {
+    "id": "new_145",
+    "titre": "Môle",
+    "service": "Gynéco-obstétrique",
+    "persona": "Maman/Patient 145, Kinshasa Ngaba",
+    "histoire": "Môle - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "môle"
+  },
+  "146": {
+    "id": "new_146",
+    "titre": "Dystocie épaule",
+    "service": "Gynéco-obstétrique",
+    "persona": "Maman/Patient 146, Kinshasa Ngaba",
+    "histoire": "Dystocie épaule - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "dystocie épaule"
+  },
+  "147": {
+    "id": "new_147",
+    "titre": "Procidence cordon",
+    "service": "Gynéco-obstétrique",
+    "persona": "Maman/Patient 147, Kinshasa Ngaba",
+    "histoire": "Procidence cordon - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "procidence cordon"
+  },
+  "148": {
+    "id": "new_148",
+    "titre": "Rétention placentaire",
+    "service": "Gynéco-obstétrique",
+    "persona": "Maman/Patient 148, Kinshasa Ngaba",
+    "histoire": "Rétention placentaire - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "rétention placentaire"
+  },
+  "149": {
+    "id": "new_149",
+    "titre": "Mastite abcès",
+    "service": "Gynéco-obstétrique",
+    "persona": "Maman/Patient 149, Kinshasa Ngaba",
+    "histoire": "Mastite abcès - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "mastite abcès"
+  },
+  "150": {
+    "id": "new_150",
+    "titre": "Anémie grossesse",
+    "service": "Gynéco-obstétrique",
+    "persona": "Maman/Patient 150, Kinshasa Ngaba",
+    "histoire": "Anémie grossesse - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "anémie grossesse"
+  },
+  "151": {
+    "id": "new_151",
+    "titre": "Péritonite appendiculaire",
+    "service": "Chirurgie et urgences",
+    "persona": "Maman/Patient 151, Kinshasa Ngaba",
+    "histoire": "Péritonite appendiculaire - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "péritonite appendiculaire"
+  },
+  "152": {
+    "id": "new_152",
+    "titre": "Occlusion bride",
+    "service": "Chirurgie et urgences",
+    "persona": "Maman/Patient 152, Kinshasa Ngaba",
+    "histoire": "Occlusion bride - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "occlusion bride"
+  },
+  "153": {
+    "id": "new_153",
+    "titre": "Hernie étranglée",
+    "service": "Chirurgie et urgences",
+    "persona": "Maman/Patient 153, Kinshasa Ngaba",
+    "histoire": "Hernie étranglée - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "hernie étranglée"
+  },
+  "154": {
+    "id": "new_154",
+    "titre": "Perforation typhique",
+    "service": "Chirurgie et urgences",
+    "persona": "Maman/Patient 154, Kinshasa Ngaba",
+    "histoire": "Perforation typhique - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "perforation typhique"
+  },
+  "155": {
+    "id": "new_155",
+    "titre": "Fracture ouverte",
+    "service": "Chirurgie et urgences",
+    "persona": "Maman/Patient 155, Kinshasa Ngaba",
+    "histoire": "Fracture ouverte - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "fracture ouverte"
+  },
+  "156": {
+    "id": "new_156",
+    "titre": "Brûlure étendue",
+    "service": "Chirurgie et urgences",
+    "persona": "Maman/Patient 156, Kinshasa Ngaba",
+    "histoire": "Brûlure étendue - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "brûlure étendue"
+  },
+  "157": {
+    "id": "new_157",
+    "titre": "Luxation épaule",
+    "service": "Chirurgie et urgences",
+    "persona": "Maman/Patient 157, Kinshasa Ngaba",
+    "histoire": "Luxation épaule - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "luxation épaule"
+  },
+  "158": {
+    "id": "new_158",
+    "titre": "Hématome extra-dural",
+    "service": "Chirurgie et urgences",
+    "persona": "Maman/Patient 158, Kinshasa Ngaba",
+    "histoire": "Hématome extra-dural - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "hématome extra-dural"
+  },
+  "159": {
+    "id": "new_159",
+    "titre": "Torsion testiculaire",
+    "service": "Chirurgie et urgences",
+    "persona": "Maman/Patient 159, Kinshasa Ngaba",
+    "histoire": "Torsion testiculaire - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "torsion testiculaire"
+  },
+  "160": {
+    "id": "new_160",
+    "titre": "Invagination",
+    "service": "Chirurgie et urgences",
+    "persona": "Maman/Patient 160, Kinshasa Ngaba",
+    "histoire": "Invagination - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "invagination"
+  },
+  "161": {
+    "id": "new_161",
+    "titre": "Volvulus",
+    "service": "Chirurgie et urgences",
+    "persona": "Maman/Patient 161, Kinshasa Ngaba",
+    "histoire": "Volvulus - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "volvulus"
+  },
+  "162": {
+    "id": "new_162",
+    "titre": "Colique néphrétique",
+    "service": "Chirurgie et urgences",
+    "persona": "Maman/Patient 162, Kinshasa Ngaba",
+    "histoire": "Colique néphrétique - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "colique néphrétique"
+  },
+  "163": {
+    "id": "new_163",
+    "titre": "Cholécystite",
+    "service": "Chirurgie et urgences",
+    "persona": "Maman/Patient 163, Kinshasa Ngaba",
+    "histoire": "Cholécystite - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "cholécystite"
+  },
+  "164": {
+    "id": "new_164",
+    "titre": "Pancréatite",
+    "service": "Chirurgie et urgences",
+    "persona": "Maman/Patient 164, Kinshasa Ngaba",
+    "histoire": "Pancréatite - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "pancréatite"
+  },
+  "165": {
+    "id": "new_165",
+    "titre": "Ischémie membre",
+    "service": "Chirurgie et urgences",
+    "persona": "Maman/Patient 165, Kinshasa Ngaba",
+    "histoire": "Ischémie membre - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "ischémie membre"
+  },
+  "166": {
+    "id": "new_166",
+    "titre": "Abcès marge anale",
+    "service": "Chirurgie et urgences",
+    "persona": "Maman/Patient 166, Kinshasa Ngaba",
+    "histoire": "Abcès marge anale - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "abcès marge anale"
+  },
+  "167": {
+    "id": "new_167",
+    "titre": "Cellulite orbitaire",
+    "service": "Chirurgie et urgences",
+    "persona": "Maman/Patient 167, Kinshasa Ngaba",
+    "histoire": "Cellulite orbitaire - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "cellulite orbitaire"
+  },
+  "168": {
+    "id": "new_168",
+    "titre": "Plaie pénétrante",
+    "service": "Chirurgie et urgences",
+    "persona": "Maman/Patient 168, Kinshasa Ngaba",
+    "histoire": "Plaie pénétrante - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "plaie pénétrante"
+  },
+  "169": {
+    "id": "new_169",
+    "titre": "Fracture col fémur",
+    "service": "Chirurgie et urgences",
+    "persona": "Maman/Patient 169, Kinshasa Ngaba",
+    "histoire": "Fracture col fémur - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "fracture col fémur"
+  },
+  "170": {
+    "id": "new_170",
+    "titre": "Rupture rate",
+    "service": "Chirurgie et urgences",
+    "persona": "Maman/Patient 170, Kinshasa Ngaba",
+    "histoire": "Rupture rate - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "rupture rate"
+  },
+  "171": {
+    "id": "new_171",
+    "titre": "Choc anaphylactique",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 171, Kinshasa Ngaba",
+    "histoire": "Choc anaphylactique - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "choc anaphylactique"
+  },
+  "172": {
+    "id": "new_172",
+    "titre": "Intoxication paracétamol",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 172, Kinshasa Ngaba",
+    "histoire": "Intoxication paracétamol - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "intoxication paracétamol"
+  },
+  "173": {
+    "id": "new_173",
+    "titre": "Crise drépanocytaire",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 173, Kinshasa Ngaba",
+    "histoire": "Crise drépanocytaire - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "crise drépanocytaire"
+  },
+  "174": {
+    "id": "new_174",
+    "titre": "Tétanos",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 174, Kinshasa Ngaba",
+    "histoire": "Tétanos - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "tétanos"
+  },
+  "175": {
+    "id": "new_175",
+    "titre": "Rage",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 175, Kinshasa Ngaba",
+    "histoire": "Rage - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "rage"
+  },
+  "176": {
+    "id": "new_176",
+    "titre": "Choléra grave",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 176, Kinshasa Ngaba",
+    "histoire": "Choléra grave - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "choléra grave"
+  },
+  "177": {
+    "id": "new_177",
+    "titre": "Méningite bactérienne",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 177, Kinshasa Ngaba",
+    "histoire": "Méningite bactérienne - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "méningite bactérienne"
+  },
+  "178": {
+    "id": "new_178",
+    "titre": "Embolie pulmonaire",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 178, Kinshasa Ngaba",
+    "histoire": "Embolie pulmonaire - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "embolie pulmonaire"
+  },
+  "179": {
+    "id": "new_179",
+    "titre": "Infarctus",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 179, Kinshasa Ngaba",
+    "histoire": "Infarctus - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "infarctus"
+  },
+  "180": {
+    "id": "new_180",
+    "titre": "AVC hémorragique",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 180, Kinshasa Ngaba",
+    "histoire": "AVC hémorragique - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "avc hémorragique"
+  },
+  "181": {
+    "id": "new_181",
+    "titre": "Hypoglycémie",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 181, Kinshasa Ngaba",
+    "histoire": "Hypoglycémie - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "hypoglycémie"
+  },
+  "182": {
+    "id": "new_182",
+    "titre": "Acidocétose",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 182, Kinshasa Ngaba",
+    "histoire": "Acidocétose - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "acidocétose"
+  },
+  "183": {
+    "id": "new_183",
+    "titre": "Palu grave enfant",
+    "service": "Pédiatrie",
+    "persona": "Maman/Patient 183, Kinshasa Ngaba",
+    "histoire": "Palu grave enfant - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "palu grave enfant"
+  },
+  "184": {
+    "id": "new_184",
+    "titre": "Déshydratation sévère",
+    "service": "Pédiatrie",
+    "persona": "Maman/Patient 184, Kinshasa Ngaba",
+    "histoire": "Déshydratation sévère - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "déshydratation sévère"
+  },
+  "185": {
+    "id": "new_185",
+    "titre": "Convulsion fébrile",
+    "service": "Pédiatrie",
+    "persona": "Maman/Patient 185, Kinshasa Ngaba",
+    "histoire": "Convulsion fébrile - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "convulsion fébrile"
+  },
+  "186": {
+    "id": "new_186",
+    "titre": "Schistosomiase",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 186, Kinshasa Ngaba",
+    "histoire": "Schistosomiase - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "schistosomiase"
+  },
+  "187": {
+    "id": "new_187",
+    "titre": "Trypanosomiase",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 187, Kinshasa Ngaba",
+    "histoire": "Trypanosomiase - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "trypanosomiase"
+  },
+  "188": {
+    "id": "new_188",
+    "titre": "Filariose",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 188, Kinshasa Ngaba",
+    "histoire": "Filariose - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "filariose"
+  },
+  "189": {
+    "id": "new_189",
+    "titre": "Ulcère Buruli",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 189, Kinshasa Ngaba",
+    "histoire": "Ulcère Buruli - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "ulcère buruli"
+  },
+  "190": {
+    "id": "new_190",
+    "titre": "Lèpre",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 190, Kinshasa Ngaba",
+    "histoire": "Lèpre - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "lèpre"
+  },
+  "191": {
+    "id": "new_191",
+    "titre": "Syphilis secondaire",
+    "service": "Médecine interne",
+    "persona": "Maman/Patient 191, Kinshasa Ngaba",
+    "histoire": "Syphilis secondaire - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "syphilis secondaire"
+  },
+  "192": {
+    "id": "new_192",
+    "titre": "Hernie discale",
+    "service": "Chirurgie et urgences",
+    "persona": "Maman/Patient 192, Kinshasa Ngaba",
+    "histoire": "Hernie discale - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "hernie discale"
+  },
+  "193": {
+    "id": "new_193",
+    "titre": "Gonarthrose",
+    "service": "Chirurgie et urgences",
+    "persona": "Maman/Patient 193, Kinshasa Ngaba",
+    "histoire": "Gonarthrose - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "gonarthrose"
+  },
+  "194": {
+    "id": "new_194",
+    "titre": "Glomérulonéphrite",
+    "service": "Pédiatrie",
+    "persona": "Maman/Patient 194, Kinshasa Ngaba",
+    "histoire": "Glomérulonéphrite - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "glomérulonéphrite"
+  },
+  "195": {
+    "id": "new_195",
+    "titre": "Ictère néonatal",
+    "service": "Pédiatrie",
+    "persona": "Maman/Patient 195, Kinshasa Ngaba",
+    "histoire": "Ictère néonatal - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "ictère néonatal"
+  },
+  "196": {
+    "id": "new_196",
+    "titre": "Méningite néonatale",
+    "service": "Pédiatrie",
+    "persona": "Maman/Patient 196, Kinshasa Ngaba",
+    "histoire": "Méningite néonatale - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "méningite néonatale"
+  },
+  "197": {
+    "id": "new_197",
+    "titre": "Dystocie",
+    "service": "Gynéco-obstétrique",
+    "persona": "Maman/Patient 197, Kinshasa Ngaba",
+    "histoire": "Dystocie - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "dystocie"
+  },
+  "198": {
+    "id": "new_198",
+    "titre": "Présentation transverse",
+    "service": "Gynéco-obstétrique",
+    "persona": "Maman/Patient 198, Kinshasa Ngaba",
+    "histoire": "Présentation transverse - contexte RDC eau puits, moustiquaire déchirée, paracétamol pris",
+    "diagnostic_cache": "présentation transverse"
+  }
+}
