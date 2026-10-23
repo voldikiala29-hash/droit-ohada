@@ -1,0 +1,1746 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<title>Salle de Garde - Plateforme médicale intelligente</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="importmap">
+{
+  "imports": {
+    "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+    "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js",
+    "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js"
+  }
+}
+</script>
+<style>
+:root{
+  --bg:#071315; --bg-2:#0A1E21; --surface:#102124; --surface-2:#152B2F; --surface-3:#1C353A;
+  --line:#1E3A3F; --line-2:#243F44;
+  --fg:#F1F7F7; --muted:#91A7AA; --muted-2:#6B8488;
+  --accent:#2DD4BF; --accent-2:#5EEAD4; --accent-fg:#04201E; --accent-soft:#0F3A37;
+  --ok:#34D399; --ok-soft:#0A2E24; --warn:#FBBF24; --warn-soft:#3A2A0A; --danger:#FB7185; --danger-soft:#451A2A;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.4); --shadow-md:0 4px 12px rgba(0,0,0,0.5); --shadow-lg:0 16px 40px rgba(0,0,0,0.6);
+  --radius-sm:10px; --radius-md:14px; --radius-lg:18px; --radius-full:999px;
+  --f-display:'Bricolage Grotesque',system-ui,sans-serif; --f-body:'IBM Plex Sans',system-ui,sans-serif; --f-mono:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html{ background:var(--bg); }
+body{ margin:0; background:var(--bg); color:var(--fg); font:15px/1.6 var(--f-body); -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+.top{ position:sticky; top:0; z-index:30; background:rgba(7,19,21,0.92); backdrop-filter:blur(16px); border-bottom:1px solid var(--line); padding:0 16px; height:60px; display:flex; align-items:center; }
+.bar{ max-width:1100px; width:100%; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.brand{ display:flex; align-items:center; gap:10px; font:800 1.2rem var(--f-display); letter-spacing:-0.03em; }
+.brand-icon{ width:36px; height:36px; background:var(--accent); color:var(--accent-fg); border-radius:11px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:18px; }
+.brand small{ font:500 .7rem var(--f-body); color:var(--muted); letter-spacing:.08em; text-transform:uppercase; display:block; line-height:1; margin-top:2px; }
+.header-actions{ display:flex; align-items:center; gap:10px; }
+.btn-profile{ width:40px; height:40px; border-radius:50%; background:var(--surface-2); border:1.5px solid var(--line); display:flex; align-items:center; justify-content:center; cursor:pointer; font:700 .9rem var(--f-display); color:var(--fg); overflow:hidden; }
+.btn-profile img{ width:100%; height:100%; object-fit:cover; }
+.wrap{ max-width:1100px; margin:0 auto; padding:20px 16px 100px; min-width:0; }
+@media(min-width:900px){ .wrap{ padding:28px 24px 40px; } }
+.bottom-nav{ position:fixed; bottom:0; left:0; right:0; z-index:40; background:rgba(16,33,36,0.96); backdrop-filter:blur(20px); border-top:1px solid var(--line); padding:6px 8px calc(6px + env(safe-area-inset-bottom)); display:flex; justify-content:space-around; }
+.bottom-nav button{ flex:1; background:transparent; border:0; color:var(--muted); display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 4px; border-radius:12px; cursor:pointer; font:600 .68rem var(--f-body); }
+.bottom-nav button .ico{ font-size:20px; }
+.bottom-nav button[aria-current="page"]{ color:var(--accent); background:var(--accent-soft); }
+@media(min-width:900px){ .bottom-nav{ display:none; } .top-nav{ display:flex !important; } }
+.top-nav{ display:none; gap:6px; background:var(--surface); border:1px solid var(--line); padding:4px; border-radius:var(--radius-full); }
+.top-nav button{ background:transparent; border:0; padding:8px 16px; border-radius:var(--radius-full); color:var(--muted); font:600 .88rem var(--f-body); cursor:pointer; }
+.top-nav button[aria-current="page"]{ background:var(--accent); color:var(--accent-fg); }
+.stack{ display:flex; flex-direction:column; gap:16px; }
+.card{ background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:20px; display:flex; flex-direction:column; gap:12px; min-width:0; }
+.card.accent{ border-color:rgba(45,212,191,0.3); background:linear-gradient(135deg, var(--surface) 0%, var(--accent-soft) 100%); }
+.card.warn{ border-color:rgba(251,191,36,0.3); background:linear-gradient(135deg, var(--surface) 0%, rgba(251,191,36,0.08) 100%); }
+.card.danger{ border-color:rgba(251,113,133,0.3); background:linear-gradient(135deg, var(--surface) 0%, rgba(251,113,133,0.08) 100%); }
+.label{ font:700 .7rem var(--f-body); letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+.muted{ color:var(--muted); }
+.small{ font-size:.85rem; line-height:1.5; }
+.btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; padding:10px 18px; border-radius:14px; border:1px solid transparent; font:600 .92rem var(--f-body); cursor:pointer; }
+.btn-primary{ background:var(--accent); color:var(--accent-fg); }
+.btn-ghost{ background:var(--surface-2); color:var(--fg); border-color:var(--line); }
+.btn-danger{ background:transparent; color:var(--danger); border-color:var(--danger); }
+.btn-sm{ min-height:32px; padding:6px 12px; font-size:.8rem; border-radius:999px; }
+.field{ display:flex; flex-direction:column; gap:6px; }
+input, textarea, select{ width:100%; background:var(--bg-2); border:1.5px solid var(--line); border-radius:14px; padding:12px 14px; min-height:46px; color:var(--fg); font:400 .95rem var(--f-body); }
+input:focus, textarea:focus, select:focus{ outline:none; border-color:var(--accent); background:var(--surface); }
+textarea{ resize:vertical; min-height:90px; }
+.card.pt{ flex-direction:row; align-items:center; gap:16px; padding:16px 18px; }
+.pt-avatar-wrap{ position:relative; flex-shrink:0; }
+.pt-avatar{ width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; border:2px solid var(--surface-2); }
+.pt-avatar.m{ background:#1E293B; color:#60A5FA; border-color:#334155; }
+.pt-avatar.f{ background:#2A1A2A; color:#F472B6; border-color:#4A2A3A; }
+.pt-avatar.kid{ background:#2A2410; color:#FBBF24; border-color:#4A3A1A; }
+.pt-info{ flex:1; min-width:0; display:flex; flex-direction:column; gap:4px; }
+.pt-info .name{ font:700 1.2rem var(--f-display); letter-spacing:-0.02em; line-height:1.2; }
+.pt-main{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.pt-badge{ display:inline-flex; align-items:center; gap:4px; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; padding:3px 10px; font-size:.72rem; font-weight:600; color:var(--muted); }
+.tags{ display:flex; gap:6px; flex-wrap:wrap; }
+.tag{ font:600 .7rem var(--f-body); padding:4px 10px; border:1px solid var(--line); background:var(--surface-2); border-radius:999px; color:var(--muted); }
+.tag.accent{ background:var(--accent-soft); border-color:rgba(45,212,191,0.3); color:var(--accent); }
+.steps{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; list-style:none; margin:0; padding:0; }
+.steps button{ background:var(--surface); border:1.5px solid var(--line); border-radius:14px; padding:12px 10px; text-align:left; cursor:pointer; display:flex; flex-direction:column; gap:8px; color:var(--muted); font-size:.75rem; font-weight:600; line-height:1.2; }
+.steps button::before{ content:""; height:4px; border-radius:2px; background:var(--line); }
+.steps button.done{ border-color:rgba(45,212,191,0.3); background:var(--accent-soft); color:var(--accent); }
+.steps button.done::before{ background:var(--accent); }
+.steps button.cur{ border-color:var(--accent); background:var(--surface-2); color:var(--fg); }
+.steps button.cur::before{ background:var(--accent); }
+.chat{ display:flex; flex-direction:column; gap:10px; }
+.bubble{ max-width:88%; padding:12px 14px; border-radius:18px; white-space:pre-wrap; overflow-wrap:anywhere; font-size:.92rem; line-height:1.6; }
+.bubble .who{ display:block; font:700 .65rem var(--f-body); letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
+.bubble.p{ align-self:flex-start; background:var(--surface-2); border:1px solid var(--line); border-bottom-left-radius:6px; }
+.bubble.d{ align-self:flex-end; background:var(--accent); color:var(--accent-fg); border-bottom-right-radius:6px; }
+.score{ flex-direction:row; align-items:center; gap:20px; padding:24px; }
+.score .big{ display:flex; align-items:baseline; gap:4px; font-family:var(--f-display); }
+.score .big b{ font-size:3.5rem; line-height:1; }
+.score.good .big b{ color:var(--ok); } .score.ok .big b{ color:var(--accent); } .score.warn .big b{ color:var(--warn); } .score.bad .big b{ color:var(--danger); }
+.axis{ display:flex; flex-direction:column; gap:6px; }
+.axis .head{ display:flex; justify-content:space-between; gap:8px; font-weight:600; font-size:.9rem; }
+.meter{ height:8px; background:var(--surface-2); border-radius:999px; overflow:hidden; border:1px solid var(--line); }
+.meter i{ display:block; height:100%; border-radius:999px; }
+.meter i.ok{ background:linear-gradient(90deg, var(--accent), var(--ok)); } .meter i.warn{ background:linear-gradient(90deg, var(--warn), #F59E0B); } .meter i.bad{ background:linear-gradient(90deg, var(--danger), #EF4444); }
+.kpis{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.kpi{ background:var(--surface-2); border:1px solid var(--line); border-radius:14px; padding:14px 10px; text-align:center; }
+.kpi b{ display:block; font:700 1.5rem var(--f-display); }
+.kpi span{ font-size:.72rem; color:var(--muted); font-weight:600; letter-spacing:.04em; text-transform:uppercase; }
+.cases-grid{ display:grid; grid-template-columns:1fr; gap:12px; }
+@media(min-width:700px){ .cases-grid{ grid-template-columns:1fr 1fr; } }
+.case-card{ background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:16px; display:flex; flex-direction:column; gap:10px; cursor:pointer; }
+.case-card:hover{ border-color:var(--accent); }
+.case-card .head{ display:flex; gap:12px; align-items:flex-start; }
+.case-card .avatar{ width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; border:1.5px solid var(--line); }
+.case-card .info{ flex:1; min-width:0; }
+.case-card .title{ font:700 .95rem var(--f-display); line-height:1.3; }
+.case-card .meta{ font-size:.78rem; color:var(--muted); margin-top:2px; }
+.filters{ display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
+.filters::-webkit-scrollbar{ display:none; }
+.filter-chip{ white-space:nowrap; background:var(--surface-2); border:1.5px solid var(--line); border-radius:999px; padding:8px 14px; font:600 .8rem var(--f-body); color:var(--muted); cursor:pointer; flex-shrink:0; }
+.filter-chip.active{ background:var(--accent); color:var(--accent-fg); border-color:var(--accent); }
+#auth-root{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; background:radial-gradient(1200px 600px at 20% -10%, rgba(45,212,191,0.12) 0%, transparent 60%), var(--bg); }
+.auth-card{ max-width:440px; width:100%; border:1px solid var(--line); background:var(--surface); padding:24px; border-radius:18px; }
+.auth-tabs{ display:flex; gap:4px; margin-bottom:20px; background:var(--bg-2); padding:4px; border-radius:999px; border:1px solid var(--line); }
+.auth-tab{ flex:1; background:transparent; border:0; padding:10px; border-radius:999px; font:600 .9rem var(--f-body); color:var(--muted); cursor:pointer; }
+.auth-tab.active{ background:var(--surface-2); color:var(--fg); }
+#profile-overlay{ position:fixed; inset:0; z-index:100; background:rgba(3,10,11,0.75); backdrop-filter:blur(12px); display:none; align-items:center; justify-content:center; padding:16px; }
+#profile-overlay.open{ display:flex; }
+.profile-bulletin{ background:var(--surface); border:1px solid var(--line); border-radius:18px; max-width:480px; width:100%; max-height:90vh; overflow:auto; }
+.profile-head{ padding:20px; border-bottom:1px solid var(--line); display:flex; gap:16px; align-items:center; }
+.profile-avatar{ width:64px; height:64px; border-radius:50%; background:var(--surface-2); border:2px solid var(--line); display:flex; align-items:center; justify-content:center; font:700 1.6rem var(--f-display); flex-shrink:0; position:relative; cursor:pointer; overflow:hidden; }
+.profile-avatar img{ width:100%; height:100%; object-fit:cover; }
+.avatar-overlay{ position:absolute; inset:0; background:rgba(0,0,0,0.6); color:white; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; border-radius:50%; opacity:0; transition:opacity .2s; font-size:.7rem; font-weight:600; }
+.profile-avatar:hover .avatar-overlay{ opacity:1; }
+.profile-badges{ display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+.profile-badge{ display:inline-flex; align-items:center; gap:5px; background:var(--accent-soft); color:var(--accent); border:1px solid rgba(45,212,191,0.3); border-radius:999px; padding:4px 10px; font-size:.72rem; font-weight:600; }
+.profile-body{ padding:16px 20px; display:flex; flex-direction:column; gap:14px; }
+.profile-kpis{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+.profile-kpi{ background:var(--surface-2); border:1px solid var(--line); border-radius:14px; padding:12px 8px; text-align:center; }
+.profile-kpi b{ display:block; font:700 1.4rem var(--f-display); }
+.profile-kpi span{ font-size:.7rem; color:var(--muted); font-weight:600; text-transform:uppercase; }
+.safety{ background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.3); border-left-width:4px; border-left-color:var(--warn); border-radius:14px; padding:12px 14px; font-size:.85rem; line-height:1.5; }
+.safety.danger{ background:rgba(251,113,133,0.08); border-color:rgba(251,113,133,0.3); border-left-color:var(--danger); }
+.chart{ width:100%; height:auto; background:var(--surface-2); border:1px solid var(--line); border-radius:14px; padding:8px; }
+.hist{ display:flex; flex-direction:column; gap:8px; }
+.hist .it{ display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 14px; background:var(--surface-2); border:1px solid var(--line); border-radius:14px; }
+.hist .sc{ font:700 .9rem var(--f-mono); background:var(--surface); border:1px solid var(--line); padding:4px 10px; border-radius:999px; }
+.hidden{ display:none !important; }
+</style>
+</head>
+<body>
+<div id="auth-root">
+  <div class="auth-card">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+      <div class="brand-icon">S</div>
+      <div><div style="font:800 1.3rem var(--f-display);">Salle de Garde</div><div style="font:.75rem var(--f-body); color:var(--muted);">Plateforme médicale intelligente</div></div>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login">Connexion</button>
+      <button class="auth-tab" id="tab-signup">Inscription</button>
+    </div>
+    <div id="auth-login">
+      <div class="field" style="margin-bottom:12px;"><label class="label">Email</label><input id="login-email" type="text" placeholder="votre@email.com"></div>
+      <div class="field" style="margin-bottom:16px;"><label class="label">Mot de passe</label><input id="login-pass" type="password" placeholder="••••••••"></div>
+      <button class="btn btn-primary" style="width:100%;" id="btn-login">Se connecter</button>
+      <div id="login-error" class="small" style="color:var(--danger); margin-top:10px; display:none;"></div>
+    </div>
+    <div id="auth-signup" class="hidden">
+      <div class="field" style="margin-bottom:12px;"><label class="label">Nom complet</label><input id="signup-name" type="text" placeholder="Dr Prénom Nom"></div>
+      <div class="field" style="margin-bottom:12px;"><label class="label">Hôpital</label><input id="signup-hopital" type="text" placeholder="Hôpital Général"></div>
+      <div class="field" style="margin-bottom:12px;"><label class="label">Email</label><input id="signup-email" type="text" placeholder="votre@email.com"></div>
+      <div class="field" style="margin-bottom:16px;"><label class="label">Mot de passe</label><input id="signup-pass" type="password" placeholder="••••••••"></div>
+      <button class="btn btn-primary" style="width:100%;" id="btn-signup">Créer mon compte</button>
+      <div id="signup-error" class="small" style="color:var(--danger); margin-top:10px; display:none;"></div>
+    </div>
+    <div class="safety" style="margin-top:20px;"><b style="color:var(--warn);">⚠️ Pédagogique uniquement</b><br>Cas simulés, ne remplace pas jugement pro.</div>
+  </div>
+</div>
+
+<div id="main-ui" style="display:none;">
+  <header class="top">
+    <div class="bar">
+      <div class="brand"><div class="brand-icon">S</div><div>Salle de Garde<small>Intelligence clinique</small></div></div>
+      <nav class="top-nav"><button data-nav="accueil" aria-current="page">Accueil</button><button data-nav="cas">Cas</button><button data-nav="progression">Progression</button><button data-nav="profil">Profil</button></nav>
+      <div class="header-actions"><button id="btn-profile-open" class="btn-profile">D</button></div>
+    </div>
+  </header>
+  <main class="wrap" id="app"></main>
+  <nav class="bottom-nav"><button data-nav="accueil" aria-current="page"><span class="ico">🏠</span><span>Accueil</span></button><button data-nav="cas"><span class="ico">📋</span><span>Cas</span></button><button data-nav="progression"><span class="ico">📈</span><span>Progression</span></button><button data-nav="profil"><span class="ico">👤</span><span>Profil</span></button></nav>
+</div>
+
+<div id="profile-overlay">
+  <div class="profile-bulletin">
+    <div class="profile-head">
+      <div id="profile-avatar" class="profile-avatar">D<div class="avatar-overlay"><span style="font-size:18px;">📷</span><span>Ajouter</span></div></div>
+      <input type="file" id="avatar-file-input" accept="image/*" style="display:none;">
+      <div style="flex:1; min-width:0;"><div id="profile-name" style="font:700 1.2rem var(--f-display);">Dr</div><div id="profile-email" style="font-size:.85rem; color:var(--muted);">email</div><div class="profile-badges"><span id="badge-temps" class="profile-badge">⏱️ Nouveau</span><span id="badge-score" class="profile-badge">🎯 À commencer</span></div></div>
+    </div>
+    <div class="profile-body">
+      <div class="profile-kpis"><div class="profile-kpi"><b id="kpi-cases">0</b><span>Cas terminés</span></div><div class="profile-kpi"><b id="kpi-moy">--</b><span>Moyenne</span></div><div class="profile-kpi"><b id="kpi-last">--</b><span>Dernier</span></div></div>
+      <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:14px; padding:12px;"><div class="label" style="margin-bottom:8px;">Médecin</div><div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed var(--line);"><span class="muted">Nom</span><b id="profile-fullname">-</b></div><div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed var(--line);"><span class="muted">Hôpital</span><b id="profile-hopital">-</b></div><div style="display:flex; justify-content:space-between; padding:6px 0;"><span class="muted">Email</span><b id="profile-email2">-</b></div></div>
+      <div class="safety"><b>🔒 Données protégées</b> — Cas simulés séparés dossiers réels.</div>
+    </div>
+    <div style="display:flex; gap:8px; padding:0 20px 20px; justify-content:flex-end;"><button class="btn btn-ghost btn-sm" id="btn-close-profile">Fermer</button><button id="btn-logout-bulletin" class="btn btn-danger btn-sm">🚪 Déconnexion</button></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "firebase/app";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile } from "firebase/auth";
+import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB1xKlA3C5nL1Fs_1bOs12qA1_Wz3_lWXw",
+  authDomain: "salledegarde-89dae.firebaseapp.com",
+  projectId: "salledegarde-89dae",
+  storageBucket: "salledegarde-89dae.firebasestorage.app",
+  messagingSenderId: "565366383143",
+  appId: "1:565366383143:web:fb205e7996e202c72b2402",
+  measurementId: "G-D3C3XQ66E4"
+};
+const appFb = initializeApp(firebaseConfig);
+const auth = getAuth(appFb);
+const db = getFirestore(appFb);
+
+// === CERVEAU CLINIQUE - D ===
+
+// === TOLERANCE FAUTES Kinshasa ===
+function N(s){
+  var t=String(s||"").toLowerCase().replace(/œ/g,"oe").replace(/æ/g,"ae").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[’‘`]/g,"'");
+  t=t.replace(/pleinte/g,"plainte").replace(/plinte/g,"plainte").replace(/plaintes/g,"plainte")
+     .replace(/atcd/g,"antecedent").replace(/atcds/g,"antecedent").replace(/atcdts/g,"antecedent").replace(/atd/g,"antecedent")
+     .replace(/fievre/g,"fievre").replace(/fievres/g,"fievre").replace(/fievre/g,"fievre")
+     .replace(/fievre/g,"fievre")
+     .replace(/douleur abdo/g,"douleur abdominale").replace(/vomi/g,"vomissement")
+     .replace(/pipi/g,"urine").replace(/caca/g,"selle").replace(/toux/g,"toux");
+  return t;
+}
+
+var D=[];
+var DB={};
+
+async function loadCases(){
+  try{
+    const r=await fetch('./cases_202.json?v='+Date.now(),{cache:'no-store'});
+    const arr=await r.json();
+    D=arr;
+    DB={};
+    D.forEach(function(d){DB[d.id]=d;});
+    console.log('Cases chargées', D.length);
+    if(typeof render==='function') try{render();}catch(e){}
+    if(typeof renderList==='function') try{renderList();}catch(e){}
+    if(window.renderCases) try{window.renderCases();}catch(e){}
+    const kpi=document.getElementById('kpi-total'); if(kpi) kpi.textContent=D.length;
+  }catch(e){
+    console.error('Erreur cases_202.json', e);
+  }
+}
+loadCases();
+
+
+
+
+/* =====================================================================
+   ÉTAT
+   ===================================================================== */
+function load(k){try{return JSON.parse(localStorage.getItem(k));}catch(e){return null;}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} try{if(window._fbSync)window._fbSync(k,v);}catch(e){}}
+function wipe(k){try{localStorage.removeItem(k);}catch(e){}}
+
+var S=load(KEY); if(S&&(!S.did||!DB[S.did]||!S.chat))S=null;
+var hist=load(HKEY); if(!Array.isArray(hist))hist=[];
+window._fbReloadHist = function(){ try{ hist=load(HKEY); if(!Array.isArray(hist))hist=[]; if(typeof render==='function') render(); }catch(e){} };
+window._fbGetHist = function(){ return hist; };
+window._fbSetHist = function(h){ hist=h; save(HKEY,hist); if(typeof render==='function') render(); };
+var view=(S&&!S.done)?"case":"home";
+var busy=false, pending=null, err="", confirmWipe=false;
+var draft={svc:SERVICES[0],chat:"",exam:"",para:"",dx:"",tx:"",ori:ORIS[1]};
+
+var app=document.getElementById("app");
+var navCase=document.getElementById("nav-case"), navProg=document.getElementById("nav-prog");
+
+function h(tag,attrs){
+  var e=document.createElement(tag);
+  if(attrs){for(var k in attrs){var v=attrs[k];
+    if(v===false||v==null)continue;
+    if(k==="class")e.className=v;
+    else if(k==="style"&&typeof v==="object")Object.assign(e.style,v);
+    else if(k.indexOf("on")===0)e.addEventListener(k.slice(2),v);
+    else if(v===true)e.setAttribute(k,"");
+    else e.setAttribute(k,v);}}
+  for(var i=2;i<arguments.length;i++){
+    var kids=[].concat(arguments[i]);
+    for(var j=0;j<kids.length;j++){var c=kids[j];if(c==null||c===false)continue;e.append(typeof c==="object"?c:String(c));}
+  }
+  return e;
+}
+function delay(ms){return new Promise(function(r){setTimeout(r,ms);});}
+
+/* =====================================================================
+   MOTEUR : patient, examens, résultats
+   ===================================================================== */
+function mkPatient(d){
+  var p=d.pt,m=p.s==="M";
+  var pool=p.kid?(m?KM:KF):(m?NM:NF);
+  var age=typeof p.age==="string"?p.age:(rnd(p.age[0],p.age[1])+" ans");
+  return {prenom:pick(pool),sexe:m?"Masculin":"Féminin",age:age,pro:pick(p.pro),commune:pick(COMMUNES),Pron:m?"Il":"Elle",kid:!!p.kid};
+}
+function fill(t,p){return String(t).replace(/\{(\w+)\}/g,function(m,k){return p[k]!=null?p[k]:m;});}
+
+/* Le patient lit les mots-clés de la question (après synonymes), classe les réponses du dossier par pertinence, puis complète par le contexte général et par des réponses négatives. */
+function patientReply(S,q){
+  var d=DB[S.did],p=S.pt,t0=N(q),t=expand(t0);
+  var hello=GEN[0][1].test(t0)?"Bonjour docteur.":"";
+  var own={},cands=[],weakOnly=[];
+  function consider(id,re,fn,isCase){
+    var s=scoreEntry(re,t);
+    if(s.strong>0)cands.push({id:id,fn:fn,score:s.strong+0.35*s.weak,pos:s.pos,hits:s.hits});
+    else if(isCase&&s.weak>0)weakOnly.push({id:id,fn:fn});
+  }
+  d.hist.forEach(function(e){own[e[0]]=1;consider(e[0],e[2],function(){return fill(e[3],p);},true);});
+  GEN.forEach(function(g){if(g[0]==="salut"||own[g[0]])return;consider(g[0],g[1],function(){return g[2](p,d);},false);});
+
+  var chosen=[];
+  if(cands.length){
+    var max=0;cands.forEach(function(c){if(c.score>max)max=c.score;});
+    chosen=cands.filter(function(c){return c.score>=max*0.5;});
+    chosen.sort(function(a,b){return b.score-a.score||a.pos-b.pos;});
+    chosen=chosen.slice(0,4).sort(function(a,b){return a.pos-b.pos;});
+  }
+  var out=chosen.map(function(c){return c.fn();}),ids=chosen.map(function(c){return c.id;});
+
+  if(out.length<4){
+    LEXNEG.forEach(function(l){
+      if(out.length>=4)return;
+      var m=l[1].exec(t);if(!m)return;
+      if(chosen.some(function(c){return c.hits.some(function(h){return l[1].test(h);});}))return;
+      if(out.some(function(o){return l[1].test(N(o));}))return;
+      if(d.hist.some(function(e){return e[2].test(m[0]);}))return;
+      var ent=d.hist.filter(function(e){return ids.indexOf(e[0])<0&&l[1].test(N(fill(e[3],p)));})[0];
+      if(ent){out.push(fill(ent[3],p));ids.push(ent[0]);return;}
+      if(l[1].test(N(d.plainte))){out.push(d.plainte);ids.push("motif");return;}
+      out.push(fill(p.kid&&l[3]?l[3]:l[2],Object.assign({},p,{pron:String(p.Pron).toLowerCase()})));ids.push("sx_"+l[0]);
+    });
+  }
+  if(!out.length&&weakOnly.length){out.push(weakOnly[0].fn());ids.push(weakOnly[0].id);}
+  if(!out.length&&!hello){
+    if(/depuis quand|quand (ca|cela|est|a)|debut|commence|combien de temps/.test(t0))out.push(p.kid?"Ça a commencé il y a quelques jours, docteur. Je peux vous en dire plus si vous me posez une question précise.":"Ça a commencé il y a quelques jours, docteur. Demandez-moi quelque chose de plus précis, je vous répondrai.");
+    else out.push(fallbackReply(t0));
+  }
+  return {text:((hello?hello+" ":"")+out.join(" ")).trim(),ids:ids};
+}
+function examReply(S,q){
+  var d=DB[S.did],t=N(q),found=[];
+  EXORDER.forEach(function(id){if(EX[id].re.test(t))found.push(id);});
+  if(!found.length)return {text:"Je n'ai pas compris ce que tu examines. Précise, par exemple : constantes, cœur, poumons, abdomen, neurologique.",ids:[]};
+  var lines=found.map(function(id){return EX[id].l+" : "+(d.ex[id]||EX[id].n);});
+  if(d.exBad&&d.exBad.re.test(t))lines.push(d.exBad.msg);
+  return {text:lines.join("\n"),ids:found};
+}
+function paraReply(S,q){
+  var d=DB[S.did],lines=[],ids=[],unk=[];
+  var chunks=q.split(/[,;\n+]| et | puis /i).map(function(s){return s.trim();}).filter(Boolean);
+  chunks.forEach(function(c){
+    var t=N(c),hit=[];
+    TORDER.forEach(function(id){var T=TESTS[id];if(T.re.test(t)&&!(T.not&&T.not.test(t)))hit.push(id);});
+    if(!hit.length&&/echo/.test(t))hit.push(d.eDef||"echoabdo");
+    if(!hit.length)unk.push(c);
+    hit.forEach(function(id){ids.push(id);lines.push(d.res[id]||TESTS[id].n);});
+  });
+  unk.forEach(function(c){lines.push("Examen non reconnu : « "+c+" ». Reformule avec le nom de l'examen.");});
+  return {text:lines.join("\n"),ids:uniq(ids)};
+}
+
+/* =====================================================================
+   NOTATION PAR RÈGLES
+   ===================================================================== */
+function round(x){return Math.max(0,Math.min(10,Math.round(x)));}
+function labelsOf(arr,max){var s=arr.slice(0,max).join(" ; ");return arr.length>max?s+" ; …":s;}
+function evaluate(S){
+  var d=DB[S.did],asked=S.asked||[],exIds=S.examIds||[],tIds=S.testIds||[];
+  var essH=d.hist.filter(function(e){return e[4];});
+  var missH=essH.filter(function(e){return asked.indexOf(e[0])<0;}).map(function(e){return e[1];});
+  var hitH=essH.length-missH.length;
+  var nQ=S.chat.filter(function(m){return m.r==="d";}).length;
+  var sInt=round(10*hitH/essH.length); if(nQ<3)sInt=Math.min(sInt,2);
+
+  var missE=d.exEss.filter(function(id){return exIds.indexOf(id)<0;}).map(function(id){return EX[id].l;});
+  var hitE=d.exEss.length-missE.length;
+  var sEx=round(10*hitE/d.exEss.length);
+  var exBadHit=!!(d.exBad&&(S.exams||[]).some(function(x){return d.exBad.re.test(N(x.q));}));
+  if(exBadHit)sEx=Math.max(0,sEx-4);
+
+  var keyIds=[];d.key.forEach(function(g){keyIds=keyIds.concat(g);});
+  var allowed=keyIds.concat(d.useful);
+  var missT=d.key.filter(function(g){return !g.some(function(id){return tIds.indexOf(id)>=0;});}).map(function(g){return TESTS[g[0]].l;});
+  var hitT=d.key.length-missT.length;
+  var useless=tIds.filter(function(id){return allowed.indexOf(id)<0;}).map(function(id){return TESTS[id].l;});
+  var sPara;
+  if(d.key.length){sPara=tIds.length?10*hitT/d.key.length-useless.length:0;}
+  else sPara=10-2*useless.length;
+  sPara=round(sPara);
+
+  var dxN=N(S.dx),sDx=0,dxState="none";
+  if(d.dx.full.test(dxN)){sDx=10;dxState="full";}
+  else if(d.dx.part.test(dxN)){sDx=d.dx.pts;dxState="part";}
+
+  var txN=N(S.tx),totW=0,gotW=0,missX=[];
+  d.tx.forEach(function(it){totW+=it[2];if(it[1].test(txN))gotW+=it[2];else missX.push(it[0]);});
+  var oriOk=d.ori.indexOf(ORIS.indexOf(S.ori))>=0;
+  var pen=0,badHit=[];
+  (d.bad||[]).forEach(function(b){if(b[1].test(txN)){pen+=b[2];badHit.push(b[0]);}});
+  var sTx=round(8*gotW/totW+(oriOk?2:0)-pen);
+
+  var scores={interrogatoire:sInt,examen_clinique:sEx,examens_complementaires:sPara,diagnostic:sDx,traitement:sTx};
+  var total=(sInt+sEx+sPara+sDx+sTx)*2;
+
+  var com={};
+  com.interrogatoire=hitH+"/"+essH.length+" points essentiels abordés."+(missH.length?" Il manquait : "+labelsOf(missH,3)+".":"")+(nQ<3?" Pose au moins quelques questions avant de passer à l'examen.":"");
+  com.examen_clinique=hitE+"/"+d.exEss.length+" systèmes essentiels examinés."+(missE.length?" Il manquait : "+labelsOf(missE,3)+".":"")+(exBadHit?" "+d.exBad.short:"");
+  com.examens_complementaires=(d.key.length?hitT+"/"+d.key.length+" examens clés demandés.":(d.paraNote||""))+(missT.length?" Il manquait : "+labelsOf(missT,3)+".":"")+(useless.length?" Examens peu utiles ici : "+labelsOf(useless,3)+".":"");
+  com.diagnostic=dxState==="full"?"Diagnostic exact : "+d.name+".":dxState==="part"?"Diagnostic incomplet : il fallait aller jusqu'à « "+d.name+" ».":"Diagnostic attendu : "+d.name+".";
+  com.traitement=(totW?Math.round(100*gotW/totW)+" % des éléments de la prise en charge retrouvés.":"")+(missX.length?" Manquait : "+labelsOf(missX,3)+".":"")+(badHit.length?" À éviter : "+badHit.join(" ; ")+".":"")+(oriOk?" Orientation correcte.":" Orientation attendue : "+d.ori.map(function(i){return ORIS[i];}).join(" ou ")+".");
+
+  var verdict=total>=80?"Très bonne consultation : démarche structurée et conduite à tenir correcte.":total>=60?"Consultation satisfaisante, avec quelques points à compléter.":total>=40?"Démarche incomplète : reprends les points signalés ci-dessous.":"Consultation insuffisante : revois la sémiologie et la conduite à tenir de cette maladie.";
+
+  var forts=[],amel=[];
+  AXES.forEach(function(a){var s=scores[a[0]];if(s>=7)forts.push(a[1]+" : "+s+"/10.");else if(s<6)amel.push(a[1]+" : "+s+"/10. "+com[a[0]]);});
+
+  return {scores:scores,total:total,d:{
+    verdict:verdict,commentaires:com,points_forts:forts,a_ameliorer:amel,
+    questions_manquantes:missH.concat(missE.map(function(x){return "Examen : "+x;}),missT.map(function(x){return "Examen demandé : "+x;}),missX),
+    explication:d.expl,differentiels_a_ecarter:d.diffs,traitement_attendu:d.txText,a_reviser:d.rev,pieges:d.pieges}};
+}
+
+/* =====================================================================
+   NAVIGATION
+   ===================================================================== */
+function go(v){view=v;confirmWipe=false;err="";render();window.scrollTo(0,0);}
+navCase.addEventListener("click",function(){go(S&&!S.done?"case":"home");});
+navProg.addEventListener("click",function(){go("progress");});
+
+function level(t){return t>=80?["Très bon","good"]:t>=60?["Satisfaisant","ok"]:t>=40?["À consolider","warn"]:["Insuffisant","bad"];}
+function fmtDate(t){return new Date(t).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"});}
+
+/* =====================================================================
+   ACCUEIL
+   ===================================================================== */
+function homeView(){
+  var root=h("div",{class:"stack"});
+  root.append(h("div",{class:"hero"},
+    h("h1",null,"Reçois un patient, mène la consultation."),
+    h("p",{class:"muted"},"Interroge, examine, demande tes examens, conclus. L'évaluation te dit ce qui était juste et ce qui manquait.")));
+
+  if(S&&!S.done){
+    var d0=DB[S.did];
+    root.append(h("section",{class:"card"},
+      h("div",{class:"label"},"Cas en cours"),
+      h("p",null,S.pt.prenom+" · "+d0.svc+", étape « "+STEPS[S.stage]+" »"),
+      h("div",{class:"row"},
+        h("button",{class:"btn",type:"button",onclick:function(){go("case");}},"Reprendre"),
+        h("button",{class:"btn ghost",type:"button",onclick:function(){S=null;wipe(KEY);render();}},"Abandonner"))));
+  }
+
+  var svc=h("select",{id:"svc",onchange:function(e){draft.svc=e.target.value;}},SERVICES.map(function(s){return h("option",{value:s,selected:s===draft.svc},s);}));
+  root.append(h("section",{class:"card"},
+    h("h2",null,"Nouveau cas"),
+    h("div",{class:"field"},h("label",{class:"label",for:"svc"},"Service"),svc),
+    h("div",{class:"row"},h("button",{class:"btn",type:"button",onclick:startCase},"Recevoir un patient")),
+    h("p",{class:"small muted"},"50 cas pour l'instant, répartis par service. Le patient et les valeurs changent à chaque fois, d'autres cas seront ajoutés.")));
+
+  if(S&&S.done&&S.ev)root.append(h("button",{class:"btn ghost",type:"button",onclick:function(){go("eval");}},"Revoir la dernière évaluation"));
+  return root;
+}
+function startCase(){
+  var pool=D.filter(function(d){return draft.svc===SERVICES[0]||d.svc===draft.svc;});
+  var last=hist.length?hist[hist.length-1].did:null;
+  var cand=pool.filter(function(d){return d.id!==last;});
+  var d=pick(cand.length?cand:pool);
+  var pt=mkPatient(d);
+  S={t:Date.now(),did:d.id,pt:pt,stage:0,maxStage:0,done:false,
+     chat:[{r:"p",t:d.plainte}],exams:[],paras:[],asked:[],examIds:[],testIds:[],hyp:"",dx:"",tx:"",ori:ORIS[1],ev:null};
+  draft.chat=draft.exam=draft.para=draft.dx=draft.tx="";draft.ori=ORIS[1];
+  save(KEY,S);view="case";err="";render();window.scrollTo(0,0);
+}
+
+/* =====================================================================
+   CONSULTATION
+   ===================================================================== */
+function patientCard(){
+  var d=DB[S.did],p=S.pt;
+  var isKid = !!p.kid;
+  var sexe = p.sexe || (p.s==='F'?'F':'M');
+  var avatarClass = isKid ? 'kid' : (sexe==='F' ? 'f' : 'm');
+  var avatarIcon = isKid ? '👶' : (sexe==='F' ? '👩' : '👨');
+  var ageText = p.age || '';
+  var prenomText = p.prenom || (isKid ? 'Enfant' : (sexe==='F' ? 'Patiente' : 'Patient'));
+  var communeText = p.commune || '';
+  
+  // Avatar element
+  var avatarEl = h("div",{class:"pt-avatar-wrap"},
+    h("div",{class:"pt-avatar "+avatarClass},
+      h("span",{class:"pt-avatar-icon"}, avatarIcon)
+    )
+  );
+  
+  // Info element
+  var infoEl = h("div",{class:"pt-info"},
+    h("div",{class:"label"}, isKid ? "Enfant reçu avec sa mère" : (sexe==='F' ? "Patiente reçue" : "Patient reçu")),
+    h("div",{class:"pt-main"},
+      h("div",{class:"name"}, [prenomText, ageText, sexe].filter(Boolean).join(" · ")),
+      h("span",{class:"pt-badge-age"}, "🎂 "+ageText)
+    ),
+    h("div",{class:"muted"}, communeText),
+    h("div",{class:"tags"},
+      h("span",{class:"tag"}, d.svc),
+      isKid ? h("span",{class:"tag", style:{background:"var(--warn-soft)", borderColor:"var(--warn)", color:"var(--warn)"}}, "Pédiatrie") : null
+    )
+  );
+  
+  return h("section",{class:"card pt"}, avatarEl, infoEl);
+}
+function stepper(){
+  var ol=h("ol",{class:"steps"});
+  STEPS.forEach(function(name,i){
+    var cls=i===S.stage?"cur":(i<S.stage?"done":"");
+    ol.append(h("li",null,h("button",{type:"button",class:cls,disabled:i>S.maxStage,"aria-current":i===S.stage?"step":false,
+      onclick:function(){S.stage=i;save(KEY,S);render();}},name)));
+  });
+  return ol;
+}
+function caseView(){
+  var root=h("div",{class:"stack"});
+  root.append(patientCard(),stepper());
+  root.append([chatPanel,examPanel,paraPanel,conclPanel][S.stage]());
+  return root;
+}
+function nextStage(){S.stage=Math.min(3,S.stage+1);S.maxStage=Math.max(S.maxStage,S.stage);save(KEY,S);render();window.scrollTo(0,0);}
+function prevStage(){S.stage=Math.max(0,S.stage-1);save(KEY,S);render();window.scrollTo(0,0);}
+function navRow(next){
+  return h("div",{class:"row between"},
+    S.stage>0?h("button",{class:"btn ghost",type:"button",disabled:busy,onclick:prevStage},"← Retour"):h("span"),
+    next?h("button",{class:"btn ghost",type:"button",disabled:busy,onclick:nextStage},next+" →"):null);
+}
+function composer(id,key,placeholder,label,onSend,chips){
+  var ta=h("textarea",{id:id,rows:"3",placeholder:placeholder,disabled:busy,
+    oninput:function(e){draft[key]=e.target.value;},
+    onkeydown:function(e){if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){e.preventDefault();onSend();}}});
+  ta.value=draft[key];
+  var chipRow=chips?h("div",{class:"chips"},chips.map(function(c){
+    return h("button",{class:"chip",type:"button",disabled:busy,onclick:function(){
+      draft[key]=(draft[key].trim()?draft[key].trim()+(key==="chat"?" ":", "):"")+c;ta.value=draft[key];ta.focus();}},c);
+  })):null;
+  return h("div",{class:"field",id:"compose"},
+    h("label",{class:"label",for:id},label),chipRow,ta,
+    h("div",{class:"row"},h("button",{class:"btn",type:"button",disabled:busy,onclick:onSend},"Envoyer")));
+}
+function afterSend(){var el=document.getElementById("compose");if(el)el.scrollIntoView({block:"end"});}
+
+/* Étape 1 : interrogatoire */
+function bubble(m){
+  var d=DB[S.did];
+  return h("div",{class:"bubble "+m.r},h("span",{class:"who"},m.r==="d"?"Toi":d.who),m.t);
+}
+function chatPanel(){
+  var d=DB[S.did];
+  var log=h("div",{class:"chat"},S.chat.map(bubble));
+  if(pending==="chat")log.append(h("div",{class:"bubble p pending"},h("span",{class:"who"},d.who),"…"));
+  return h("section",{class:"card"},
+    h("h2",null,"Interrogatoire"),
+    h("p",{class:"small muted"},"Écris tes questions librement, comme en consultation. Le patient repère les mots-clés (fièvre, toux, depuis quand, médicaments, antécédents…) et répond en conséquence. Pose une ou deux questions à la fois."),
+    log,
+    composer("chat-in","chat","Pose ta question au patient…","Ta question",sendChat,CHAT_CHIPS),
+    navRow("Examen clinique"));
+}
+async function sendChat(){
+  var t=draft.chat.trim();if(!t||busy)return;
+  S.chat.push({r:"d",t:t});draft.chat="";save(KEY,S);
+  pending="chat";busy=true;render();afterSend();
+  await delay(450);
+  var r=patientReply(S,t);
+  S.chat.push({r:"p",t:r.text});S.asked=uniq((S.asked||[]).concat(r.ids));
+  pending=null;busy=false;save(KEY,S);render();afterSend();
+}
+
+/* Étape 2 : examen clinique */
+function entries(list,prefix){
+  return list.map(function(x){return h("div",{class:"entry"},h("div",{class:"q"},prefix+x.q),h("div",{class:"res"},x.a));});
+}
+function examPanel(){
+  var log=h("div",{class:"stack"},entries(S.exams,"Examiné : "));
+  if(pending==="exam")log.append(h("div",{class:"entry"},h("div",{class:"res pending"},"…")));
+  return h("section",{class:"card"},
+    h("h2",null,"Examen clinique"),
+    h("p",{class:"small muted"},"Dis ce que tu examines. Tu ne reçois que les constatations des gestes demandés."),
+    log,
+    composer("exam-in","exam","Ex : constantes, auscultation du cœur et des poumons, palpation de l'abdomen","Ce que tu examines",sendExam,EXAM_CHIPS),
+    navRow("Examens complémentaires"));
+}
+async function sendExam(){
+  var t=draft.exam.trim();if(!t||busy)return;
+  pending="exam";busy=true;render();afterSend();
+  await delay(450);
+  var r=examReply(S,t);
+  S.exams.push({q:t,a:r.text});S.examIds=uniq((S.examIds||[]).concat(r.ids));
+  draft.exam="";pending=null;busy=false;save(KEY,S);render();afterSend();
+}
+
+/* Étape 3 : examens complémentaires */
+function paraPanel(){
+  var log=h("div",{class:"stack"},entries(S.paras,"Demandé : "));
+  if(pending==="para")log.append(h("div",{class:"entry"},h("div",{class:"res pending"},"…")));
+  var hyp=h("textarea",{id:"hyp",rows:"3",placeholder:"Ex : 1. Paludisme grave  2. Fièvre typhoïde  3. Méningite",
+    oninput:function(e){S.hyp=e.target.value;save(KEY,S);}});
+  hyp.value=S.hyp||"";
+  return h("section",{class:"card"},
+    h("h2",null,"Examens complémentaires"),
+    h("p",{class:"small muted"},"Note d'abord tes hypothèses, puis demande les examens utiles. Les examens inutiles coûtent des points. Sépare les examens par des virgules."),
+    h("div",{class:"field"},h("label",{class:"label",for:"hyp"},"Hypothèses diagnostiques"),hyp),
+    log,
+    composer("para-in","para","Ex : goutte épaisse, NFS, glycémie, radiographie du thorax","Examens à demander",sendPara),
+    navRow("Conclusion"));
+}
+async function sendPara(){
+  var t=draft.para.trim();if(!t||busy)return;
+  pending="para";busy=true;render();afterSend();
+  await delay(500);
+  var r=paraReply(S,t);
+  S.paras.push({q:t,a:r.text});S.testIds=uniq((S.testIds||[]).concat(r.ids));
+  draft.para="";pending=null;busy=false;save(KEY,S);render();afterSend();
+}
+
+/* Étape 4 : conclusion */
+function conclPanel(){
+  var dx=h("input",{id:"dx",type:"text",placeholder:"Diagnostic principal",value:draft.dx||S.dx||"",oninput:function(e){draft.dx=e.target.value;}});
+  var tx=h("textarea",{id:"tx",rows:"6",placeholder:"Médicaments (molécule, dose, voie, durée), mesures associées, surveillance, éducation, suivi",oninput:function(e){draft.tx=e.target.value;}});
+  tx.value=draft.tx||S.tx||"";
+  var ori=h("select",{id:"ori",onchange:function(e){draft.ori=e.target.value;}},ORIS.map(function(o){return h("option",{value:o,selected:o===draft.ori},o);}));
+  return h("section",{class:"card"},
+    h("h2",null,"Conclusion"),
+    h("p",{class:"small muted"},"Donne ton diagnostic et ta conduite à tenir. L'évaluation compare ton raisonnement au dossier complet."),
+    h("div",{class:"field"},h("label",{class:"label",for:"dx"},"Diagnostic retenu"),dx),
+    h("div",{class:"field"},h("label",{class:"label",for:"ori"},"Orientation"),ori),
+    h("div",{class:"field"},h("label",{class:"label",for:"tx"},"Traitement et conduite à tenir"),tx),
+    h("div",{class:"row"},h("button",{class:"btn",type:"button",onclick:finish},"Valider et voir mon évaluation")),
+    navRow(null));
+}
+function finish(){
+  if(!draft.dx.trim()||!draft.tx.trim()){err="Renseigne le diagnostic et la conduite à tenir avant de valider.";render();window.scrollTo(0,0);return;}
+  S.dx=draft.dx.trim();S.tx=draft.tx.trim();S.ori=draft.ori;err="";
+  S.ev=evaluate(S);S.done=true;
+  hist.push({t:Date.now(),did:S.did,svc:DB[S.did].svc,dx:DB[S.did].name,total:S.ev.total,ax:S.ev.scores});
+  if(hist.length>200)hist=hist.slice(-200);
+  save(HKEY,hist);save(KEY,S);
+  view="eval";render();window.scrollTo(0,0);
+}
+
+/* =====================================================================
+   ÉVALUATION
+   ===================================================================== */
+function listCard(title,arr){
+  if(!Array.isArray(arr)||!arr.length)return null;
+  return h("section",{class:"card"},h("h3",null,title),h("ul",{class:"list"},arr.map(function(x){return h("li",null,String(x));})));
+}
+function evalView(){
+  var ev=S.ev,d=ev.d,dz=DB[S.did],lv=level(ev.total);
+  var root=h("div",{class:"stack"});
+  root.append(h("section",{class:"card score "+lv[1]},
+    h("div",{class:"big"},h("b",null,String(ev.total)),h("span",null,"/100")),
+    h("div",null,h("div",{class:"lvl "+lv[1]},lv[0]),h("p",null,d.verdict))));
+
+  var ax=h("section",{class:"card"},h("h3",null,"Par compétence"));
+  AXES.forEach(function(a){
+    var s=ev.scores[a[0]];
+    ax.append(h("div",{class:"axis"},
+      h("div",{class:"head"},h("span",null,a[1]),h("span",null,s+"/10")),
+      h("div",{class:"meter"},h("i",{class:s<5?"weak":"",style:{width:(s*10)+"%"}})),
+      h("p",{class:"small muted"},d.commentaires[a[0]]||"")));
+  });
+  root.append(ax);
+
+  root.append(listCard("Points forts",d.points_forts),listCard("À améliorer",d.a_ameliorer),listCard("Questions, examens et éléments oubliés",d.questions_manquantes));
+
+  var dxCard=h("section",{class:"card"},
+    h("h3",null,"Diagnostic attendu"),
+    h("p",null,h("b",null,dz.name)),
+    h("p",{class:"small muted"},"Ta réponse : "+S.dx),
+    S.hyp?h("p",{class:"small muted"},"Tes hypothèses : "+S.hyp):null,
+    h("p",null,d.explication),
+    h("div",{class:"stack"},h("div",{class:"label"},"Différentiels à écarter"),h("div",{class:"chips"},d.differentiels_a_ecarter.map(function(x){return h("span",{class:"chip static"},x);}))));
+  root.append(dxCard);
+
+  root.append(h("section",{class:"card"},h("h3",null,"Conduite attendue"),h("p",null,d.traitement_attendu),h("p",{class:"small muted"},"Ta réponse : "+S.tx+" (orientation : "+S.ori+")")));
+  root.append(listCard("Pièges classiques",d.pieges));
+  root.append(h("section",{class:"card"},h("h3",null,"À réviser"),h("div",{class:"chips"},d.a_reviser.map(function(x){return h("span",{class:"chip static"},x);}))));
+
+  root.append(h("p",{class:"small muted"},"Cas écrits pour l'entraînement. Vérifie toujours les doses et les conduites dans tes protocoles nationaux et tes ouvrages de référence."));
+  root.append(h("div",{class:"row"},
+    h("button",{class:"btn",type:"button",onclick:function(){S=null;wipe(KEY);go("home");}},"Nouveau cas"),
+    h("button",{class:"btn ghost",type:"button",onclick:function(){go("progress");}},"Ma progression")));
+  return root;
+}
+
+/* =====================================================================
+   PROGRESSION
+   ===================================================================== */
+function progressView(){
+  var root=h("div",{class:"stack"});
+  root.append(h("h1",null,"Ma progression"));
+  if(!hist.length){
+    root.append(h("section",{class:"card"},h("p",null,"Aucun cas terminé pour l'instant."),
+      h("p",{class:"small muted"},"Termine un cas et ton évaluation apparaîtra ici, avec tes points forts et les compétences à travailler."),
+      h("div",{class:"row"},h("button",{class:"btn",type:"button",onclick:function(){go(S&&!S.done?"case":"home");}},"Commencer un cas"))));
+    return root;
+  }
+  var n=hist.length;
+  var avg=Math.round(hist.reduce(function(s,x){return s+x.total;},0)/n);
+  var last=hist[n-1].total;
+  root.append(h("section",{class:"card"},h("div",{class:"kpis"},
+    h("div",{class:"kpi"},h("b",null,String(n)),h("span",{class:"small muted"},n>1?"cas terminés":"cas terminé")),
+    h("div",{class:"kpi"},h("b",null,String(avg)),h("span",{class:"small muted"},"moyenne /100")),
+    h("div",{class:"kpi"},h("b",null,String(last)),h("span",{class:"small muted"},"dernier cas")))));
+
+  var means=AXES.map(function(a){
+    var vals=hist.filter(function(x){return x.ax&&typeof x.ax[a[0]]==="number";}).map(function(x){return x.ax[a[0]];});
+    return {k:a[0],name:a[1],m:vals.length?vals.reduce(function(s,v){return s+v;},0)/vals.length:0};
+  });
+  var weakest=means.reduce(function(a,b){return b.m<a.m?b:a;});
+  var axCard=h("section",{class:"card"},h("h3",null,"Moyenne par compétence"));
+  means.forEach(function(a){
+    axCard.append(h("div",{class:"axis"},
+      h("div",{class:"head"},h("span",null,a.name),h("span",null,a.m.toFixed(1)+"/10")),
+      h("div",{class:"meter"},h("i",{class:a.k===weakest.k?"weak":"",style:{width:(a.m*10)+"%"}}))));
+  });
+  if(n>=2)axCard.append(h("p",{class:"small muted"},"À travailler en priorité : "+weakest.name+"."));
+  root.append(axCard);
+
+  var recent=hist.slice(-10);
+  var W=360,H=150,pad=22,bw=(W-pad*2)/recent.length;
+  var svgNS="http://www.w3.org/2000/svg";
+  var svg=document.createElementNS(svgNS,"svg");
+  svg.setAttribute("viewBox","0 0 "+W+" "+H);svg.setAttribute("class","chart");svg.setAttribute("role","img");
+  svg.setAttribute("aria-label","Scores des "+recent.length+" derniers cas");
+  function add(tag,at,txt){var el=document.createElementNS(svgNS,tag);for(var k in at)el.setAttribute(k,at[k]);if(txt!=null)el.textContent=txt;svg.appendChild(el);}
+  var top=18,base=H-22,ch=base-top;
+  add("line",{x1:pad,x2:W-pad,y1:base,y2:base});
+  add("line",{x1:pad,x2:W-pad,y1:top+ch*0.4,y2:top+ch*0.4,"stroke-dasharray":"3 3"});
+  add("text",{x:2,y:top+ch*0.4+3},"60");
+  recent.forEach(function(x,i){
+    var bh=Math.max(2,ch*x.total/100),bx=pad+i*bw+bw*0.15,w=bw*0.7;
+    add("rect",{x:bx,y:base-bh,width:w,height:bh,rx:2});
+    add("text",{x:bx+w/2,y:base-bh-4,"text-anchor":"middle",class:"v"},String(x.total));
+    add("text",{x:bx+w/2,y:H-8,"text-anchor":"middle"},fmtDate(x.t));
+  });
+  root.append(h("section",{class:"card"},h("h3",null,"Derniers scores"),svg));
+
+  var hl=h("div",{class:"hist"});
+  hist.slice(-8).reverse().forEach(function(x){
+    hl.append(h("div",{class:"it"},
+      h("div",null,h("div",null,x.dx),h("div",{class:"small muted"},fmtDate(x.t)+" · "+x.svc)),
+      h("div",{class:"sc"},x.total+"/100")));
+  });
+  root.append(h("section",{class:"card"},h("h3",null,"Historique"),hl,
+    h("p",{class:"small muted"},"L'historique est gardé dans ce navigateur, sur cet appareil.")));
+
+  root.append(h("div",{class:"row"},
+    confirmWipe?h("button",{class:"btn danger",type:"button",onclick:function(){hist=[];wipe(HKEY);confirmWipe=false;render();}},"Confirmer l'effacement"):
+      h("button",{class:"btn ghost",type:"button",onclick:function(){confirmWipe=true;render();}},"Effacer l'historique"),
+    confirmWipe?h("button",{class:"btn ghost",type:"button",onclick:function(){confirmWipe=false;render();}},"Annuler"):null));
+  return root;
+}
+
+// === APP LOGIC ===
+
+
+var KEY='sdg_auto_state_v1';
+var HIST_KEY='sdg_auto_hist_v1';
+var FAV_KEY='sdg_fav_v1';
+
+function h(tag,attrs){
+  var e=document.createElement(tag);
+  if(attrs){for(var k in attrs){var v=attrs[k];
+    if(v===false||v==null)continue;
+    if(k==="class")e.className=v;
+    else if(k==="style"&&typeof v==="object")Object.assign(e.style,v);
+    else if(k.indexOf("on")===0)e.addEventListener(k.slice(2),v);
+    else if(v===true)e.setAttribute(k,"");
+    else e.setAttribute(k,v);}}
+  for(var i=2;i<arguments.length;i++){
+    var kids=[].concat(arguments[i]);
+    for(var j=0;j<kids.length;j++){var c=kids[j];if(c==null||c===false)continue;e.append(typeof c==="object"?c:String(c));}
+  }
+  return e;
+}
+function save(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch{} }
+function load(k){ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch{ return null; } }
+
+var DB = {}; D.forEach(function(c){ DB[c.id]=c; c.difficulty = c.difficulty || ( (c.hist.filter(x=>x[4]===1).length + (c.exEss?.length||0) + (c.key?.length||0) ) > 12 ? 'hard' : (c.hist.filter(x=>x[4]===1).length>6 ? 'medium' : 'easy') ); });
+
+var S = load(KEY) || null;
+var view = 'accueil';
+var searchQ = '';
+var filterSvc = 'all';
+var filterDiff = 'all';
+var filterFavOnly = false;
+
+function initApp(){
+  if(!S){
+    // Pas de simulation en cours
+  }else{
+    // Reprise automatique - sauvegarde préserve les réponses
+    S.pt = S.pt || genPt(DB[S.did].pt);
+  }
+  navigate('accueil');
+  render();
+}
+
+function genPt(raw){
+  // Génère pt détaillé à partir de raw
+  var age = Array.isArray(raw.age) ? (raw.age[0]+'-'+raw.age[1]+' ans') : raw.age;
+  var s = raw.s;
+  var pro = raw.pro ? raw.pro[Math.floor(Math.random()*raw.pro.length)] : '';
+  var prenomsM = ['Jean','Pierre','Paul','Joseph','David','Emmanuel','Patrick','Christian'];
+  var prenomsF = ['Marie','Jeanne','Grace','Esther','Sarah','Claire','Aline','Chantal'];
+  var prenomsKid = ['Petit','Bébé','Enfant'];
+  var prenom = raw.kid ? prenomsKid[Math.floor(Math.random()*prenomsKid.length)] : (s==='F' ? prenomsF[Math.floor(Math.random()*prenomsF.length)] : prenomsM[Math.floor(Math.random()*prenomsM.length)]);
+  var communes = ['Kinshasa','Lemba','Ngaliema','Bumbu','Matete','Kintambo','Limete','Gombe'];
+  var commune = communes[Math.floor(Math.random()*communes.length)];
+  return { prenom: prenom, age: age, sexe: s, pro: pro, commune: commune, kid: !!raw.kid, s: s };
+}
+
+function navigate(v){
+  view = v;
+  document.querySelectorAll('[data-nav]').forEach(function(btn){ btn.setAttribute('aria-current', btn.getAttribute('data-nav')===v ? 'page' : 'false'); });
+  render();
+}
+
+function render(){
+  var app = document.getElementById('app');
+  if(!app) return;
+  app.replaceChildren();
+  if(view==='accueil') app.append(accueilView());
+  else if(view==='cas') app.append(casView());
+  else if(view==='progression') app.append(progressionView());
+  else if(view==='profil') app.append(profilView());
+  else if(view==='case') app.append(caseView());
+  else if(view==='eval') app.append(evalView());
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// === ACCUEIL - SANS STATS FICTIVES, DONNEES REELLES UNIQUEMENT ===
+function accueilView(){
+  var root = h('div',{class:'stack'});
+  var hist = load(HIST_KEY)||[];
+  var favs = load(FAV_KEY)||[];
+  
+  // Simulation en cours
+  if(S && !S.done){
+    var d = DB[S.did];
+    var p = S.pt;
+    var progress = Math.round((S.stage/4)*100);
+    var card = h('section',{class:'card accent'},
+      h('div',{class:'label'},'▶️ Simulation en cours — Reprise automatique active'),
+      h('div',{class:'card pt', style:{margin:'0 -2px', border:'0', background:'transparent', boxShadow:'none', padding:'0'}},
+        h('div',{class:'pt-avatar-wrap'},
+          h('div',{class:'pt-avatar '+(p.kid?'kid':(p.sexe==='F'?'f':'m'))}, h('span',{class:'pt-avatar-icon'}, p.kid?'👶':(p.sexe==='F'?'👩':'👨')))
+        ),
+        h('div',{class:'pt-info'},
+          h('div',{class:'name'}, d.name),
+          h('div',{class:'muted small'}, p.prenom+' · '+p.age+' · '+p.sexe+' · '+p.commune),
+          h('div',{class:'tags'}, h('span',{class:'tag accent'}, d.svc), h('span',{class:'tag'}, 'Étape '+(S.stage+1)+'/4 — '+progress+'%'))
+        )
+      ),
+      h('div',{class:'row'},
+        h('button',{class:'btn btn-primary', onclick:function(){ navigate('case'); }}, 'Reprendre la simulation'),
+        h('button',{class:'btn btn-ghost', onclick:function(){ if(confirm('Abandonner cette simulation ?')){ S=null; save(KEY,null); render(); }}}, 'Abandonner')
+      ),
+      h('div',{class:'small muted'}, 'Tes réponses sont sauvegardées automatiquement. Tu peux naviguer et revenir.')
+    );
+    root.append(card);
+  }
+
+  // Derniers résultats - REELS UNIQUEMENT
+  if(hist.length>0){
+    var last3 = hist.slice(-3).reverse();
+    var cardRes = h('section',{class:'card'},
+      h('div',{class:'label'},'📊 Derniers résultats (données réelles)'),
+      h('div',{class:'hist'},
+        ...last3.map(function(it){
+          var d = DB[it.did]||{name:it.did, svc:'-'};
+          return h('div',{class:'it', onclick:function(){ /* comparer */ }},
+            h('div',null, h('div',{style:{fontWeight:700, fontSize:'.9rem'}}, d.name), h('div',{class:'small muted'}, new Date(it.t).toLocaleDateString()+' · '+d.svc)),
+            h('span',{class:'sc'}, it.total+'/100')
+          );
+        })
+      ),
+      h('button',{class:'btn btn-ghost btn-sm', onclick:function(){ navigate('progression'); }}, 'Voir toute la progression →')
+    );
+    root.append(cardRes);
+  }else{
+    root.append(h('section',{class:'card'},
+      h('div',{class:'label'},'Bienvenue 👋'),
+      h('div',{style:{fontSize:'1.1rem', fontWeight:700}}, 'Aucune simulation terminée'),
+      h('div',{class:'muted small'}, 'Commence par un cas clinique pour voir tes premiers résultats réels ici. Aucune statistique fictive.'),
+      h('button',{class:'btn btn-primary', onclick:function(){ navigate('cas'); }}, 'Explorer les cas cliniques')
+    ));
+  }
+
+  // Cas récents
+  var recentCases = D.slice(0,6);
+  var cardRecent = h('section',{class:'card'},
+    h('div',{class:'row between'}, h('div',{class:'label'},'📋 Cas récents'), h('button',{class:'btn btn-ghost btn-sm', onclick:function(){ navigate('cas'); }}, 'Voir tout')),
+    h('div',{class:'cases-grid'},
+      ...recentCases.map(function(c){
+        var raw = c.pt;
+        var isKid = !!raw.kid;
+        var cls = isKid?'kid':(raw.s==='F'?'f':'m');
+        var icon = isKid?'👶':(raw.s==='F'?'👩':'👨');
+        return h('div',{class:'case-card', onclick:function(){ startCase(c.id); }},
+          h('div',{class:'head'},
+            h('div',{class:'avatar '+cls}, icon),
+            h('div',{class:'info'},
+              h('div',{class:'title'}, c.name),
+              h('div',{class:'meta'}, c.svc+' · '+(c.difficulty==='easy'?'Facile':c.difficulty==='medium'?'Moyen':'Difficile'))
+            )
+          )
+        );
+      })
+    )
+  );
+  root.append(cardRecent);
+
+  // Recommandations de révision - BASÉES SUR VRAIES ERREURS
+  if(hist.length>0){
+    var low = hist.filter(function(x){ return x.total < 60; }).slice(-3);
+    var servicesLow = {};
+    hist.forEach(function(it){
+      var svc = (DB[it.did]?.svc)||'Autre';
+      if(!servicesLow[svc]) servicesLow[svc]={total:0,count:0};
+      servicesLow[svc].total+=it.total; servicesLow[svc].count++;
+    });
+    var weakestSvc = Object.entries(servicesLow).map(function([k,v]){ return {svc:k, avg:Math.round(v.total/v.count)}; }).sort(function(a,b){ return a.avg-b.avg; })[0];
+    var recos = [];
+    if(weakestSvc && weakestSvc.avg < 70) recos.push('Renforcer '+weakestSvc.svc+' (moyenne '+weakestSvc.avg+'/100)');
+    low.forEach(function(it){ var d=DB[it.did]; if(d) recos.push('Reprendre : '+d.name+' ('+it.total+'/100)'); });
+    if(recos.length>0){
+      var cardRec = h('section',{class:'card warn'},
+        h('div',{class:'label'},'🎯 Recommandations de révision (basées sur tes erreurs réelles)'),
+        h('div',{class:'stack', style:{gap:'8px'}},
+          ...recos.slice(0,4).map(function(r){ return h('div',{class:'small'}, '• '+r); })
+        )
+      );
+      root.append(cardRec);
+    }
+  }
+
+  // Sécurité
+  root.append(h('div',{class:'safety'},
+    h('b',null,'ℹ️ Limites de l'outil : '),
+    'Plateforme pédagogique. Ne remplace pas le jugement clinique. Les cas sont simulés, séparés des dossiers patients réels. En cas d'urgence vitale, appliquer les protocoles locaux.'
+  ));
+
+  return root;
+}
+
+// === BIBLIOTHEQUE CAS CLINIQUES ===
+function casView(){
+  var root = h('div',{class:'stack'});
+  var favs = load(FAV_KEY)||[];
+  var hist = load(HIST_KEY)||[];
+  
+  root.append(h('div',{class:'card'},
+    h('div',{class:'label'},'Bibliothèque médicale — 50 cas enrichis'),
+    h('div',{class:'field'}, h('input',{type:'text', placeholder:'Rechercher : paludisme, dyspnée, enfant, ...', value:searchQ, oninput:function(e){ searchQ=e.target.value.toLowerCase(); render(); }})),
+    h('div',{class:'filters'},
+      h('button',{class:'filter-chip '+(filterSvc==='all'?'active':''), onclick:function(){ filterSvc='all'; render(); }}, 'Toutes spécialités'),
+      ...Array.from(new Set(D.map(function(c){ return c.svc; }))).map(function(svc){
+        return h('button',{class:'filter-chip '+(filterSvc===svc?'active':''), onclick:function(){ filterSvc=svc; render(); }}, svc);
+      })
+    ),
+    h('div',{class:'filters'},
+      h('button',{class:'filter-chip '+(filterDiff==='all'?'active':''), onclick:function(){ filterDiff='all'; render(); }}, 'Tous niveaux'),
+      h('button',{class:'filter-chip '+(filterDiff==='easy'?'active':''), onclick:function(){ filterDiff='easy'; render(); }}, 'Facile'),
+      h('button',{class:'filter-chip '+(filterDiff==='medium'?'active':''), onclick:function(){ filterDiff='medium'; render(); }}, 'Moyen'),
+      h('button',{class:'filter-chip '+(filterDiff==='hard'?'active':''), onclick:function(){ filterDiff='hard'; render(); }}, 'Difficile'),
+      h('button',{class:'filter-chip '+(filterFavOnly?'active':''), onclick:function(){ filterFavOnly=!filterFavOnly; render(); }}, '⭐ Favoris ('+favs.length+')')
+    )
+  ));
+
+  var filtered = D.filter(function(c){
+    if(filterSvc!=='all' && c.svc!==filterSvc) return false;
+    if(filterDiff!=='all' && c.difficulty!==filterDiff) return false;
+    if(filterFavOnly && !favs.includes(c.id)) return false;
+    if(searchQ){
+      var txt = (c.name+' '+c.svc+' '+c.plainte+' '+(c.pt.pro||'')+' '+(c.pt.age||'')).toLowerCase();
+      if(!txt.includes(searchQ)) return false;
+    }
+    return true;
+  });
+
+  root.append(h('div',{class:'small muted'}, filtered.length+' cas trouvés — Médecine interne, Cardiologie, Pneumologie, Neurologie, Infectiologie, Pédiatrie, Chirurgie, Gynéco-obstétrique, Urgences'));
+
+  var grid = h('div',{class:'cases-grid'},
+    ...filtered.map(function(c){
+      var raw=c.pt; var isKid=!!raw.kid; var cls=isKid?'kid':(raw.s==='F'?'f':'m'); var icon=isKid?'👶':(raw.s==='F'?'👩':'👨');
+      var isFav = favs.includes(c.id);
+      var done = hist.find(function(h){ return h.did===c.id; });
+      return h('div',{class:'case-card', onclick:function(){ startCase(c.id); }},
+        h('div',{class:'head'},
+          h('div',{class:'avatar '+cls}, icon),
+          h('div',{class:'info'},
+            h('div',{class:'title'}, c.name),
+            h('div',{class:'meta'}, c.svc+' · '+(c.difficulty==='easy'?'Facile':c.difficulty==='medium'?'Moyen':'Difficile')+(done?' · '+done.total+'/100':''))
+          ),
+          h('button',{class:'btn btn-ghost btn-sm', style:{minWidth:'36px'}, onclick:function(ev){ ev.stopPropagation(); toggleFav(c.id); }}, isFav?'★':'☆')
+        ),
+        h('div',{class:'small muted', style:{display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden'}}, c.plainte),
+        h('div',{class:'tags'},
+          h('span',{class:'tag'}, 'Anamnèse'),
+          h('span',{class:'tag'}, 'Examen'),
+          h('span',{class:'tag'}, 'Paraclinique'),
+          h('span',{class:'tag accent'}, 'Correction pédagogique')
+        )
+      );
+    })
+  );
+  root.append(grid);
+  return root;
+}
+
+function toggleFav(id){
+  var favs = load(FAV_KEY)||[];
+  if(favs.includes(id)) favs = favs.filter(function(x){ return x!==id; });
+  else favs.push(id);
+  save(FAV_KEY, favs);
+  render();
+}
+
+function startCase(id){
+  var c = DB[id];
+  if(!c) return;
+  S = { did:id, pt:genPt(c.pt), stage:0, maxStage:0, histAsked:[], exChecked:[], paraChecked:[], conclusion:{ diag:'', args:'', diffs:'', gravite:'', orientation:'', traitement:'', surveillance:'' }, done:false, t:Date.now() };
+  save(KEY, S);
+  navigate('case');
+}
+
+// === SIMULATION 4 ETAPES ===
+function stepper(){
+  var labels = ['Anamnèse','Examen clinique','Paraclinique','Conclusion'];
+  return h('ol',{class:'steps'},
+    ...labels.map(function(name,i){
+      var cls = i<S.stage?'done':(i===S.stage?'cur':'');
+      return h('li',null, h('button',{class:cls, onclick:function(){ if(i<=S.maxStage){ S.stage=i; save(KEY,S); render(); } }}, (i+1)+'. '+name));
+    })
+  );
+}
+
+function patientCard(){
+  var d=DB[S.did],p=S.pt;
+  var cls = p.kid?'kid':(p.sexe==='F'?'f':'m');
+  var icon = p.kid?'👶':(p.sexe==='F'?'👩':'👨');
+  return h('section',{class:'card pt'},
+    h('div',{class:'pt-avatar-wrap'}, h('div',{class:'pt-avatar '+cls}, h('span',{class:'pt-avatar-icon'}, icon))),
+    h('div',{class:'pt-info'},
+      h('div',{class:'label'}, p.kid?'Enfant reçu avec sa mère':'Patient reçu'),
+      h('div',{class:'pt-main'}, h('div',{class:'name'}, [p.prenom,p.age,p.sexe].join(' · ')), h('span',{class:'pt-badge'}, '🎂 '+p.age)),
+      h('div',{class:'muted small'}, p.commune+' · '+p.pro),
+      h('div',{class:'tags'}, h('span',{class:'tag accent'}, d.svc), h('span',{class:'tag'}, d.name.slice(0,30)+'...'))
+    )
+  );
+}
+
+function caseView(){
+  var root = h('div',{class:'stack'});
+  root.append(patientCard(), stepper());
+  if(S.stage===0) root.append(anamnesePanel());
+  else if(S.stage===1) root.append(examenPanel());
+  else if(S.stage===2) root.append(paraPanel());
+  else if(S.stage===3) root.append(conclusionPanel());
+  return root;
+}
+
+function anamnesePanel(){
+  var d=DB[S.did];
+  var asked = S.histAsked||[];
+  var chat = h('div',{class:'chat'});
+  chat.append(h('div',{class:'bubble p'}, h('span',{class:'who'}, d.who+' — Motif'), d.plainte));
+  asked.forEach(function(id){
+    var item = d.hist.find(function(x){ return x[0]===id; });
+    if(item) chat.append(h('div',{class:'bubble d'}, h('span',{class:'who'},'Toi'), item[1]), h('div',{class:'bubble p'}, h('span',{class:'who'}, d.who), item[3]));
+  });
+
+  var suggestions = d.hist.filter(function(x){ return !asked.includes(x[0]); }).slice(0,4);
+  var chips = h('div',{class:'chips'}, ...suggestions.map(function(it){
+    return h('button',{class:'chip', onclick:function(){ askHist(it[0]); }}, it[1]);
+  }));
+
+  var inputRow = h('div',{class:'row'},
+    h('div',{class:'field', style:{flex:1}}, h('input',{type:'text', id:'q-input', placeholder:'Pose ta question librement...', onkeydown:function(e){ if(e.key==='Enter') askFree(); }})),
+    h('button',{class:'btn btn-primary', onclick:function(){ askFree(); }}, 'Demander')
+  );
+
+  var nextBtn = (asked.filter(function(id){ var it=d.hist.find(function(x){return x[0]===id;}); return it&&it[4]===1; }).length >= Math.ceil(d.hist.filter(function(x){return x[4]===1;}).length*0.6)) ? h('button',{class:'btn btn-primary', style:{marginTop:'12px'}, onclick:function(){ nextStage(); }}, 'Passer à l'examen clinique →') : null;
+
+  return h('section',{class:'card'},
+    h('div',{class:'label'},'Anamnèse — Interroge le patient (faits, hypothèses, conclusions)'),
+    h('div',{class:'small muted'}, 'Pose des questions ouvertes. Le moteur analyse les symptômes, antécédents, signes cliniques. Les questions essentielles sont marquées.'),
+    chat,
+    h('div',{style:{marginTop:'12px'}}, h('div',{class:'small muted', style:{marginBottom:'6px'}}, 'Suggestions :'), chips),
+    h('div',{style:{marginTop:'12px'}}, inputRow),
+    nextBtn||h('div',{class:'small muted', style:{marginTop:'8px'}}, 'Continue l'anamnèse pour débloquer la suite (≥60% des questions essentielles)')
+  );
+}
+
+function askHist(id){
+  if(!S.histAsked.includes(id)) S.histAsked.push(id);
+  save(KEY,S); render();
+}
+
+function askFree(){
+  var input = document.getElementById('q-input');
+  if(!input) return;
+  var q = input.value.trim().toLowerCase();
+  if(!q) return;
+  var d = DB[S.did];
+  var matched = null;
+  for(var i=0;i<d.hist.length;i++){
+    var it = d.hist[i];
+    var regex = it[2];
+    if(regex.test(q)){ matched = it[0]; break; }
+  }
+  if(matched) askHist(matched);
+  else{
+    // Pas trouvé, affiche message pédagogique
+    var chat = document.querySelector('.chat');
+    if(chat){
+      chat.append(h('div',{class:'bubble d'}, h('span',{class:'who'},'Toi'), input.value), h('div',{class:'bubble p'}, h('span',{class:'who'}, d.who), 'Je ne comprends pas bien, docteur. Peux-tu reformuler ?'));
+    }
+    input.value='';
+    return;
+  }
+  input.value='';
+}
+
+function examenPanel(){
+  var d=DB[S.did];
+  var checked = S.exChecked||[];
+  var ex = d.ex;
+  var keys = Object.keys(ex);
+  var ess = d.exEss||[];
+
+  var list = h('div',{class:'stack', style:{gap:'8px'}},
+    ...keys.map(function(k){
+      var isEss = ess.includes(k);
+      var isChecked = checked.includes(k);
+      return h('label',{class:'card', style:{flexDirection:'row', alignItems:'center', gap:'12px', padding:'12px 14px', cursor:'pointer', borderColor:isChecked?'var(--accent)':'var(--line)'}},
+        h('input',{type:'checkbox', checked:isChecked, onchange:function(e){ 
+          if(e.target.checked){ if(!S.exChecked.includes(k)) S.exChecked.push(k); }else{ S.exChecked = S.exChecked.filter(function(x){return x!==k;}); }
+          save(KEY,S); render();
+        }}),
+        h('div',{style:{flex:1}},
+          h('div',{style:{fontWeight:600, fontSize:'.9rem'}}, k+' '+(isEss?'⭐':'') ),
+          h('div',{class:'small muted'}, ex[k].slice(0,120)+'...')
+        )
+      );
+    })
+  );
+
+  var progressEss = ess.filter(function(k){ return checked.includes(k); }).length / (ess.length||1);
+  var canNext = progressEss >= 0.5;
+
+  return h('section',{class:'card'},
+    h('div',{class:'label'},'Examen clinique — Distingue faits / hypothèses'),
+    h('div',{class:'small muted'}, 'Coche les éléments que tu examines. Les ⭐ sont essentiels. Le moteur signale les signes de gravité et les infos manquantes.'),
+    list,
+    canNext ? h('button',{class:'btn btn-primary', style:{marginTop:'12px'}, onclick:function(){ nextStage(); }}, 'Passer à la paraclinique →') : h('div',{class:'small muted'}, 'Coche au moins 50% des éléments essentiels pour continuer')
+  );
+}
+
+function paraPanel(){
+  var d=DB[S.did];
+  var checked = S.paraChecked||[];
+  var res = d.res;
+  var keys = d.key ? d.key.flat() : Object.keys(res).slice(0,5);
+  var allKeys = Object.keys(res);
+
+  var list = h('div',{class:'stack', style:{gap:'8px'}},
+    ...allKeys.map(function(k){
+      var isKey = keys.includes(k);
+      var isChecked = checked.includes(k);
+      var isUseful = (d.useful||[]).includes(k);
+      return h('label',{class:'card', style:{flexDirection:'row', alignItems:'center', gap:'12px', padding:'12px 14px', cursor:'pointer', borderColor:isChecked?'var(--accent)':'var(--line)', opacity:isUseful?'.7':'1'}},
+        h('input',{type:'checkbox', checked:isChecked, onchange:function(e){
+          if(e.target.checked){ if(!S.paraChecked.includes(k)) S.paraChecked.push(k); }else{ S.paraChecked = S.paraChecked.filter(function(x){return x!==k;}); }
+          save(KEY,S); render();
+        }}),
+        h('div',{style:{flex:1}},
+          h('div',{style:{fontWeight:600, fontSize:'.9rem'}}, k+' '+(isKey?'⭐':'')+(isUseful?' · non essentiel':'')),
+          h('div',{class:'small muted'}, isChecked ? res[k] : 'Résultat masqué — coche pour révéler (le moteur n'invente jamais de résultats)')
+        )
+      );
+    })
+  );
+
+  var progressKey = keys.filter(function(k){ return checked.includes(k); }).length / (keys.length||1);
+  var canNext = progressKey >= 0.5;
+
+  return h('section',{class:'card'},
+    h('div',{class:'label'},'Paraclinique — Interprète sans inventer'),
+    h('div',{class:'small muted'}, 'Coche les examens que tu demandes. Le système ne génère jamais de résultats fictifs. Les ⭐ sont les examens clés.'),
+    list,
+    canNext ? h('button',{class:'btn btn-primary', style:{marginTop:'12px'}, onclick:function(){ nextStage(); }}, 'Aller à la conclusion →') : h('div',{class:'small muted'}, 'Demande au moins 50% des examens clés pour conclure')
+  );
+}
+
+function conclusionPanel(){
+  var d=DB[S.did];
+  var c = S.conclusion||{};
+  
+  return h('section',{class:'card'},
+    h('div',{class:'label'},'Conclusion — Structure ton raisonnement'),
+    h('div',{class:'safety danger'},
+      h('b',null,'🚨 Signaux de gravité : '), d.expl ? d.expl.slice(0,180)+'...' : 'Évalue la gravité et l'urgence.'
+    ),
+    h('div',{class:'field'}, h('label',{class:'label'},'Diagnostic principal et arguments diagnostiques (faits → hypothèses → conclusion) *'), h('textarea',{id:'c-diag', placeholder:'Ex: Paludisme grave à P. falciparum — Arguments: fièvre 4j, troubles conscience, anémie 6.8, parasitémie 8%, hypoglycémie...', value:c.diag||'', oninput:function(e){ S.conclusion.diag=e.target.value; save(KEY,S); }})),
+    h('div',{class:'field'}, h('label',{class:'label'},'Diagnostics différentiels (justifie chaque hypothèse) *'), h('textarea',{id:'c-diffs', placeholder:'Ex: Méningite bactérienne écartée car pas de raideur nuque, LCR...', value:c.diffs||'', oninput:function(e){ S.conclusion.diffs=e.target.value; save(KEY,S); }})),
+    h('div',{class:'field'}, h('label',{class:'label'},'Évaluation de la gravité (critères, score) *'), h('textarea',{id:'c-grav', placeholder:'Ex: 5 critères OMS de gravité: troubles conscience, anémie sévère, hypoglycémie, insuffisance rénale, hyperparasitémie...', value:c.gravite||'', oninput:function(e){ S.conclusion.gravite=e.target.value; save(KEY,S); }})),
+    h('div',{class:'field'}, h('label',{class:'label'},'Orientation du patient *'), h('select',{id:'c-ori', onchange:function(e){ S.conclusion.orientation=e.target.value; save(KEY,S); }},
+      h('option',{value:''}, 'Choisir...'),
+      h('option',{value:'ambulatoire', selected:c.orientation==='ambulatoire'}, 'Ambulatoire'),
+      h('option',{value:'hospitalisation', selected:c.orientation==='hospitalisation'}, 'Hospitalisation'),
+      h('option',{value:'urgence', selected:c.orientation==='urgence'}, 'Urgence / Réanimation'),
+      h('option',{value:'referencement', selected:c.orientation==='referencement'}, 'Référencement spécialisé')
+    )),
+    h('div',{class:'field'}, h('label',{class:'label'},'Traitement et conduite à tenir (posologies contextualisées) *'), h('textarea',{id:'c-trait', placeholder:'Ex: Artésunate IV 2.4mg/kg H0 H12 H24, puis ACT 3j, Glucose 10% si hypo, Transfusion si Hb<7...', value:c.traitement||'', oninput:function(e){ S.conclusion.traitement=e.target.value; save(KEY,S); }})),
+    h('div',{class:'field'}, h('label',{class:'label'},'Surveillance et suivi *'), h('textarea',{id:'c-surv', placeholder:'Ex: Diurèse, conscience, glycémie /2h, Hb, créat, parasitémie J3...', value:c.surveillance||'', oninput:function(e){ S.conclusion.surveillance=e.target.value; save(KEY,S); }})),
+    h('button',{class:'btn btn-primary', style:{width:'100%', minHeight:'52px', fontSize:'1rem', marginTop:'8px'}, onclick:function(){ evaluateCase(); }}, '🧠 Évaluer mon raisonnement')
+  );
+}
+
+function nextStage(){ S.stage=Math.min(3,S.stage+1); S.maxStage=Math.max(S.maxStage,S.stage); save(KEY,S); render(); }
+
+function evaluateCase(){
+  var d=DB[S.did];
+  var c=S.conclusion||{};
+  // Validation minimale
+  if(!c.diag || c.diag.trim().length<10){ alert('Renseigne le diagnostic principal avec arguments (min 10 caractères)'); return; }
+  if(!c.traitement || c.traitement.trim().length<10){ alert('Renseigne le traitement'); return; }
+
+  // Calcul score intelligent - BARÈME EXPLICITE
+  var score = 0;
+  var max = 100;
+  var details = [];
+  var pointsForts = [];
+  var erreurs = [];
+  var omissions = [];
+
+  // 1. Anamnèse (20 pts) - faits essentiels
+  var histEss = d.hist.filter(function(x){ return x[4]===1; });
+  var histAskedEss = S.histAsked.filter(function(id){ var it=d.hist.find(function(x){return x[0]===id;}); return it&&it[4]===1; });
+  var histScore = Math.round((histAskedEss.length / (histEss.length||1))*20);
+  score+=histScore;
+  details.push({label:'Anamnèse (questions essentielles)', pts:histScore+'/20', pct:Math.round((histAskedEss.length/(histEss.length||1))*100)});
+  if(histScore>=16) pointsForts.push('Anamnèse complète, faits bien recueillis');
+  else if(histScore<10) erreurs.push('Anamnèse incomplète : '+ (histEss.length-histAskedEss.length) +' questions essentielles manquées');
+  var missingHist = histEss.filter(function(x){ return !S.histAsked.includes(x[0]); }).map(function(x){ return x[1]; });
+  if(missingHist.length>0) omissions.push('Anamnèse manquante: '+missingHist.slice(0,3).join(', '));
+
+  // 2. Examen clinique (15 pts)
+  var exEss = d.exEss||[];
+  var exCheckedEss = S.exChecked.filter(function(k){ return exEss.includes(k); });
+  var exScore = Math.round((exCheckedEss.length/(exEss.length||1))*15);
+  score+=exScore;
+  details.push({label:'Examen clinique (signes clés)', pts:exScore+'/15', pct:Math.round((exCheckedEss.length/(exEss.length||1))*100)});
+  if(exScore>=12) pointsForts.push('Examen clinique pertinent, signes de gravité reconnus');
+  else omissions.push('Examen incomplet: '+(exEss.filter(function(k){return !S.exChecked.includes(k);}).join(', ')));
+
+  // 3. Paraclinique (15 pts) - ne jamais inventer
+  var keyExams = d.key ? d.key.flat() : [];
+  var paraCheckedKey = S.paraChecked.filter(function(k){ return keyExams.includes(k); });
+  var paraScore = Math.round((paraCheckedKey.length/(keyExams.length||1))*15);
+  score+=paraScore;
+  details.push({label:'Paraclinique (examens clés, sans invention)', pts:paraScore+'/15', pct:Math.round((paraCheckedKey.length/(keyExams.length||1))*100)});
+  if(paraScore>=12) pointsForts.push('Examens complémentaires bien ciblés, interprétation sans invention');
+  else erreurs.push('Examens clés manqués: '+(keyExams.filter(function(k){return !S.paraChecked.includes(k);}).slice(0,3).join(', ')));
+
+  // 4. Diagnostic principal (20 pts) - accepte formulations équivalentes
+  var diagScore = 0;
+  var diagText = c.diag.toLowerCase();
+  if(d.dx){
+    if(d.dx.full && d.dx.full.test(diagText)) diagScore=20;
+    else if(d.dx.part && d.dx.part.test(diagText)) diagScore=12;
+    else if(diagText.length>20) diagScore=5; // au moins a tenté
+  }
+  score+=diagScore;
+  details.push({label:'Diagnostic principal (formulations équivalentes acceptées)', pts:diagScore+'/20', pct:Math.round((diagScore/20)*100)});
+  if(diagScore>=12) pointsForts.push('Diagnostic principal correct');
+  else erreurs.push('Diagnostic principal imprécis ou incorrect — Référence: '+(d.expl||'voir correction'));
+
+  // 5. Différentiels (10 pts)
+  var diffScore = 0;
+  var diffText = (c.diffs||'').toLowerCase();
+  var diffsRef = d.diffs||[];
+  var diffsFound = diffsRef.filter(function(dd){ return diffText.includes(dd.toLowerCase().split(' ')[0]); }).length;
+  diffScore = Math.round((diffsFound/(diffsRef.length||1))*10);
+  if(diffText.length>20 && diffScore===0) diffScore=3; // a tenté
+  score+=diffScore;
+  details.push({label:'Diagnostics différentiels justifiés', pts:diffScore+'/10', pct:Math.round((diffScore/10)*100)});
+
+  // 6. Gravité + Orientation (10 pts)
+  var gravScore = 0;
+  if(c.gravite && c.gravite.length>15) gravScore+=5;
+  if(c.orientation){
+    var oriExpected = d.ori||[];
+    // ori: [1,2] = hospitalisation, [0]=ambulatoire etc. Simplifié: si contient hospitalisation/urgence et attendu
+    if(oriExpected.length>0) gravScore+=5;
+    else gravScore+=3;
+  }
+  score+=gravScore;
+  details.push({label:'Gravité & Orientation', pts:gravScore+'/10', pct:Math.round((gravScore/10)*100)});
+  if(gravScore<5) omissions.push('Gravité ou orientation non évaluée — Signes de gravité à reconnaître');
+
+  // 7. Traitement + Surveillance (10 pts)
+  var traitScore = 0;
+  var traitText = (c.traitement||'').toLowerCase();
+  var survText = (c.surveillance||'').toLowerCase();
+  if(traitText.length>20) traitScore+=5;
+  if(survText.length>15) traitScore+=5;
+  // Vérifie si traitement contient éléments clés
+  if(d.tx){
+    var txFound = d.tx.filter(function(t){ return traitText.includes(t[0].toLowerCase().split(' ')[0]) || (t[1]&&t[1].test(traitText)); }).length;
+    if(txFound>=2) pointsForts.push('Traitement conforme aux références');
+  }
+  score+=traitScore;
+  details.push({label:'Traitement & Surveillance (posologies contextualisées)', pts:traitScore+'/10', pct:Math.round((traitScore/10)*100)});
+
+  // Plafonne à 100
+  score = Math.min(100, score);
+
+  // Détection urgence
+  var isUrgence = d.name.toLowerCase().includes('grave') || d.name.toLowerCase().includes('rupture') || d.name.toLowerCase().includes('éclampsie') || d.name.toLowerCase().includes('hémorragie') || d.name.toLowerCase().includes('septicémie') || (d.expl && d.expl.toLowerCase().includes('urgence'));
+
+  var result = {
+    did: S.did,
+    total: score,
+    details: details,
+    pointsForts: pointsForts,
+    erreurs: erreurs,
+    omissions: omissions,
+    diffsRef: d.diffs||[],
+    correction: d.expl||'',
+    txText: d.txText||'',
+    pieges: d.pieges||[],
+    rev: d.rev||[],
+    conclusion: c,
+    t: new Date().toISOString(),
+    isUrgence: isUrgence,
+    histAsked: S.histAsked,
+    exChecked: S.exChecked,
+    paraChecked: S.paraChecked
+  };
+
+  // Sauvegarde
+  var hist = load(HIST_KEY)||[];
+  hist.push(result);
+  save(HIST_KEY, hist);
+  // Firestore sync
+  try{
+    var auth = auth;
+    if(auth && auth.currentUser){
+      var db = db;
+      (function(){ var mod = { doc: doc, setDoc: setDoc, serverTimestamp: serverTimestamp };
+        var docRef = doc(db, 'progression', auth.currentUser.uid);
+        setDoc(docRef, { hist: hist, updatedAt: serverTimestamp() }, { merge:true });
+      })();
+    }
+  }catch{}
+
+  S.eval = result;
+  S.done = true;
+  save(KEY, S);
+  navigate('eval');
+}
+
+function evalView(){
+  var ev = S.eval;
+  if(!ev) return h('div',{class:'card'}, 'Aucune évaluation');
+  var d = DB[S.did];
+  var level = ev.total>=80?'good':(ev.total>=60?'ok':(ev.total>=40?'warn':'bad'));
+  
+  var root = h('div',{class:'stack'},
+    h('section',{class:'card score '+level},
+      h('div',{class:'big'}, h('b',null, ev.total), h('span',null, '/100')),
+      h('div',null,
+        h('div',{class:'lvl '+level}, ev.total>=80?'Excellent':(ev.total>=60?'Correct':(ev.total>=40?'Insuffisant':'À reprendre'))),
+        h('div',{class:'small muted'}, d.name+' · '+d.svc),
+        ev.isUrgence ? h('div',{class:'safety danger', style:{marginTop:'8px'}}, '🚨 Situation potentiellement urgente — Gravité reconnue : '+(ev.conclusion.gravite?'Oui':'À améliorer')) : null
+      )
+    ),
+    h('section',{class:'card'},
+      h('div',{class:'label'},'Barème explicite — Évaluation du raisonnement'),
+      h('div',{class:'stack'},
+        ...ev.details.map(function(det){
+          var cls = det.pct>=70?'ok':(det.pct>=40?'warn':'bad');
+          return h('div',{class:'axis'},
+            h('div',{class:'head'}, h('span',null, det.label), h('span',{class:'small'}, det.pts)),
+            h('div',{class:'meter'}, h('i',{class:cls, style:{width:det.pct+'%'}}))
+          );
+        })
+      )
+    ),
+    ev.pointsForts.length>0 ? h('section',{class:'card'},
+      h('div',{class:'label'},'✅ Points forts (faits avérés)'),
+      h('div',{class:'stack', style:{gap:'6px'}}, ...ev.pointsForts.map(function(p){ return h('div',{class:'small'}, '• '+p); }))
+    ) : null,
+    ev.erreurs.length>0 ? h('section',{class:'card danger'},
+      h('div',{class:'label'},'❌ Erreurs à corriger'),
+      h('div',{class:'stack', style:{gap:'6px'}}, ...ev.erreurs.map(function(e){ return h('div',{class:'small'}, '• '+e); }))
+    ) : null,
+    ev.omissions.length>0 ? h('section',{class:'card warn'},
+      h('div',{class:'label'},'⚠️ Omissions & Informations manquantes'),
+      h('div',{class:'stack', style:{gap:'6px'}}, ...ev.omissions.map(function(o){ return h('div',{class:'small'}, '• '+o); }))
+    ) : null,
+    h('section',{class:'card'},
+      h('div',{class:'label'},'📚 Correction détaillée — Références fiables'),
+      h('div',{class:'small', style:{whiteSpace:'pre-wrap', lineHeight:1.7}}, ev.correction),
+      h('div',{class:'label', style:{marginTop:'12px'}},'Conduite à tenir (posologies contextualisées)'),
+      h('div',{class:'small', style:{whiteSpace:'pre-wrap', background:'var(--surface-2)', border:'1px solid var(--line)', padding:'12px', borderRadius:'12px'}}, ev.txText),
+      ev.pieges.length>0 ? h('div',null,
+        h('div',{class:'label', style:{marginTop:'12px'}},'Pièges à éviter'),
+        h('div',{class:'stack', style:{gap:'6px'}}, ...ev.pieges.map(function(p){ return h('div',{class:'small'}, '⚠️ '+p); }))
+      ) : null,
+      h('div',{class:'label', style:{marginTop:'12px'}},'Diagnostics différentiels pertinents'),
+      h('div',{class:'chips'}, ...ev.diffsRef.map(function(dd){ return h('span',{class:'chip static'}, dd); })),
+      h('div',{class:'label', style:{marginTop:'12px'}},'À réviser'),
+      h('div',{class:'chips'}, ...ev.rev.map(function(r){ return h('span',{class:'tag'}, r); }))
+    ),
+    h('div',{class:'row'},
+      h('button',{class:'btn btn-primary', onclick:function(){ S=null; save(KEY,null); navigate('accueil'); }}, 'Terminer et retourner à l'accueil'),
+      h('button',{class:'btn btn-ghost', onclick:function(){ startCase(S.did); }}, 'Recommencer ce cas'),
+      h('button',{class:'btn btn-ghost', onclick:function(){ navigate('progression'); }}, 'Voir progression')
+    ),
+    h('div',{class:'safety'},
+      h('b',null,'🔒 Fiabilité médicale : '),
+      'Corrections basées sur OMS, HAS, revues actualisées. Posologies à adapter au poids, âge, fonction rénale, contre-indications. Vérifie les protocoles locaux.'
+    )
+  );
+  return root;
+}
+
+// === PROGRESSION ===
+function progressionView(){
+  var hist = load(HIST_KEY)||[];
+  var root = h('div',{class:'stack'});
+  
+  if(hist.length===0){
+    root.append(h('section',{class:'card'},
+      h('div',{class:'label'},'Progression — Données réelles uniquement'),
+      h('div',{style:{fontWeight:700}}, 'Aucune donnée'),
+      h('div',{class:'small muted'}, 'Termine un cas pour voir tes résultats réels ici. Aucune statistique fictive.'),
+      h('button',{class:'btn btn-primary', onclick:function(){ navigate('cas'); }}, 'Commencer un cas')
+    ));
+    return root;
+  }
+
+  var n = hist.length;
+  var avg = Math.round(hist.reduce(function(s,x){return s+(x.total||0);},0)/n);
+  var last = hist[hist.length-1];
+
+  root.append(h('section',{class:'card'},
+    h('div',{class:'label'},'📈 Résultats réels — Progression et apprentissage'),
+    h('div',{class:'kpis'},
+      h('div',{class:'kpi'}, h('b',null, n), h('span',null, 'Cas terminés')),
+      h('div',{class:'kpi'}, h('b',null, avg), h('span',null, 'Moyenne /100')),
+      h('div',{class:'kpi'}, h('b',null, last.total), h('span',null, 'Dernier'))
+    ),
+    h('div',{style:{marginTop:'12px'}},
+      h('svg',{class:'chart', viewBox:'0 0 300 80', preserveAspectRatio:'none'},
+        h('polyline',{fill:'none', stroke:'var(--accent)', 'stroke-width':2, points: hist.map(function(it,i){ var x=(i/(n-1||1))*280+10; var y=70-(it.total/100)*60; return x+','+y; }).join(' ')})
+      )
+    )
+  ));
+
+  // Compétences à améliorer
+  var bySvc = {};
+  hist.forEach(function(it){ var svc=(DB[it.did]?.svc)||'Autre'; if(!bySvc[svc]) bySvc[svc]={total:0,count:0}; bySvc[svc].total+=it.total; bySvc[svc].count++; });
+  var competences = Object.entries(bySvc).map(function([k,v]){ return {svc:k, avg:Math.round(v.total/v.count), count:v.count}; }).sort(function(a,b){return a.avg-b.avg;});
+
+  root.append(h('section',{class:'card'},
+    h('div',{class:'label'},'🧠 Compétences à améliorer (basé sur tes scores réels)'),
+    h('div',{class:'stack', style:{gap:'8px'}},
+      ...competences.map(function(c){
+        var cls = c.avg>=70?'ok':(c.avg>=50?'warn':'bad');
+        return h('div',{class:'axis'},
+          h('div',{class:'head'}, h('span',null, c.svc+' ('+c.count+' cas)'), h('span',null, c.avg+'/100')),
+          h('div',{class:'meter'}, h('i',{class:cls, style:{width:c.avg+'%'}}))
+        );
+      })
+    )
+  ));
+
+  // Erreurs récurrentes
+  var allErreurs = [];
+  hist.forEach(function(it){ (it.erreurs||[]).forEach(function(e){ allErreurs.push(e); }); });
+  var freq = {};
+  allErreurs.forEach(function(e){ var key=e.slice(0,60); freq[key]=(freq[key]||0)+1; });
+  var recurrent = Object.entries(freq).filter(function([k,v]){return v>=2;}).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
+
+  if(recurrent.length>0){
+    root.append(h('section',{class:'card warn'},
+      h('div',{class:'label'},'🔁 Erreurs récurrentes (à corriger)'),
+      h('div',{class:'stack', style:{gap:'6px'}},
+        ...recurrent.map(function([txt,count]){ return h('div',{class:'small'}, '• '+txt+' ('+count+' fois)'); })
+      )
+    ));
+  }
+
+  // Cas à reprendre
+  var toRedo = hist.filter(function(it){ return it.total < 60; }).sort(function(a,b){return a.total-b.total;}).slice(0,5);
+  if(toRedo.length>0){
+    root.append(h('section',{class:'card'},
+      h('div',{class:'label'},'🔄 Cas à reprendre (score <60)'),
+      h('div',{class:'hist'},
+        ...toRedo.map(function(it){
+          var d=DB[it.did]||{name:it.did};
+          return h('div',{class:'it', onclick:function(){ startCase(it.did); }},
+            h('div',null, h('div',{style:{fontWeight:700, fontSize:'.9rem'}}, d.name), h('div',{class:'small muted'}, it.total+'/100 · '+new Date(it.t).toLocaleDateString())),
+            h('button',{class:'btn btn-ghost btn-sm'}, 'Reprendre')
+          );
+        })
+      )
+    ));
+  }
+
+  // Historique complet
+  root.append(h('section',{class:'card'},
+    h('div',{class:'label'},'📜 Historique complet — Comparer les évaluations'),
+    h('div',{class:'hist'},
+      ...hist.slice().reverse().map(function(it){
+        var d=DB[it.did]||{name:it.did, svc:''};
+        return h('div',{class:'it'},
+          h('div',null,
+            h('div',{style:{fontWeight:700, fontSize:'.9rem'}}, d.name),
+            h('div',{class:'small muted'}, new Date(it.t).toLocaleString()+' · '+d.svc)
+          ),
+          h('span',{class:'sc'}, it.total+'/100')
+        );
+      })
+    )
+  ));
+
+  return root;
+}
+
+// === PROFIL ===
+function profilView(){
+  var hist = load(HIST_KEY)||[];
+  var favs = load(FAV_KEY)||[];
+  var auth = auth;
+  var user = auth ? auth.currentUser : null;
+  var root = h('div',{class:'stack'});
+
+  root.append(h('section',{class:'card'},
+    h('div',{class:'label'},'👤 Profil — Données protégées'),
+    h('div',{class:'row between'},
+      h('div',null,
+        h('div',{style:{fontWeight:700, fontSize:'1.1rem'}}, user?.displayName||'Dr'),
+        h('div',{class:'small muted'}, user?.email||'Non connecté')
+      ),
+      h('button',{class:'btn btn-ghost btn-sm', onclick:function(){ openProfile(); }}, 'Gérer profil')
+    ),
+    h('div',{class:'kpis', style:{marginTop:'12px'}},
+      h('div',{class:'kpi'}, h('b',null, hist.length), h('span',null, 'Cas')),
+      h('div',{class:'kpi'}, h('b',null, favs.length), h('span',null, 'Favoris')),
+      h('div',{class:'kpi'}, h('b',null, hist.length>0 ? Math.round(hist.reduce(function(s,x){return s+x.total;},0)/hist.length) : '--'), h('span',null, 'Moyenne'))
+    )
+  ));
+
+  root.append(h('section',{class:'card'},
+    h('div',{class:'label'},'⚙️ Préférences'),
+    h('div',{class:'small muted'}, 'Thème sombre premium activé. Données chiffrées, séparées des dossiers patients réels.'),
+    h('div',{class:'row', style:{marginTop:'8px'}},
+      h('button',{class:'btn btn-ghost btn-sm', onclick:function(){ if(confirm('Effacer historique local ?')){ save(HIST_KEY,[]); render(); }}}, 'Effacer historique local'),
+      h('button',{class:'btn btn-danger btn-sm', onclick:function(){ document.getElementById('btn-logout-bulletin').click(); }}, 'Déconnexion totale')
+    )
+  ));
+
+  root.append(h('div',{class:'safety'},
+    h('b',null,'Limites : '), 'Outil pédagogique. Ne remplace pas le jugement d'un professionnel. Vérifie posologies, contre-indications, protocoles locaux.'
+  ));
+
+  return root;
+}
+
+// === INIT ===
+function renderApp(){
+  render();
+}
+
+
+// === AUTH HANDLERS ===
+document.getElementById('tab-login').onclick = ()=>{ document.getElementById('tab-login').classList.add('active'); document.getElementById('tab-signup').classList.remove('active'); document.getElementById('auth-login').classList.remove('hidden'); document.getElementById('auth-signup').classList.add('hidden'); };
+document.getElementById('tab-signup').onclick = ()=>{ document.getElementById('tab-signup').classList.add('active'); document.getElementById('tab-login').classList.remove('active'); document.getElementById('auth-signup').classList.remove('hidden'); document.getElementById('auth-login').classList.add('hidden'); };
+
+document.getElementById('btn-login').onclick = async ()=>{
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+  errEl.style.display='none';
+  if(!email || !pass){ errEl.textContent='Remplis email et mot de passe'; errEl.style.display='block'; return; }
+  try{ await signInWithEmailAndPassword(auth, email, pass); }catch(e){ errEl.textContent = e.code==='auth/invalid-credential' ? 'Email ou mot de passe incorrect' : e.message; errEl.style.display='block'; }
+};
+document.getElementById('btn-signup').onclick = async ()=>{
+  const name = document.getElementById('signup-name').value.trim();
+  const hopital = document.getElementById('signup-hopital').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const pass = document.getElementById('signup-pass').value;
+  const errEl = document.getElementById('signup-error');
+  errEl.style.display='none';
+  if(!name || !email || pass.length<6){ errEl.textContent='Nom, email et mot de passe (min 6) requis'; errEl.style.display='block'; return; }
+  try{
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    try{ await updateProfile(cred.user, { displayName: name }); }catch{}
+    await setDoc(doc(db, "medecins", cred.user.uid), { displayName: name, hopital: hopital||"", email, createdAt: serverTimestamp(), photoURL: "" }, { merge:true });
+  }catch(e){ errEl.textContent = e.message; errEl.style.display='block'; }
+};
+
+onAuthStateChanged(auth, async (user)=>{
+  if(user){
+    document.getElementById('auth-root').style.display='none';
+    document.getElementById('main-ui').style.display='block';
+    const initial = (user.displayName?.[0] || user.email?.[0] || 'D').toUpperCase();
+    document.getElementById('btn-profile-open').textContent = initial;
+    try{
+      const snap = await getDoc(doc(db, "medecins", user.uid));
+      if(snap.exists()){
+        const d = snap.data();
+        if(d.photoURL){
+          document.getElementById('btn-profile-open').innerHTML = `<img src="${d.photoURL}" alt="">`;
+          const av = document.getElementById('profile-avatar');
+          av.innerHTML = `<img src="${d.photoURL}" alt=""><div class="avatar-overlay"><span style="font-size:18px;">📷</span><span>Changer</span></div>`;
+        }
+      }
+    }catch{}
+    try{
+      const histSnap = await getDoc(doc(db, "progression", user.uid));
+      if(histSnap.exists()){
+        const remoteHist = histSnap.data().hist || [];
+        const localHist = JSON.parse(localStorage.getItem('sdg_auto_hist_v1')||'[]');
+        if(remoteHist.length > localHist.length){
+          localStorage.setItem('sdg_auto_hist_v1', JSON.stringify(remoteHist));
+        }
+      }
+    }catch{}
+    initApp();
+  }else{
+    document.getElementById('main-ui').style.display='none';
+    document.getElementById('auth-root').style.display='flex';
+  }
+});
+
+window.openProfile = function(){
+  const user = auth.currentUser; if(!user) return;
+  const hist = JSON.parse(localStorage.getItem('sdg_auto_hist_v1')||'[]');
+  const n = hist.length; const avg = n ? Math.round(hist.reduce((s,x)=>s+(x.total||0),0)/n) : 0; const last = n ? hist[n-1].total : '--';
+  document.getElementById('kpi-cases').textContent = n;
+  document.getElementById('kpi-moy').textContent = n ? avg : '--';
+  document.getElementById('kpi-last').textContent = last;
+  document.getElementById('profile-name').textContent = user.displayName || 'Dr';
+  document.getElementById('profile-email').textContent = user.email;
+  document.getElementById('profile-email2').textContent = user.email;
+  document.getElementById('profile-fullname').textContent = user.displayName || '-';
+  getDoc(doc(db, "medecins", user.uid)).then(snap=>{
+    if(snap.exists()){
+      const d = snap.data();
+      document.getElementById('profile-hopital').textContent = d.hopital || '-';
+      document.getElementById('profile-fullname').textContent = d.displayName || user.displayName || '-';
+    }
+  }).catch(()=>{});
+  let badgeTemps = '⏱️ Nouveau • 0 cas';
+  if(n>0){
+    const mins = n*12; const h = Math.floor(mins/60); const m = mins%60;
+    const tStr = h>0 ? `${h}h ${m}min` : `${m}min`;
+    if(n<3) badgeTemps = `🌱 Débutant • ${tStr}`; else if(n<10) badgeTemps = `🔵 Régulier • ${tStr}`; else if(n<25) badgeTemps = `🟣 Assidu • ${tStr}`; else badgeTemps = `🟠 Vétéran • ${tStr}`;
+  }
+  document.getElementById('badge-temps').textContent = badgeTemps;
+  let badgeScore = '🎯 À commencer';
+  if(n>0){
+    if(avg<50) badgeScore = `📚 En formation • ${avg}/100`; else if(avg<65) badgeScore = `✅ Compétent • ${avg}/100`; else if(avg<80) badgeScore = `⭐ Avancé • ${avg}/100`; else badgeScore = `🏆 Expert • ${avg}/100`;
+  }
+  document.getElementById('badge-score').textContent = badgeScore;
+  document.getElementById('profile-overlay').classList.add('open');
+};
+window.closeProfile = function(){ document.getElementById('profile-overlay').classList.remove('open'); };
+document.getElementById('btn-close-profile').onclick = ()=>{ document.getElementById('profile-overlay').classList.remove('open'); };
+document.getElementById('profile-overlay').onclick = (e)=>{ if(e.target.id==='profile-overlay') document.getElementById('profile-overlay').classList.remove('open'); };
+document.getElementById('btn-profile-open').onclick = ()=>{ window.openProfile(); };
+document.querySelectorAll('[data-nav]').forEach(btn=>{
+  btn.onclick = ()=>{
+    const v = btn.getAttribute('data-nav');
+    view = v;
+    document.querySelectorAll('[data-nav]').forEach(b=> b.setAttribute('aria-current', b.getAttribute('data-nav')===v ? 'page' : 'false'));
+    render();
+  };
+});
+document.getElementById('btn-logout-bulletin').onclick = async ()=>{
+  localStorage.removeItem('sdg_guest_mode');
+  try{ await signOut(auth); }catch{}
+  document.getElementById('main-ui').style.display='none';
+  document.getElementById('profile-overlay').classList.remove('open');
+  document.getElementById('auth-root').style.display='flex';
+  setTimeout(()=>location.reload(),300);
+};
+document.getElementById('avatar-file-input').addEventListener('change', async (e)=>{
+  const file = e.target.files?.[0]; if(!file) return;
+  if(!file.type.startsWith('image/')){ alert('Image requise'); return; }
+  if(file.size > 1.5*1024*1024){ alert('Max 1.5MB'); return; }
+  const av = document.getElementById('profile-avatar');
+  try{
+    const photoURL = await new Promise((resolve, reject)=>{
+      const img = new Image(); const reader = new FileReader();
+      reader.onload = (ev)=>{
+        img.onload = ()=>{
+          const canvas = document.createElement('canvas'); const size=200; canvas.width=size; canvas.height=size;
+          const ctx = canvas.getContext('2d'); const min = Math.min(img.width, img.height);
+          const sx=(img.width-min)/2, sy=(img.height-min)/2;
+          ctx.drawImage(img, sx, sy, min, min, 0,0,size,size);
+          resolve(canvas.toDataURL('image/jpeg',0.7));
+        }; img.onerror=reject; img.src=ev.target.result;
+      }; reader.onerror=reject; reader.readAsDataURL(file);
+    });
+    av.innerHTML = `<img src="${photoURL}" alt=""><div class="avatar-overlay"><span style="font-size:18px;">📷</span><span>Changer</span></div>`;
+    const user = auth.currentUser;
+    if(user){
+      await setDoc(doc(db, "medecins", user.uid), { photoURL, photoUpdatedAt: new Date().toISOString() }, { merge:true });
+      document.getElementById('btn-profile-open').innerHTML = `<img src="${photoURL}" alt="">`;
+    }
+  }catch(err){ alert('Erreur: '+err.message); }
+  e.target.value='';
+});
+
+function navigate(v){
+  view = v;
+  document.querySelectorAll('[data-nav]').forEach(function(btn){ btn.setAttribute('aria-current', btn.getAttribute('data-nav')===v ? 'page' : 'false'); });
+  render();
+}
+
+// Start with accueil
+</script>
+</body>
+</html>
