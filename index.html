@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Salle de Garde Autonome</title>
+<title>Salle de Garde – Simulateur de patient virtuel pour étudiants en médecine (RDC)</title>
+<meta name="description" content="Salle de Garde : 202 cas cliniques, un patient virtuel qui comprend tes fautes et ton lingala, et ne donne jamais le diagnostic. Gratuit, sans installation.">
+<meta name="theme-color" content="#0F766E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -212,19 +214,157 @@ textarea{ resize:vertical; min-height:96px; line-height:1.6; }
 .pt-badge-age{ display:inline-flex; align-items:center; gap:4px; background:var(--surface); border:1px solid var(--line-2); border-radius:999px; padding:3px 10px; font-size:.75rem; font-weight:600; color:var(--muted); }
 .pt-main{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
 
+
+/* ===== PAGE D'ACCUEIL PUBLIQUE (landing) ===== */
+#landing-root{ display:block; background:var(--bg); color:var(--fg); }
+.ld-wrap{ max-width:1120px; margin-inline:auto; padding-inline:20px; }
+.ld-top{ position:sticky; top:0; z-index:50; background:rgba(246,248,249,0.88); backdrop-filter:blur(12px) saturate(1.2); -webkit-backdrop-filter:blur(12px) saturate(1.2); border-bottom:1px solid var(--line); }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .ld-top{ background:rgba(10,21,24,0.88); } }
+.ld-top .ld-wrap{ display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:64px; }
+.ld-brand{ display:flex; align-items:center; gap:10px; font:700 1.2rem var(--f-display); letter-spacing:-0.02em; }
+.ld-brand svg{ width:34px; height:18px; fill:none; stroke:var(--accent); stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+.ld-hero{ padding:64px 0 56px; background:radial-gradient(900px 480px at 10% -10%, var(--accent-soft) 0%, transparent 60%), radial-gradient(700px 380px at 100% 0%, var(--surface-3) 0%, transparent 55%); }
+.ld-hero .ld-wrap{ display:grid; grid-template-columns:1.1fr 0.9fr; gap:48px; align-items:center; }
+.ld-badge{ display:inline-flex; align-items:center; gap:8px; background:var(--accent-soft); color:var(--accent-2); border:1px solid var(--line); border-radius:var(--radius-full); padding:6px 14px; font:600 .76rem var(--f-body); letter-spacing:.08em; }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .ld-badge{ color:var(--accent); } }
+.ld-h1{ font:700 clamp(2.1rem,5.2vw,3.4rem)/1.08 var(--f-display); letter-spacing:-0.03em; margin:18px 0 16px; }
+.ld-h1 span{ color:var(--accent); }
+.ld-lead{ font-size:1.1rem; line-height:1.65; color:var(--muted); max-width:56ch; margin:0 0 26px; }
+.ld-cta{ display:flex; flex-wrap:wrap; gap:12px; }
+.ld-cta .btn{ min-height:50px; padding:12px 24px; font-size:1rem; text-decoration:none; }
+.ld-note{ margin:16px 0 0; font-size:.9rem; color:var(--muted); }
+.ld-sim{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-lg); box-shadow:var(--shadow-lg); overflow:hidden; }
+.ld-sim-head{ display:flex; align-items:center; gap:8px; padding:12px 16px; background:var(--surface-2); border-bottom:1px solid var(--line-2); font:600 .8rem var(--f-body); color:var(--muted); }
+.ld-dot{ width:9px; height:9px; border-radius:50%; background:var(--alert); }
+.ld-dot.g{ background:var(--ok); }
+.ld-chat{ padding:18px; display:flex; flex-direction:column; gap:12px; }
+.ld-b{ max-width:88%; padding:11px 14px; border-radius:14px; font-size:.95rem; line-height:1.5; }
+.ld-b small{ display:block; font:600 .66rem var(--f-body); letter-spacing:.08em; text-transform:uppercase; opacity:.7; margin-bottom:3px; }
+.ld-b.p{ background:var(--surface-2); border:1px solid var(--line-2); border-top-left-radius:4px; }
+.ld-b.d{ background:var(--accent); color:var(--accent-fg); align-self:flex-end; border-top-right-radius:4px; }
+.ld-tags{ display:flex; flex-wrap:wrap; gap:8px; padding:0 18px 18px; }
+.ld-tag{ background:var(--ok-soft); color:var(--ok); border-radius:var(--radius-full); padding:5px 12px; font:600 .78rem var(--f-body); }
+.ld-sec{ padding:72px 0; }
+.ld-sec.alt{ background:var(--surface); border-block:1px solid var(--line-2); }
+.ld-eyebrow{ font:600 .78rem var(--f-body); letter-spacing:.1em; text-transform:uppercase; color:var(--accent); margin:0 0 10px; }
+.ld-h2{ font:700 clamp(1.6rem,3.4vw,2.3rem)/1.15 var(--f-display); letter-spacing:-0.02em; margin:0 0 12px; }
+.ld-sub{ color:var(--muted); max-width:60ch; margin:0 0 36px; }
+.ld-grid3{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+.ld-card{ background:var(--surface); border:1px solid var(--line-2); border-radius:var(--radius-lg); padding:24px; box-shadow:var(--shadow-sm); transition:box-shadow .2s ease, transform .2s ease; }
+.ld-card:hover{ box-shadow:var(--shadow-md); transform:translateY(-2px); }
+.ld-ico{ width:46px; height:46px; border-radius:12px; background:var(--accent-soft-2); display:flex; align-items:center; justify-content:center; font-size:23px; margin-bottom:14px; }
+.ld-card h3{ font:700 1.1rem var(--f-display); margin:0 0 8px; letter-spacing:-0.01em; }
+.ld-card p{ margin:0; color:var(--muted); font-size:.95rem; line-height:1.6; }
+.ld-step-n{ width:40px; height:40px; border-radius:50%; background:var(--fg); color:var(--bg); display:flex; align-items:center; justify-content:center; font:700 1.05rem var(--f-display); margin-bottom:14px; }
+.ld-final{ background:var(--fg); color:var(--bg); padding:72px 0; text-align:center; }
+.ld-final .ld-h2{ color:var(--bg); }
+.ld-final p{ margin:0 auto 26px; max-width:52ch; opacity:.8; }
+.ld-final .btn{ background:var(--bg); color:var(--fg); min-height:52px; padding:12px 28px; font-size:1.02rem; }
+.ld-final .btn:hover{ background:var(--accent-soft); }
+.ld-foot{ padding:26px 0; border-top:1px solid var(--line); text-align:center; color:var(--muted); font-size:.88rem; }
+.ld-back{ align-self:flex-start; min-height:36px; padding:6px 12px; font-size:.85rem; }
+#features,#how{ scroll-margin-top:76px; }
+@media (max-width:900px){
+  .ld-hero{ padding:40px 0 36px; }
+  .ld-hero .ld-wrap{ grid-template-columns:1fr; gap:32px; }
+  .ld-grid3{ grid-template-columns:repeat(2,1fr); }
+}
+@media (max-width:600px){
+  .ld-grid3{ grid-template-columns:1fr; }
+  .ld-sec,.ld-final{ padding:48px 0; }
+  .ld-cta .btn{ width:100%; }
+  .ld-top .btn{ padding:8px 14px; min-height:40px; }
+  .ld-b{ max-width:94%; }
+}
+
 </style>
-
-
-
+<script src="./cases_202.js?v=20261024"></script>
 </head>
 <body>
 
 <div id="main-app-wrapper">
 
 
+<!-- PAGE D'ACCUEIL PUBLIQUE : visible au démarrage -->
+<div id="landing-root">
+  <header class="ld-top">
+    <div class="ld-wrap">
+      <div class="ld-brand">
+        <svg viewBox="0 0 40 20" aria-hidden="true"><polyline points="0,11 9,11 12,4 16,17 20,2 24,11 40,11"/></svg>
+        <span>Salle de Garde</span>
+      </div>
+      <button class="btn" type="button" onclick="showAuth()">Se connecter</button>
+    </div>
+  </header>
+
+  <section class="ld-hero">
+    <div class="ld-wrap">
+      <div>
+        <span class="ld-badge">202 CAS CLINIQUES • RDC • OHADA</span>
+        <h1 class="ld-h1">Deviens le médecin que <span>la RDC attend.</span></h1>
+        <p class="ld-lead">Salle de Garde est le premier simulateur de patient virtuel pour étudiants en médecine en RDC. Un patient qui comprend tes fautes, ton lingala, tes abréviations, et qui ne te donne jamais le diagnostic.</p>
+        <div class="ld-cta">
+          <button class="btn" type="button" onclick="showAuth()">Commencer gratuitement →</button>
+          <a class="btn ghost" href="#features">Voir comment ça marche</a>
+        </div>
+        <p class="ld-note">✓ Gratuit &nbsp;•&nbsp; Sans installation &nbsp;•&nbsp; Progression sauvegardée</p>
+      </div>
+      <div class="ld-sim" aria-label="Exemple de consultation">
+        <div class="ld-sim-head"><span class="ld-dot"></span><span class="ld-dot g"></span><span>Consultation en cours</span></div>
+        <div class="ld-chat">
+          <div class="ld-b p"><small>Patient</small>Docteur, mwasi na ngai azali na fièvre makasi…</div>
+          <div class="ld-b d"><small>Toi</small>depuis quand la fievre? atcd?</div>
+          <div class="ld-b p"><small>Patient</small>Depuis 4 jours, avec des frissons le soir. Pas d'antécédent particulier.</div>
+        </div>
+        <div class="ld-tags"><span class="ld-tag">✓ Tolère les fautes</span><span class="ld-tag">✓ Lingala</span><span class="ld-tag">✓ Sans diagnostic</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ld-sec alt" id="features">
+    <div class="ld-wrap">
+      <p class="ld-eyebrow">Pourquoi Salle de Garde</p>
+      <h2 class="ld-h2">Un vrai patient, pas un QCM.</h2>
+      <p class="ld-sub">Tu poses les questions, tu examines, tu demandes tes examens, tu conclus. Comme en garde.</p>
+      <div class="ld-grid3">
+        <article class="ld-card"><div class="ld-ico">🧠</div><h3>Patient qui comprend tout</h3><p>« pleinte », « atcd », « fievre », « pipi », lingala… Le patient te comprend et ne répond jamais « je ne comprends pas ».</p></article>
+        <article class="ld-card"><div class="ld-ico">🚫</div><h3>Jamais de diagnostic donné</h3><p>Comme en vrai, il décrit ses symptômes. Le diagnostic, c'est à toi de le trouver : « Je ne sais pas docteur. »</p></article>
+        <article class="ld-card"><div class="ld-ico">📚</div><h3>202 cas cliniques RDC</h3><p>Médecine interne, pédiatrie, gynéco-obstétrique, chirurgie et urgences. Le patient et les valeurs changent à chaque fois.</p></article>
+        <article class="ld-card"><div class="ld-ico">💾</div><h3>Progression sauvegardée</h3><p>Connecte-toi avec Google ou ton email : tes scores et ton historique te suivent sur tous tes appareils, sans limite.</p></article>
+        <article class="ld-card"><div class="ld-ico">⚖️</div><h3>Droit OHADA</h3><p>Salle de Garde s'inscrit dans l'espace OHADA et s'adapte aux réalités de la RDC.</p></article>
+        <article class="ld-card"><div class="ld-ico">📱</div><h3>Marche sur téléphone</h3><p>Aucune installation : ouvre le site sur ton téléphone ou ton ordinateur et commence ta garde.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="ld-sec" id="how">
+    <div class="ld-wrap">
+      <p class="ld-eyebrow">En 3 étapes</p>
+      <h2 class="ld-h2">Comment ça marche</h2>
+      <p class="ld-sub">Une consultation complète en quelques minutes.</p>
+      <div class="ld-grid3">
+        <article class="ld-card"><div class="ld-step-n">1</div><h3>Reçois un patient</h3><p>Choisis un service ou laisse le hasard décider : un patient arrive avec sa plainte.</p></article>
+        <article class="ld-card"><div class="ld-step-n">2</div><h3>Mène la consultation</h3><p>Interroge, examine, demande tes examens complémentaires, puis donne ton diagnostic et ta conduite à tenir.</p></article>
+        <article class="ld-card"><div class="ld-step-n">3</div><h3>Sois évalué</h3><p>Une note sur 100, tes points forts, ce qui manquait et les notions à réviser.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="ld-final">
+    <div class="ld-wrap">
+      <h2 class="ld-h2">Prêt pour ta première garde ?</h2>
+      <p>Crée ton compte gratuit et reçois ton premier patient en moins d'une minute.</p>
+      <button class="btn" type="button" onclick="showAuth()">Commencer maintenant →</button>
+    </div>
+  </section>
+
+  <footer class="ld-foot"><div class="ld-wrap">Salle de Garde • Fait pour les étudiants RDC • 2026</div></footer>
+</div>
+
 <!-- ECRAN CONNEXION - Template connexion -->
-<div id="auth-root">
+<div id="auth-root" style="display:none;">
   <div class="auth-card card">
+    <button class="btn ghost ld-back" type="button" onclick="showLanding()">← Retour</button>
     <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
       <svg class="ecg" viewBox="0 0 40 20" aria-hidden="true" style="width:34px;height:18px;fill:none;stroke:var(--alert);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><polyline points="0,11 9,11 12,4 16,17 20,2 24,11 40,11"/></svg>
       <h1 style="font-size:1.4rem;">Salle de Garde</h1>
@@ -252,7 +392,6 @@ textarea{ resize:vertical; min-height:96px; line-height:1.6; }
       <div class="auth-field"><label class="label">Mot de passe</label><input id="reg-pass" type="password" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:12px;min-height:44px;" placeholder="Au moins 6 caractères"></div>
       <button id="btn-register" class="btn" type="button" style="width:100%; margin-top:8px;">Créer mon compte gratuit</button>
       <p id="reg-error" class="small" style="color:var(--alert); margin-top:10px;"></p>
-      <p class="small muted" style="margin-top:10px;">Inscription illimitée - Règles Firestore: allow read, write: if true;</p>
     </div>
 
     <div class="auth-sep"></div>
@@ -289,6 +428,24 @@ textarea{ resize:vertical; min-height:96px; line-height:1.6; }
     <button id="btn-logout" class="btn ghost" type="button" style="min-height:32px; padding:6px 10px; font-size:.85rem;">Déconnexion</button>
   </div>
 </div>
+
+<script>
+/* Navigation : landing (public) -> connexion -> app */
+function showLanding(){
+  document.getElementById("landing-root").style.display="block";
+  document.getElementById("auth-root").style.display="none";
+  document.getElementById("main-ui").style.display="none";
+  window.scrollTo(0,0);
+}
+function showAuth(){
+  document.getElementById("landing-root").style.display="none";
+  document.getElementById("auth-root").style.display="flex";
+  document.getElementById("main-ui").style.display="none";
+  window.scrollTo(0,0);
+}
+window.showLanding=showLanding; window.showAuth=showAuth;
+showLanding();
+</script>
 
 <script type="importmap">
 {
@@ -344,6 +501,7 @@ localStorage.removeItem("sdg_guest_mode");
 
 
 function showApp(user){
+  document.getElementById("landing-root").style.display="none";
   document.getElementById("auth-root").style.display="none";
   document.getElementById("main-ui").style.display="block";
   const info = document.getElementById("user-info");
@@ -485,10 +643,6 @@ function showApp(user){
 window._closeProfile = function(){ document.getElementById("profile-overlay")?.classList.remove("open"); };
 
 
-function showAuth(){
-  document.getElementById("auth-root").style.display="flex";
-  document.getElementById("main-ui").style.display="none";
-}
 
 // Tabs
 document.getElementById("tab-login").onclick = ()=>{
@@ -546,7 +700,7 @@ document.getElementById("btn-google").onclick = async ()=>{
 document.getElementById("btn-logout").onclick = async ()=>{
   localStorage.removeItem("sdg_guest_mode");
   await signOut(auth);
-  showAuth();
+  window.showLanding();
 };
 
 // Auth state
@@ -563,9 +717,9 @@ onAuthStateChanged(auth, async (user)=>{
     }catch(e){ console.log(e); }
     showApp(user);
   } else {
-    // Déconnexion totale : oblige à se connecter, pas d'accès invité
+    // Non connecté : page d'accueil publique (sauf si l'écran de connexion est déjà ouvert)
     localStorage.removeItem("sdg_guest_mode");
-    showAuth();
+    if(document.getElementById("auth-root").style.display!=="flex") window.showLanding();
   }
 });
 
@@ -583,7 +737,7 @@ window._handleLogoutBulletin = async function(){
     // Force écran de connexion avant de voir évolutions
     document.getElementById("main-ui").style.display="none";
     document.getElementById("profile-overlay")?.classList.remove("open");
-    document.getElementById("auth-root").style.display="flex";
+    window.showLanding();
     // Recharge pour être sûr que plus rien n'est visible sans connexion
     setTimeout(()=> location.reload(), 300);
   }catch(e){
@@ -693,10 +847,9 @@ document.getElementById('avatar-file-input')?.addEventListener('change', window.
       const user = window._fbAuth?.currentUser;
       const authRoot = document.getElementById("auth-root");
       const mainUi = document.getElementById("main-ui");
-      if(!user && mainUi && mainUi.style.display!=="none" && authRoot && authRoot.style.display==="none"){
-        // Pas connecté mais app visible -> force retour login
-        mainUi.style.display="none";
-        authRoot.style.display="flex";
+      if(!user && mainUi && mainUi.style.display!=="none"){
+        // Pas connecté mais app visible -> retour à la page d'accueil
+        window.showLanding();
       }
     }catch(e){}
   }, 500);
@@ -704,7 +857,6 @@ document.getElementById('avatar-file-input')?.addEventListener('change', window.
 
 </script>
 
-<script src="./cases_202.js?v=20261024"></script>
 <script>
 // === CODE ORIGINAL DE TON APP (avec patch Firebase) ===
 
@@ -1062,6 +1214,7 @@ function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} try
 function wipe(k){try{localStorage.removeItem(k);}catch(e){}}
 
 var S=null;
+try{ localStorage.clear(); }catch(e){}
 var hist=load(HKEY); if(!Array.isArray(hist))hist=[];
 window._fbReloadHist = function(){ try{ hist=load(HKEY); if(!Array.isArray(hist))hist=[]; if(typeof render==='function') render(); }catch(e){} };
 window._fbGetHist = function(){ return hist; };
