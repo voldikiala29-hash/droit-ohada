@@ -1181,7 +1181,7 @@ function normCase(d){
 
 /* ===== Patient autonome (IA) — la clé API reste dans le Worker ===== */
 /* Mettre ici l'URL du Worker (voir worker/patient-worker.js). Vide = mode local (moteur de règles). */
-var LLM_URL=window.SDG_LLM_URL||"";
+var LLM_URL=window.SDG_LLM_URL||"https://muddy-shadow-c8d5.voldikiala29.workers.dev";
 function fillX(t,p){return String(t).replace(/\{(\w+)\}/g,function(m,k){return p[k]!=null?p[k]:m;});}
 function buildPersona(S){
   var p=S.pt,d=DB[S.did];
@@ -1208,8 +1208,9 @@ async function answerPatient(S,t){
         body:JSON.stringify({persona:buildPersona(S),facts:buildFacts(S),step:STEPS[S.stage],history:S.chat.slice(0,-1).slice(-12),message:t})});
       if(res.ok){
         var j=await res.json();
-        if(j&&j.reponse){
-          var txt=String(j.reponse).replace(/^\s*(patient|patiente|mère|mere)\s*:\s*/i,"").trim();
+        var rep=j&&(j.reponse||j.reply);
+        if(rep){
+          var txt=String(rep).replace(/^\s*(patient|patiente|mère|mere)\s*:\s*/i,"").trim();
           return {text:guardLLM(S,txt),ids:[]};
         }
       }
