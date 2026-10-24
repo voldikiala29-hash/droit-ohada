@@ -3,13 +3,19 @@
  * Les clés API restent ICI, dans les secrets du Worker : elles ne doivent jamais
  * figurer dans index.html ni dans le dépôt.
  *
- * Déploiement (une fois) :
- *   wrangler secret put LLM_KEY          # ta clé API (Groq, OpenAI, OpenRouter… compatible OpenAI)
- *   wrangler deploy                       # avec les variables ci-dessous dans wrangler.toml :
- *     LLM_URL   = "https://api.groq.com/openai/v1/chat/completions"   (exemple)
- *     LLM_MODEL = "<nom du modèle chez ton fournisseur>"
- *     ALLOWED_ORIGIN = "https://salledegarde.online"
- * Puis mets l'URL du Worker dans index.html : window.SDG_LLM_URL (voir le haut du script).
+ * Fournisseurs (essayés dans l'ordre ci-dessous ; au premier échec, on passe au suivant) :
+ *   gemini      -> secret GEMINI_KEY       (modèle : variable GEMINI_MODEL)
+ *   groq        -> secret GROQ_KEY         (modèle : variable GROQ_MODEL)
+ *   huggingface -> secret HF_KEY           (modèle : variable HF_MODEL)
+ * Un fournisseur sans clé est simplement ignoré.
+ *
+ * Déploiement :
+ *   wrangler secret put GEMINI_KEY
+ *   wrangler secret put GROQ_KEY
+ *   wrangler secret put HF_KEY
+ *   wrangler deploy   (variables dans wrangler.toml : GEMINI_MODEL, GROQ_MODEL, HF_MODEL,
+ *                      ALLOWED_ORIGIN = "https://salledegarde.online")
+ * Puis mets l'URL du Worker dans index.html : window.SDG_LLM_URL.
  */
 const MAX_MSG = 600, MAX_HIST = 12, MAX_FACTS = 6000, MAX_PERSONA = 600;
 
@@ -31,6 +37,14 @@ function buildSystem(persona, facts, step) {
 
 function json(obj, status, headers) {
   return new Response(JSON.stringify(obj), { status, headers: { ...headers, "Content-Type": "application/json" } });
+}
+
+function providers(env) {
+  const list = [];
+  if (env.GEMINI_KEY) list.push({ name: "gemini", url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", key: env.GEMINI_KEY, model: env.GEMINI_MODEL || "gemini-2.0-flash" });
+  if (env.GROQ_KEY) list.push({ name: "groq", url: "https://api.groq.com/openai/v1/chat/completions", key: env.GROQ_KEY, model: env.GROQ_MODEL || "llama-3.3-70b-versatile" });
+  if (env.HF_KEY) list.push({ name: "huggingface", url: "https://router.huggingface.co/v1/chat/completions", key: env.HF_KEY, model: env.HF_MODEL || "meta-llama/Llama-3.1-8B-Instruct" });
+  return list;
 }
 
 export default {
@@ -62,15 +76,22 @@ export default {
       ...hist,
       { role: "user", content: message.trim() }
     ];
-    const upstream = await fetch(env.LLM_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + env.LLM_KEY },
-      body: JSON.stringify({ model: env.LLM_MODEL, messages, temperature: 0.9, max_tokens: 220 })
-    });
-    if (!upstream.ok) return json({ error: "upstream", status: upstream.status }, 502, cors);
-    const data = await upstream.json();
-    const text = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-    if (!text || !String(text).trim()) return json({ error: "empty" }, 502, cors);
-    return json({ reponse: String(text).trim().slice(0, 800) }, 200, cors);
+    let text = null, used = null;
+    for (const pr of providers(env)) {
+      try {
+        const upstream = await fetch(pr.url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + pr.key },
+          body: JSON.stringify({ model: pr.model, messages, temperature: 0.9, max_tokens: 220 }),
+          signal: AbortSignal.timeout(10000)
+        });
+        if (!upstream.ok) continue;
+        const data = await upstream.json();
+        const t = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+        if (t && String(t).trim()) { text = String(t).trim(); used = pr.name; break; }
+      } catch (e) { /* fournisseur suivant */ }
+    }
+    if (!text) return json({ error: "unavailable" }, 502, cors);
+    return json({ reponse: text.slice(0, 800) }, 200, cors);
   }
 };
