@@ -352,6 +352,7 @@ function showApp(user){
   } else {
     info.innerHTML = `<b>Mode invité</b> • Sauvegarde locale seulement`;
   }
+  try{ if(window._appRender) window._appRender(); }catch(e){ console.log(e); }
   // Crée bouton profil dans le header
   try{
     const bar = document.querySelector("#main-ui .bar");
@@ -459,6 +460,7 @@ function showApp(user){
           const db = getFirestore();
           const snap = await getDoc(doc(db, "medecins", user.uid));
           if(snap.exists()){
+            const d = snap.data();
             // Si photoURL dans Firestore et pas déjà dans auth
             if(d.photoURL && !user.photoURL){
               const av2 = document.getElementById("profile-avatar");
@@ -467,7 +469,6 @@ function showApp(user){
               const btnP = document.getElementById("btn-profile-open");
               if(btnP) btnP.innerHTML = `<img src="${d.photoURL}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
             }
-            const d = snap.data();
             if(d.nom){ document.getElementById("profile-nom").textContent = d.nom; document.getElementById("info-nom").textContent = d.nom; }
             if(d.hopital){ document.getElementById("info-hop").textContent = d.hopital; }
             else if(d.hop){ document.getElementById("info-hop").textContent = d.hop; }
@@ -703,6 +704,7 @@ document.getElementById('avatar-file-input')?.addEventListener('change', window.
 
 </script>
 
+<script src="./cases_202.js?v=20261024"></script>
 <script>
 // === CODE ORIGINAL DE TON APP (avec patch Firebase) ===
 
@@ -712,17 +714,46 @@ document.getElementById('avatar-file-input')?.addEventListener('change', window.
 /* =====================================================================
    OUTILS
    ===================================================================== */
+function lev(a,b){
+  if(a===b)return 0;
+  var m=a.length,n=b.length;if(Math.abs(m-n)>2)return 9;
+  var prev=[],cur=[],i,j;
+  for(j=0;j<=n;j++)prev[j]=j;
+  for(i=1;i<=m;i++){
+    cur=[i];
+    for(j=1;j<=n;j++)cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a.charAt(i-1)===b.charAt(j-1)?0:1));
+    prev=cur;
+  }
+  return prev[n];
+}
+/* Fautes d'orthographe courantes : mot isolé -> forme correcte */
+var TYPOS={
+  pleinte:"plainte",plinte:"plainte",plaint:"plainte",plente:"plainte",plaintes:"plainte",pleintes:"plainte",
+  atcd:"antecedent",atcds:"antecedent",atcdt:"antecedent",atcdts:"antecedent",antecedents:"antecedent",antesedan:"antecedent",antecedan:"antecedent",
+  fievres:"fievre",fiever:"fievre",fieve:"fievre",fiebre:"fievre",fievr:"fievre",fiyevre:"fievre",
+  pipis:"pipi",pipy:"pipi",pipie:"pipi",pissi:"pipi",urinaire:"urinaire",miction:"pipi",mictions:"pipi",
+  pourqoi:"pourquoi",prkoi:"pourquoi",pk:"pourquoi",pq:"pourquoi",pourkoi:"pourquoi",
+  dhr:"depuis quand",dpuis:"depuis",depui:"depuis",dpui:"depuis",
+  medicaman:"medicament",medicamen:"medicament",medocs:"medicament",medoc:"medicament",
+  vomisement:"vomissement",vomisements:"vomissement",diarhee:"diarrhee",diarrhe:"diarrhee",diaree:"diarrhee",
+  douler:"douleur",doulleur:"douleur",douleure:"douleur",alergie:"allergie",allergi:"allergie"
+};
+/* Vocabulaire pour la correction approchée (distance de Levenshtein <= 1) */
+var VOCAB=["plainte","antecedent","fievre","douleur","vomissement","diarrhee","medicament","traitement","allergie","symptome","maladie","hopital","operation","enceinte","grossesse","urine","ventre","poitrine","respiration","depuis","combien","pourquoi","frissons","convulsion","toux","fatigue"];
+function fixWord(w){
+  if(TYPOS[w])return TYPOS[w];
+  if(w.length<5)return w;
+  for(var i=0;i<VOCAB.length;i++){
+    var v=VOCAB[i];
+    if(w===v)return w;
+    if(Math.abs(v.length-w.length)<=1&&lev(w,v)<=1)return v;
+  }
+  return w;
+}
 function N(s){
   var t=String(s||"").toLowerCase().replace(/œ/g,"oe").replace(/æ/g,"ae").normalize("NFD")
     .replace(/[̀-ͯ]/g,"").replace(/[’‘`]/g,"'");
-  // Tolérance fautes fréquentes Kinshasa
-  t=t.replace(/pleinte/g,"plainte").replace(/plinte/g,"plainte").replace(/plaintes/g,"plainte")
-     .replace(/atcd/g,"antecedent").replace(/atcds/g,"antecedent").replace(/atcdts/g,"antecedent")
-     .replace(/fievres/g,"fievre").replace(/fievre/g,"fievre").replace(/pourqoi/g,"pourquoi").replace(/prkoi/g,"pourquoi")
-     .replace(/motif/g,"motif").replace(/moti/g,"motif").replace(/pipi/g,"pipi").replace(/miction/g,"pipi");
-  // Map mots isolés
-  var map={pleinte:"plainte",plinte:"plainte",atcd:"antecedent",pourqoi:"pourquoi",prkoi:"pourquoi",dhr:"depuis quand",fievre:"fievre",pipi:"pipi"};
-  t=t.split(/\s+/).map(function(w){return map[w]||w;}).join(" ");
+  t=t.split(/([^a-z0-9']+)/).map(function(w,i){return i%2===0?fixWord(w):w;}).join("");
   return t;
 }
 function rnd(a,b){return a+Math.floor(Math.random()*(b-a+1));}
@@ -814,7 +845,7 @@ var TESTS={
    QUESTIONS GÉNÉRIQUES DU PATIENT (identité, contexte : valables pour tous les cas)
    ===================================================================== */
 var GEN=[
- ["salut",/^(bonjour|bonsoir|salut|bonne)/,function(){return "Bonjour docteur.";}],
+ ["salut",/^(bonjour|bonsoir|salut|bonne|mbote)/,function(){return "Bonjour docteur.";}],
  ["motif",/motif|pleinte|plinte|plainte|pourquoi|prkoi|pourqoi|qu.est.ce qui (vous )?amene|plainte|raconte|pourquoi (venez|etes)/,function(p,d){return d.plainte;}],
  ["nom",/\bnom\b|appelez|prenom/,function(p){return p.kid?"Il s'appelle "+p.prenom+".":"Je m'appelle "+p.prenom+".";}],
  ["age",/\bage\b|quel age|\bans\b|naissance/,function(p){return p.kid?p.Pron+" a "+p.age+".":"J'ai "+p.age+".";}],
@@ -863,6 +894,28 @@ var LEXNEG=[
 
 /* Synonymes : une expression libre est ramenée aux mots-clés que les dossiers comprennent. */
 var SYN=[
+ /* --- Lingala (Kinshasa) --- */
+ [/\bmbote\b/,"bonjour"],
+ [/nzoto (ezali |ezali na |ezo\w* )?(moto|pelisi|pela)|moto ya nzoto|bokono ya moto/,"fievre frisson temperature"],
+ [/\b(moto|motu|mutu)\b (ezali |ezo\w+ |na )?(pasi|mpasi|kobela)|(pasi|mpasi) ya (moto|motu|mutu)/,"cephal tete maux de tete"],
+ [/libumu|mombongo/,"abdom ventre"],
+ [/\bm?pasi\b/,"douleur mal"],
+ [/kobwaka|kobwakisa|kolutu/,"vomi nausee"],
+ [/kokohola|kohola|kokohoka/,"toux tousse crach"],
+ [/mai ya libumu|libumu ya mai|kotanga|kosopa/,"diarrhee selle transit caca"],
+ [/\bmpema\b|kopema/,"respir souffle essouff dyspnee"],
+ [/\bmpipi\b|kosala pipi/,"urine pipi uriner miction"],
+ [/\bmakila\b/,"saign sang"],
+ [/\bkolia\b|\bbilei\b|mposa ya kolia/,"appetit mange manger alimentation repas"],
+ [/\bnkisi\b|\bbakisi\b/,"medicament traitement pris automed"],
+ [/\bbokono\b|\bkobela\b|\bmobeli\b/,"maladie infection antecedent"],
+ [/uta (ntango )?(boni|nini)|ntango boni|mikolo boni|\bsemaine boni/,"depuis quand debut combien de temps"],
+ [/\bwapi\b|esika nini|epai nini/,"ou douleur localis"],
+ [/\bkolemba\b|\bngenge\b/,"fatigue asthenie"],
+ [/\bmokongo\b/,"dos lombaire rein"],
+ [/\bmakolo\b/,"jambe pied membre"],
+ [/\bloboko\b/,"bras main membre"],
+ /* --- Français --- */
  [/mal (a|au|aux|dans) (la |le |les |l')?(tete|crane)|migraine|tete (qui )?(fait mal|cogne|eclate)|maux de tete/,"cephal tete maux de tete"],
  [/mal (a|au|dans) (le |l')?(ventre|estomac|abdomen)|douleurs? (du |au |de l')?(ventre|estomac|abdomen)|ventre (qui )?(fait mal|gonfle|dur)/,"abdom ventre"],
  [/mal (a|au|dans) (la |le |l')?(poitrine|thorax|coeur)|douleurs? (de la |du |a la |au )?(poitrine|thorax|coeur)|oppression|serrement/,"thorax poitrine"],
@@ -943,13 +996,28 @@ function scoreEntry(re,t){
 }
 var STOPW={docteur:1,depuis:1,pouvez:1,combien:1,quelle:1,quelles:1,quels:1,votre:1,aviez:1,faites:1,avez:1,vous:1,est:1,etes:1,avoir:1,pensez:1,savez:1,dites:1,pourriez:1,voulez:1,souhaitez:1,quand:1};
 function fallbackReply(t0){
-  // Version tolérante : jamais bloquante, redonne la plainte principale
+  // Le patient ne dit jamais « je ne comprends pas » : il redonne sa plainte et invite à poser une question précise.
   var d=null; try{ d=DB[S.did]; }catch(e){}
-  var base = d && d.plainte ? d.plainte : "Je suis là pour répondre à vos questions, docteur.";
-  // Si mot proche de motif/antecedent, on aide
-  if(/antecedent|atcd|atcdts/.test(t0)) return d ? "Pour les antécédents : " + (d.hist.find(function(e){return e[0]==="atcd";}) ? d.hist.find(function(e){return e[0]==="atcd";})[3] : "Pas d'antécédent particulier, à part ce que je vous ai déjà dit.") + " " + base : base;
-  if(/plainte|pleinte|motif|pourquoi|venez/.test(t0)) return base;
-  return base + " Pouvez-vous préciser votre question (fièvre, douleur, depuis quand, médicaments, antécédents) ?";
+  var base = d && d.plainte ? d.plainte : "Je suis venu pour me faire soigner, docteur.";
+  if(/antecedent/.test(t0)){
+    var a=d&&d.hist.filter(function(e){return e[0]==="atcd";})[0];
+    return (a?a[3]:"Pas d'antécédent particulier, à part ce que je vous ai déjà dit.")+" "+base;
+  }
+  if(/plainte|motif|pourquoi|venez/.test(t0)) return base;
+  return base+" Demandez-moi ce que vous voulez savoir, docteur : depuis quand, où j'ai mal, la fièvre, les médicaments, les antécédents…";
+}
+/* Garde-fou : le patient ne donne jamais le diagnostic final et ne dit jamais qu'il ne comprend pas. */
+var DXSAFE=/voisin|cousin|pere|mere|soeur|frere|tante|oncle|famille|contact|jamais|vaccin|deja eu|antecedent|enfant|grand/;
+function guardReply(d,text){
+  var parts=String(text).split(/(?<=[.!?…])\s+/),out=[];
+  parts.forEach(function(sen){
+    var n=N(sen),leak=false;
+    try{leak=d.dx&&d.dx.full&&d.dx.full.test(n)&&!DXSAFE.test(n);}catch(e){}
+    if(leak){out.push("Je ne connais pas le nom de la maladie, docteur : c'est à vous de me le dire.");return;}
+    if(/je ne (te |vous )?comprends? pas|pas compris|je n'ai pas compris|comprends pas|pardon \?/.test(n)){out.push(d.plainte);return;}
+    out.push(sen);
+  });
+  return uniq(out).join(" ").trim();
 }
 
 /* =====================================================================
@@ -957,38 +1025,34 @@ function fallbackReply(t0){
    hist : [id, libellé, regex, réponse, essentiel(1)]
    ===================================================================== */
 
-var D=[];
+/* D et DB viennent de cases_202.js (chargé avant ce script). */
+var D=Array.isArray(window.D)?window.D:[];
 var DB={};
-function loadCases(){
-  var s=document.createElement('script');
-  s.src='./cases_202.js?v='+Date.now();
-  s.onload=function(){
-    console.log('202 cas chargés JS', D.length);
-    if(typeof render==='function') try{render();}catch(e){console.error(e);}
-    var kpi=document.getElementById('kpi-total'); if(kpi) kpi.textContent=D.length;
-    try{ document.querySelectorAll('.small.muted').forEach(function(el){ if(el.textContent.includes('cas pour')) el.textContent = D.length+' cas pour l\'instant, répartis par service. Le patient et les valeurs changent à chaque fois, d\'autres cas seront ajoutés.'; }); }catch(e){}
-  };
-  s.onerror=function(){ console.error('Erreur chargement cases_202.js'); };
-  document.head.appendChild(s);
+/* Mots-clés trop courts (ex. « ou ») : on les limite au mot entier pour qu'ils ne captent pas « toux », « douleur »… */
+function tightenRe(re){
+  var alts=splitAlts(re.source).map(function(a){return /^[a-z]{1,3}$/.test(a)?"\\b"+a+"\\b":a;});
+  return new RegExp(alts.join("|"));
 }
-loadCases();
-var _retry=0;
-var _int=setInterval(function(){
-  try{
-    if(typeof D!=="undefined" && D.length>0){
-      clearInterval(_int);
-      console.log('D ready', D.length);
-      if(typeof render==='function') render();
-    } else {
-      _retry++;
-      if(_retry>10){ clearInterval(_int); console.warn('D still 0 after retry'); }
-    }
-  }catch(e){ console.error(e); }
-}, 600);
-
-
-
-
+function prepCases(){
+  DB={};
+  D.forEach(function(d){
+    DB[d.id]=d;
+    (d.hist||[]).forEach(function(e){ if(Object.prototype.toString.call(e[2])==="[object RegExp]"&&!e[2].__t){ e[2]=tightenRe(e[2]); e[2].__t=1; } });
+  });
+}
+prepCases();
+if(!D.length){
+  // Secours : si le fichier n'a pas été chargé, on le recharge puis on réaffiche.
+  var _sc=document.createElement('script');
+  _sc.src='./cases_202.js?v='+Date.now();
+  _sc.onload=function(){
+    D=Array.isArray(window.D)?window.D:[];
+    prepCases();
+    try{render();}catch(e){console.error(e);}
+  };
+  _sc.onerror=function(){console.error('Erreur chargement cases_202.js');};
+  document.head.appendChild(_sc);
+}
 
 /* =====================================================================
    ÉTAT
@@ -997,12 +1061,11 @@ function load(k){try{return JSON.parse(localStorage.getItem(k));}catch(e){return
 function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} try{if(window._fbSync)window._fbSync(k,v);}catch(e){}}
 function wipe(k){try{localStorage.removeItem(k);}catch(e){}}
 
-var S=load(KEY); if(S&&(!S.did||!DB[S.did]||!S.chat))S=null;
+var S=null;
 var hist=load(HKEY); if(!Array.isArray(hist))hist=[];
 window._fbReloadHist = function(){ try{ hist=load(HKEY); if(!Array.isArray(hist))hist=[]; if(typeof render==='function') render(); }catch(e){} };
 window._fbGetHist = function(){ return hist; };
 window._fbSetHist = function(h){ hist=h; save(HKEY,hist); if(typeof render==='function') render(); };
-try{ if(S && (!S.did || typeof DB==="undefined" || !DB[S.did])){ localStorage.removeItem(KEY); localStorage.removeItem(HKEY); S=null; } }catch(e){}
 var view="home";
 var busy=false, pending=null, err="", confirmWipe=false;
 var draft={svc:SERVICES[0],chat:"",exam:"",para:"",dx:"",tx:"",ori:ORIS[1]};
@@ -1078,7 +1141,7 @@ function patientReply(S,q){
     if(/depuis quand|quand (ca|cela|est|a)|debut|commence|combien de temps/.test(t0))out.push(p.kid?"Ça a commencé il y a quelques jours, docteur. Je peux vous en dire plus si vous me posez une question précise.":"Ça a commencé il y a quelques jours, docteur. Demandez-moi quelque chose de plus précis, je vous répondrai.");
     else out.push(fallbackReply(t0));
   }
-  return {text:((hello?hello+" ":"")+out.join(" ")).trim(),ids:ids};
+  return {text:guardReply(d,((hello?hello+" ":"")+out.join(" ")).trim()),ids:ids};
 }
 function examReply(S,q){
   var d=DB[S.did],t=N(q),found=[];
@@ -1197,21 +1260,29 @@ function homeView(){
     h("h2",null,"Nouveau cas"),
     h("div",{class:"field"},h("label",{class:"label",for:"svc"},"Service"),svc),
     h("div",{class:"row"},h("button",{class:"btn",type:"button",onclick:startCase},"Recevoir un patient")),
-    h("p",{class:"small muted"},(typeof D!=="undefined"?D.length:208)+" cas pour l'instant, répartis par service. Le patient et les valeurs changent à chaque fois, d'autres cas seront ajoutés.")));
+    h("p",{class:"small muted",id:"cases-count"},D.length+" cas pour l'instant, répartis par service. Le patient et les valeurs changent à chaque fois, d'autres cas seront ajoutés.")));
 
   if(S&&S.done&&S.ev)root.append(h("button",{class:"btn ghost",type:"button",onclick:function(){go("eval");}},"Revoir la dernière évaluation"));
   return root;
 }
 function startCase(){
-  var pool=D.filter(function(d){return draft.svc===SERVICES[0]||d.svc===draft.svc;});
-  var last=hist.length?hist[hist.length-1].did:null;
-  var cand=pool.filter(function(d){return d.id!==last;});
-  var d=pick(cand.length?cand:pool);
-  var pt=mkPatient(d);
-  S={t:Date.now(),did:d.id,pt:pt,stage:0,maxStage:0,done:false,
-     chat:[{r:"p",t:d.plainte}],exams:[],paras:[],asked:[],examIds:[],testIds:[],hyp:"",dx:"",tx:"",ori:ORIS[1],ev:null};
-  draft.chat=draft.exam=draft.para=draft.dx=draft.tx="";draft.ori=ORIS[1];
-  save(KEY,S);view="case";err="";render();window.scrollTo(0,0);
+  try{
+    if(!D.length){ D=Array.isArray(window.D)?window.D:[]; prepCases(); }
+    if(!D.length){ err="Les cas ne sont pas encore chargés. Recharge la page (Ctrl+F5) puis réessaie."; render(); return; }
+    var pool=D.filter(function(x){return draft.svc===SERVICES[0]||x.svc===draft.svc;});
+    if(!pool.length)pool=D;
+    var last=hist.length?hist[hist.length-1].did:null;
+    var cand=pool.filter(function(x){return x.id!==last;});
+    var d=pick(cand.length?cand:pool);
+    var pt=mkPatient(d);
+    S={t:Date.now(),did:d.id,pt:pt,stage:0,maxStage:0,done:false,
+       chat:[{r:"p",t:d.plainte}],exams:[],paras:[],asked:[],examIds:[],testIds:[],hyp:"",dx:"",tx:"",ori:ORIS[1],ev:null};
+    draft.chat=draft.exam=draft.para=draft.dx=draft.tx="";draft.ori=ORIS[1];
+    save(KEY,S);view="case";err="";render();window.scrollTo(0,0);
+  }catch(e){
+    console.error(e);
+    S=null;err="Impossible d'ouvrir le cas : "+(e&&e.message?e.message:e);view="home";render();
+  }
 }
 
 /* =====================================================================
@@ -1503,16 +1574,26 @@ function progressView(){
 /* =====================================================================
    RENDU
    ===================================================================== */
-window._appRender = function(){ app.replaceChildren(); navCase.setAttribute("aria-current",view!=="progress"?"page":"false"); navProg.setAttribute("aria-current",view==="progress"?"page":"false"); if(err)app.append(h("div",{class:"banner",role:"alert"},err)); if(view==="case"&&S&&!S.done)app.append(caseView()); else if(view==="eval"&&S&&S.ev)app.append(evalView()); else if(view==="progress")app.append(progressView()); else{view="home";app.append(homeView());} }; function render(){
+function render(){
   app.replaceChildren();
-  navCase.setAttribute("aria-current",view!=="progress"?"page":"false");
-  navProg.setAttribute("aria-current",view==="progress"?"page":"false");
-  if(err)app.append(h("div",{class:"banner",role:"alert"},err));
-  if(view==="case"&&S&&!S.done)app.append(caseView());
-  else if(view==="eval"&&S&&S.ev)app.append(evalView());
-  else if(view==="progress")app.append(progressView());
-  else{view="home";app.append(homeView());}
+  try{
+    navCase.setAttribute("aria-current",view!=="progress"?"page":"false");
+    navProg.setAttribute("aria-current",view==="progress"?"page":"false");
+    if(err)app.append(h("div",{class:"banner",role:"alert"},err));
+    if(view==="case"&&S&&!S.done)app.append(caseView());
+    else if(view==="eval"&&S&&S.ev)app.append(evalView());
+    else if(view==="progress")app.append(progressView());
+    else{view="home";app.append(homeView());}
+  }catch(e){
+    console.error(e);
+    S=null;wipe(KEY);view="home";
+    app.replaceChildren();
+    try{app.append(homeView());}catch(e2){
+      app.append(h("div",{class:"banner",role:"alert"},"Une erreur est survenue. Recharge la page."));
+    }
+  }
 }
+window._appRender = render;
 render();
 })();
 
