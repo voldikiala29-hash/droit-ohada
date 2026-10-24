@@ -1179,6 +1179,46 @@ function normCase(d){
   d.useful=uniq(d.useful.map(mapT));
 }
 
+/* ===== Patient autonome (IA) — la clé API reste dans le Worker ===== */
+/* Mettre ici l'URL du Worker (voir worker/patient-worker.js). Vide = mode local (moteur de règles). */
+var LLM_URL=window.SDG_LLM_URL||"";
+function fillX(t,p){return String(t).replace(/\{(\w+)\}/g,function(m,k){return p[k]!=null?p[k]:m;});}
+function buildPersona(S){
+  var p=S.pt,d=DB[S.did];
+  if(p.kid)return "Tu es la mère de "+p.prenom+" ("+p.age+"). Tu parles de ton enfant avec inquiétude. Tu t'appelles aussi "+(p.commune?"et tu habites à "+p.commune:"et tu habites Kinshasa")+".";
+  return "Tu es "+p.prenom+", "+p.age+", "+String(p.sexe).toLowerCase()+", "+p.pro+", tu habites à "+p.commune+".";
+}
+function buildFacts(S){
+  var d=DB[S.did],p=S.pt,lines=["- Motif de ta venue : "+d.plainte];
+  d.hist.forEach(function(e){lines.push("- "+e[1]+" : "+fillX(e[3],p));});
+  return lines.join("\n");
+}
+function guardLLM(S,text){
+  var d=DB[S.did],n=N(text);
+  function dxHit(s){var re=d.dx&&d.dx.full;if(!re)return false;var ns=N(s);return re.test(String(s).toLowerCase())||re.test(ns)||new RegExp(N(re.source)).test(ns);}
+  if(dxHit(text)&&!dxHit(buildFacts(S)))return "Je ne sais pas docteur, aidez-moi.";
+  if(/je ne (te |vous )?comprends? pas|pas compris|comprends pas|intelligence artificielle|\bia\b|modele de langage/.test(n))return reformulate(d);
+  return text;
+}
+async function answerPatient(S,t){
+  if(LLM_URL){
+    var ctrl=new AbortController(),tm=setTimeout(function(){ctrl.abort();},15000);
+    try{
+      var res=await fetch(LLM_URL,{method:"POST",headers:{"Content-Type":"application/json"},signal:ctrl.signal,
+        body:JSON.stringify({persona:buildPersona(S),facts:buildFacts(S),step:STEPS[S.stage],history:S.chat.slice(0,-1).slice(-12),message:t})});
+      if(res.ok){
+        var j=await res.json();
+        if(j&&j.reponse){
+          var txt=String(j.reponse).replace(/^\s*(patient|patiente|mère|mere)\s*:\s*/i,"").trim();
+          return {text:guardLLM(S,txt),ids:[]};
+        }
+      }
+    }catch(e){console.warn("LLM fallback:",e && e.message);}finally{clearTimeout(tm);}
+  }
+  return patientReply(S,t);
+}
+window._sdgDbg=function(){return {S:S,DB:DB,guardLLM:guardLLM,N:N};};
+
 /* Le patient ne dit jamais « je ne comprends pas » ni ne sort du contexte : il reformule et rappelle sa plainte */
 function patientReply(S,q){
   var t0=N(q);
@@ -1522,7 +1562,7 @@ async function sendChat(){
   S.chat.push({r:"d",t:t});draft.chat="";save(KEY,S);
   pending="chat";busy=true;render();afterSend();
   await delay(450);
-  var r=patientReply(S,t);
+  var r=await answerPatient(S,t);
   S.chat.push({r:"p",t:r.text});S.asked=uniq((S.asked||[]).concat(r.ids));
   pending=null;busy=false;save(KEY,S);render();afterSend();
 }
