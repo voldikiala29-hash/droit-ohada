@@ -1466,7 +1466,24 @@ function homeView(){
   var root=h("div",{class:"stack"});
   root.append(h("div",{class:"hero"},
     h("h1",null,"Reçois un patient, mène la consultation."),
-    h("p",null,"Interroge avec tes propres mots, examine, demande tes examens, conclus. Le feedback te dit ce qui était juste, ce que tu as manqué et les pièges du cas.")));
+    h("p",{class:"muted"},"Interroge, examine, demande tes examens, conclus. L'évaluation te dit ce qui était juste et ce qui manquait.")));
+
+  if(S&&!S.done){
+    var d0=DB[S.did];
+    root.append(h("section",{class:"card"},
+      h("div",{class:"label"},"Cas en cours"),
+      h("p",null,S.pt.prenom+" · "+groupOf(d0.svc)),
+      h("div",{class:"row"},
+        h("button",{class:"btn",type:"button",onclick:function(){go("case");}},"Reprendre"),
+        h("button",{class:"btn ghost",type:"button",onclick:function(){S=null;wipe(KEY);render();}},"Abandonner"))));
+  }
+
+  var svc=h("select",{id:"svc",onchange:function(e){draft.svc=e.target.value;}},SERVICES.map(function(s){return h("option",{value:s,selected:s===draft.svc},s);}));
+  root.append(h("section",{class:"card"},
+    h("h2",null,"Nouveau cas"),
+    h("div",{class:"field"},h("label",{class:"label",for:"svc"},"Service"),svc),
+    h("div",{class:"row"},h("button",{class:"btn",type:"button",onclick:startCase},"Recevoir un patient")),
+    h("p",{class:"small muted",id:"cases-count"},D.length+" cas cliniques répartis par service. Le patient et les valeurs changent à chaque fois.")));
 
   var n=hist.length,avg=n?Math.round(avgOf(hist.map(function(x){return x.total;}))):null,last=n?hist[n-1].total:null;
   root.append(h("div",{class:"kpi-grid3"},
@@ -1474,41 +1491,17 @@ function homeView(){
     h("div",{class:"kpi"},h("b",null,avg==null?"—":String(avg)),h("span",null,"moyenne /100")),
     h("div",{class:"kpi"},h("b",null,last==null?"—":String(last)),h("span",null,"dernier score"))));
 
-  var counts={};SERVICES.forEach(function(s){counts[s]=s===SERVICES[0]?D.length:D.filter(function(x){return groupOf(x.svc)===s;}).length;});
-  var pills=h("div",{class:"svc-pills",role:"group","aria-label":"Service"});
-  SERVICES.forEach(function(s){
-    pills.append(h("button",{type:"button",class:"svc","aria-pressed":s===draft.svc?"true":"false",onclick:function(){
-      draft.svc=s;[].slice.call(pills.children).forEach(function(b,i){b.setAttribute("aria-pressed",SERVICES[i]===s?"true":"false");});
-    }},h("b",null,s),h("span",null,counts[s]+" cas")));
-  });
-  var left=h("section",{class:"card"},
-    h("h2",null,"Nouveau cas"),
-    h("p",{class:"small muted"},"Choisis un service ou laisse le hasard décider. Le patient et les valeurs changent à chaque fois."),
-    pills,
-    h("div",{class:"row"},h("button",{class:"btn",type:"button",onclick:startCase},"Recevoir un patient →")),
-    h("p",{class:"small muted",id:"cases-count"},D.length+" cas cliniques disponibles."));
-
-  var right=h("div",{class:"stack",style:{gap:"14px"}});
-  if(S&&!S.done){
-    var d0=DB[S.did];
-    right.append(h("section",{class:"card"},
-      h("div",{class:"label"},"Cas en cours"),
-      h("p",null,S.pt.prenom+" · "+groupOf(d0.svc)),
-      h("div",{class:"row"},
-        h("button",{class:"btn",type:"button",onclick:function(){go("case");}},"Reprendre"),
-        h("button",{class:"btn ghost",type:"button",onclick:function(){S=null;wipe(KEY);render();}},"Abandonner"))));
+  if(S&&S.done&&S.ev)root.append(h("button",{class:"btn ghost",type:"button",onclick:function(){go("case");}},"Revoir la dernière évaluation"));
+  if(n){
+    var rec=h("div",{class:"recent"});
+    hist.slice(-4).reverse().forEach(function(x){
+      rec.append(h("div",{class:"it"},
+        h("div",{style:{minWidth:0}},h("div",{style:{fontWeight:600,fontSize:".92rem"}},x.dx),h("div",{class:"small muted"},fmtDate(x.t)+" · "+groupOf(x.svc))),
+        h("div",{class:"sc "+level(x.total)[1]},x.total+"/100")));
+    });
+    root.append(h("section",{class:"card"},
+      h("div",{class:"card-h"},h("h3",null,"Dernières consultations"),h("button",{class:"btn ghost sm",type:"button",onclick:function(){go("progress");}},"Tout voir")),rec));
   }
-  if(S&&S.done&&S.ev)right.append(h("button",{class:"btn ghost block",type:"button",onclick:function(){ui.pane="right";go("case");}},"Revoir la dernière évaluation"));
-  var rec=h("div",{class:"recent"});
-  hist.slice(-4).reverse().forEach(function(x){
-    rec.append(h("div",{class:"it"},
-      h("div",{style:{minWidth:0}},h("div",{style:{fontWeight:600,fontSize:".92rem"}},x.dx),h("div",{class:"small muted"},fmtDate(x.t)+" · "+groupOf(x.svc))),
-      h("div",{class:"sc "+level(x.total)[1]},x.total+"/100")));
-  });
-  right.append(h("section",{class:"card"},
-    h("div",{class:"card-h"},h("h3",null,"Dernières consultations"),n?h("button",{class:"btn ghost sm",type:"button",onclick:function(){go("progress");}},"Tout voir"):null),
-    n?rec:h("p",{class:"small muted"},"Termine un cas : ton score, ton temps et ta courbe apparaîtront ici.")));
-  root.append(h("div",{class:"home-grid"},left,right));
   return root;
 }
 function startCase(){
