@@ -15,34 +15,17 @@
    Design system : teal clinique, cartes institutionnelles, chat moderne
    ===================================================================== */
 :root{
-  --bg:#F6F8F9; --surface:#FFFFFF; --surface-2:#F1F5F5; --surface-3:#E8EFEE;
-  --fg:#0E1E22; --muted:#6B8387; --muted-2:#9AB0B4; --line:#D9E5E5; --line-2:#E9F0F0;
-  --accent:#0F766E; --accent-2:#0D5F59; --accent-fg:#FFFFFF; --accent-soft:#CCF2EE; --accent-soft-2:#E6F8F5;
-  --alert:#DC2626; --alert-soft:#FEE2E2; --ok:#059669; --ok-soft:#D1FAE5; --warn:#D97706; --warn-soft:#FEF3C7;
-  --shadow-sm:0 1px 2px rgba(15,30,34,.06),0 1px 3px rgba(15,30,34,.04);
-  --shadow-md:0 4px 12px rgba(15,30,34,.07),0 1px 4px rgba(15,30,34,.05);
-  --shadow-lg:0 12px 32px rgba(15,30,34,.10),0 4px 12px rgba(15,30,34,.06);
+  --bg:#121416; --surface:#1A1D20; --surface-2:#202428; --surface-3:#2A2F34;
+  --fg:#E8ECEE; --muted:#8B959C; --muted-2:#66707A; --line:#2B3137; --line-2:#262C31;
+  --accent:#2DD4BF; --accent-2:#5EEAD4; --accent-fg:#04201E; --accent-soft:#0F3A37; --accent-soft-2:#143E3B;
+  --alert:#F87171; --alert-soft:#451A1A; --ok:#34D399; --ok-soft:#0A2E24; --warn:#FBBF24; --warn-soft:#3A2A0A;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.35); --shadow-md:0 4px 14px rgba(0,0,0,.35); --shadow-lg:0 14px 36px rgba(0,0,0,.45);
   --radius-sm:8px; --radius-md:12px; --radius-lg:16px; --radius-full:999px;
-  --glass:rgba(255,255,255,.85);
+  --glass:rgba(26,29,32,.86);
   --f-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
   --f-body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
   --f-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
-}
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --bg:#0A1518; --surface:#111E22; --surface-2:#172A2E; --surface-3:#1E363B;
-    --fg:#E6F1F2; --muted:#8AA9AD; --muted-2:#6B8B8F; --line:#1E3438; --line-2:#233E42;
-    --accent:#2DD4BF; --accent-2:#5EEAD4; --accent-fg:#04201E; --accent-soft:#0F3A37; --accent-soft-2:#143E3B;
-    --alert:#F87171; --alert-soft:#451A1A; --ok:#34D399; --ok-soft:#0A2E24; --warn:#FBBF24; --warn-soft:#3A2A0A;
-    --glass:rgba(17,30,34,.85); color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#0A1518; --surface:#111E22; --surface-2:#172A2E; --surface-3:#1E363B;
-  --fg:#E6F1F2; --muted:#8AA9AD; --muted-2:#6B8B8F; --line:#1E3438; --line-2:#233E42;
-  --accent:#2DD4BF; --accent-2:#5EEAD4; --accent-fg:#04201E; --accent-soft:#0F3A37; --accent-soft-2:#143E3B;
-  --alert:#F87171; --alert-soft:#451A1A; --ok:#34D399; --ok-soft:#0A2E24; --warn:#FBBF24; --warn-soft:#3A2A0A;
-  --glass:rgba(17,30,34,.85); color-scheme:dark;
+  color-scheme:dark;
 }
 *{box-sizing:border-box}
 html{background:var(--bg);scroll-behavior:smooth}
@@ -90,7 +73,7 @@ textarea{resize:vertical;min-height:96px;line-height:1.6}
 
 /* ---------- En-tête 64px ---------- */
 .top{position:sticky;top:0;z-index:30;height:64px;padding:0 20px;display:flex;align-items:center;background:var(--glass);backdrop-filter:blur(12px) saturate(1.2);-webkit-backdrop-filter:blur(12px) saturate(1.2);border-bottom:1px solid var(--line)}
-.bar{max-width:1120px;width:100%;margin-inline:auto;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.bar{max-width:840px;width:100%;margin-inline:auto;display:flex;align-items:center;justify-content:space-between;gap:16px}
 .brand{display:flex;align-items:center;gap:10px;font:800 1.15rem var(--f-display);letter-spacing:-.02em}
 .ecg{width:34px;height:18px;fill:none;stroke:var(--accent);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 nav.pills{display:flex;gap:4px;background:var(--surface-2);padding:4px;border-radius:var(--radius-full);border:1px solid var(--line-2)}
@@ -100,8 +83,8 @@ nav.pills{display:flex;gap:4px;background:var(--surface-2);padding:4px;border-ra
 .avatar-btn{width:40px;height:40px;border-radius:50%;background:var(--fg);color:var(--bg);border:2px solid var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font:700 .95rem var(--f-display);box-shadow:var(--shadow-sm);overflow:hidden;padding:0;transition:transform .2s,box-shadow .2s}
 .avatar-btn:hover{transform:scale(1.05);box-shadow:var(--shadow-md)}
 .avatar-btn img{width:100%;height:100%;object-fit:cover}
-.wrap{max-width:1120px;margin-inline:auto;padding:28px 20px 56px;min-width:0}
-.pub{max-width:1120px;margin:16px auto;min-height:90px;text-align:center}
+.wrap{max-width:840px;margin-inline:auto;padding:28px 20px 56px;min-width:0}
+.pub{max-width:840px;margin:16px auto;min-height:90px;text-align:center}
 
 /* ---------- Accueil ---------- */
 .hero{display:flex;flex-direction:column;gap:10px}
@@ -367,6 +350,17 @@ nav.pills{display:flex;gap:4px;background:var(--surface-2);padding:4px;border-ra
   .ld-top .btn{padding:8px 14px;min-height:40px}
   .pg-grid{gap:8px}
 }
+/* Une colonne : patient, chat, constantes, examen, conclusion */
+.case{display:flex;flex-direction:column;gap:16px}
+.col-right{display:flex;flex-direction:column;gap:16px;min-width:0}
+.xlist{display:flex;flex-direction:column;gap:8px}
+.xlist .xt{min-height:0;flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;padding:10px 14px}
+.xlist .xt .xh{flex:1;min-width:0}
+.xlist .xt .xr{flex-basis:100%;font-size:.84rem}
+.xt .xh b{font:600 .9rem var(--f-body)}
+.xt button.go{margin:0}
+.case .vit{grid-template-columns:repeat(6,minmax(0,1fr))}
+@media (max-width:620px){.case .vit{grid-template-columns:repeat(3,minmax(0,1fr))}}
 </style>
 <script src="./cases_202.js?v=20261024"></script>
 </head>
@@ -850,6 +844,7 @@ function lev(a,b){
 }
 /* Fautes d'orthographe courantes : mot isolé -> forme correcte */
 var TYPOS={
+  vantre:"ventre",ventr:"ventre",
   pleinte:"plainte",plinte:"plainte",plaint:"plainte",plente:"plainte",plaintes:"plainte",pleintes:"plainte",
   atcd:"antecedent",atcds:"antecedent",atcdt:"antecedent",atcdts:"antecedent",antecedents:"antecedent",antesedan:"antecedent",antecedan:"antecedent",
   fievres:"fievre",fiever:"fievre",fieve:"fievre",fiebre:"fievre",fievr:"fievre",fiyevre:"fievre",
@@ -1022,6 +1017,7 @@ var LEXNEG=[
 
 /* Synonymes : une expression libre est ramenée aux mots-clés que les dossiers comprennent. */
 var SYN=[
+ [/\bmakasi\b/,"intens"],[/\bgaz\b|ballonn|flatul/,"diarrhee selle transit caca"],
  /* --- Lingala (Kinshasa) --- */
  [/\bmbote\b/,"bonjour"],
  [/nzoto (ezali |ezali na |ezo\w* )?(moto|pelisi|pela)|moto ya nzoto|bokono ya moto/,"fievre frisson temperature"],
@@ -1141,13 +1137,32 @@ function guardReply(d,text){
   parts.forEach(function(sen){
     var n=N(sen),leak=false;
     try{leak=d.dx&&d.dx.full&&d.dx.full.test(n)&&!DXSAFE.test(n);}catch(e){}
-    if(leak){out.push("Je ne connais pas le nom de la maladie, docteur : c'est à vous de me le dire.");return;}
-    if(/je ne (te |vous )?comprends? pas|pas compris|je n'ai pas compris|comprends pas|pardon \?/.test(n)){out.push(d.plainte);return;}
+    if(leak){out.push("Je ne sais pas docteur, aidez-moi.");return;}
+    if(/je ne (te |vous )?comprends? pas|pas compris|je n'ai pas compris|comprends pas|pardon \?/.test(n)){out.push(reformulate(d));return;}
     out.push(sen);
   });
   return uniq(out).join(" ").trim();
 }
 
+/* Ouverture du patient : « Bonjour docteur, ... » suivi de la plainte du cas */
+function openerLine(p){
+  var s=String(p||"").trim().replace(/^bonjour[\s,.:!]*/i,"").replace(/^docteur[\s,.:!]*/i,"").trim();
+  if(!s)return "Bonjour docteur, je ne me sens pas bien.";
+  s=s.charAt(0).toLowerCase()+s.slice(1);
+  return "Bonjour docteur, "+s;
+}
+/* Première phrase de la plainte : rappelle au médecin ce qui amène le patient */
+function clause(p){
+  var s=String(p||"").replace(/^bonjour[\s,.:!]*/i,"").replace(/^docteur[\s,.:!]*/i,"").trim();
+  var m=s.split(/[.!?…]/)[0].trim();
+  return m.length>120?m.slice(0,120).replace(/\s\S*$/,"")+"…":m;
+}
+/* Jamais « je ne comprends pas » : le patient demande de reformuler et rappelle sa plainte */
+function reformulate(d){
+  return "Docteur, pouvez-vous reformuler ? Moi, ce qui me gêne : "+clause(d.plainte)+".";
+}
+/* Demandes de diagnostic : le patient ne le connaît pas et le demande au médecin */
+var DXASK=/diagnostic|quelle maladie|quel est le nom|qu.?est.?ce que j.?ai|c.?est quoi comme|quelle est la maladie|votre diagnostic/;
 
 /* Normalisation des identifiants d'examen référencés par les cas */
 var AL_EX={loc:"abdo",membre:"ortho",ecg_ex:"cardio"};
@@ -1249,6 +1264,7 @@ function fill(t,p){return String(t).replace(/\{(\w+)\}/g,function(m,k){return p[
 /* Le patient lit les mots-clés de la question (après synonymes), classe les réponses du dossier par pertinence, puis complète par le contexte général et par des réponses négatives. */
 function patientReply(S,q){
   var d=DB[S.did],p=S.pt,t0=N(q),t=expand(t0);
+  if(DXASK.test(t0))return {text:"Je ne sais pas docteur, aidez-moi.",ids:[]};
   var hello=GEN[0][1].test(t0)?"Bonjour docteur.":"";
   var own={},cands=[],weakOnly=[];
   function consider(id,re,fn,isCase){
@@ -1291,7 +1307,7 @@ function patientReply(S,q){
 function examReply(S,q){
   var d=DB[S.did],t=N(q),found=[];
   EXORDER.forEach(function(id){if(EX[id].re.test(t))found.push(id);});
-  if(!found.length)return {text:"Je n'ai pas compris ce que tu examines. Précise, par exemple : constantes, cœur, poumons, abdomen, neurologique.",ids:[]};
+  if(!found.length)return {text:"Précise l'appareil à examiner, par exemple : constantes, cœur, poumons, abdomen, neurologique.",ids:[]};
   var lines=found.map(function(id){return EX[id].l+" : "+(d.ex[id]||EX[id].n);});
   if(d.exBad&&d.exBad.re.test(t))lines.push(d.exBad.msg);
   return {text:lines.join("\n"),ids:found};
@@ -1505,7 +1521,7 @@ function startCase(){
     var cand=pool.filter(function(x){return x.id!==last;});
     var d=pick(cand.length?cand:pool);
     S={t:Date.now(),tEnd:0,did:d.id,pt:mkPatient(d),tab:"exam",done:false,
-       chat:[{r:"p",t:endP(d.plainte)}],exams:[],exRes:{},exWarn:[],paras:[],asked:[],examIds:[],testIds:[],hyp:"",dx:"",tx:"",ori:ORIS[1],ev:null};
+       chat:[{r:"p",t:openerLine(d.plainte)}],exams:[],exRes:{},exWarn:[],paras:[],asked:[],examIds:[],testIds:[],hyp:"",dx:"",tx:"",ori:ORIS[1],ev:null};
     draft.dx=draft.tx="";draft.ori=ORIS[1];ui.pane="left";busy=false;
     save(KEY,S);view="case";err="";render();window.scrollTo(0,0);
   }catch(e){
@@ -1519,22 +1535,14 @@ function startCase(){
 function caseView(){
   var root=h("div",{class:"case"});
   root.append(kbar());
-  var grid=h("div",{class:"case-grid show-"+ui.pane});
-  var btnL=h("button",{type:"button"},"Interrogatoire");
-  var btnR=h("button",{type:"button"},S.done?"Évaluation":"Examen & conclusion");
-  function setPane(p){
-    ui.pane=p;grid.className="case-grid show-"+p;
-    btnL.setAttribute("aria-pressed",p==="left"?"true":"false");btnR.setAttribute("aria-pressed",p==="right"?"true":"false");
-    window.scrollTo(0,0);
-  }
-  btnL.addEventListener("click",function(){setPane("left");});
-  btnR.addEventListener("click",function(){setPane("right");});
-  btnL.setAttribute("aria-pressed",ui.pane==="left"?"true":"false");btnR.setAttribute("aria-pressed",ui.pane==="right"?"true":"false");
-  root.append(h("div",{class:"case-switch"},btnL,btnR));
+  root.append(patientCard());
+  root.append(chatCard());
+  root.append(timelineCard());
+  ui.vitBox=h("div");ui.vitBox.append(vitalsCard());
+  root.append(ui.vitBox);
   ui.right=h("div",{class:"col-right"});
   fillRight();
-  grid.append(h("div",{class:"col-left"},patientCard(),chatCard(),timelineCard()),ui.right);
-  root.append(grid);
+  root.append(ui.right);
   return root;
 }
 
@@ -1671,10 +1679,10 @@ function vitalsCard(){
       known?h("span",{class:"tag"},"Prises"):h("button",{class:"btn sm",type:"button",onclick:function(){examineIds(["const"],"Constantes");refreshRight();}},"Prendre les constantes")),
     grid,known?h("div",{class:"vit-note"},raw):h("p",{class:"small muted"},"Les constantes ne sont connues qu'une fois prises, comme en vrai."));
 }
-function refreshRight(){fillRight();updateKpis();}
+function refreshRight(){if(ui.vitBox)ui.vitBox.replaceChildren(vitalsCard());fillRight();updateKpis();}
 function fillRight(){
   if(!ui.right)return;
-  ui.right.replaceChildren(vitalsCard());
+  ui.right.replaceChildren();
   if(S.done){ui.right.append(feedbackView());return;}
   var tabs=[["exam","Examen clinique",(S.examIds||[]).length+"/"+EXORDER.length],["para","Paraclinique",String((S.testIds||[]).length)],["concl","Conclusion",""]];
   var bar=h("div",{class:"rtabs",role:"tablist"},tabs.map(function(t){
@@ -1693,12 +1701,12 @@ function examineIds(ids,q){
 }
 function examPanel(){
   var d=DB[S.did];
-  var grid=h("div",{class:"xgrid"});
+  var list=h("div",{class:"xlist"});
   EXORDER.filter(function(id){return id!=="const";}).forEach(function(id){
     var done=S.exRes[id]!=null;
-    grid.append(h("div",{class:"xt"+(done?" done":"")},
-      h("div",{class:"xh"},h("i"),EX[id].l),
-      done?h("div",{class:"xr"},S.exRes[id]):h("button",{class:"go",type:"button",onclick:function(){examineIds([id],EX[id].l);refreshRight();}},"Examiner")));
+    list.append(h("div",{class:"xt"+(done?" done":"")},
+      h("div",{class:"xh"},h("i"),h("b",null,EX[id].l),done?null:h("button",{class:"go",type:"button",onclick:function(){examineIds([id],EX[id].l);refreshRight();}},"Examiner")),
+      done?h("div",{class:"xr"},S.exRes[id]):null));
   });
   var hint=h("div",{class:"hint",role:"status"});
   var inp=h("input",{type:"text",placeholder:"Ou décris ton geste : palpation de la fosse iliaque droite…",autocomplete:"off","aria-label":"Geste d'examen"});
@@ -1713,7 +1721,7 @@ function examPanel(){
   var warns=S.exWarn.map(function(w){return h("div",{class:"callout",role:"alert"},w);});
   return h("section",{class:"card"},
     h("div",{class:"card-h"},h("h3",null,"Examen clinique"),h("span",{class:"small muted"},"Clique sur un appareil ou écris ton geste")),
-    grid,warns,form,hint);
+    list,warns,form,hint);
 }
 
 /* Examens complémentaires */
