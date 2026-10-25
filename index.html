@@ -1310,6 +1310,8 @@ async function answerPatient(S,t){
   }
   return patientReply(S,t);
 }
+/* Point d'accès de test : seulement si l'URL contient ?debug=1 (jamais en usage normal) */
+if(/[?&]debug=1/.test(location.search)){ window._sdgDbg=function(){return {S:S,DB:DB,guardLLM:guardLLM,N:N};}; }
 
 /* Le patient ne dit jamais « je ne comprends pas » ni ne sort du contexte : il reformule et rappelle sa plainte */
 function patientReply(S,q){
@@ -1345,6 +1347,8 @@ function esc(x){return String(x==null?"":x).replace(/&/g,"&amp;").replace(/</g,"
 /* N'accepte que des images https ou data:image (pas de javascript:) */
 function imgSrc(u){var s=String(u||"");if(/^https:\/\/[^\s"'<>]+$/.test(s)||/^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(s))return esc(s);return "";}
 function load(k){try{return JSON.parse(localStorage.getItem(k));}catch(e){return null;}}
+/* Point d'accès de test : uniquement si l'URL contient ?debug=1 */
+
 function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} try{if(window._fbSync)window._fbSync(k,v);}catch(e){}}
 function wipe(k){try{localStorage.removeItem(k);}catch(e){}}
 
