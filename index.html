@@ -481,7 +481,7 @@ textarea{ resize:vertical; min-height:96px; line-height:1.6; }
 <script type="module">
 // === CONFIG FIREBASE - Ton projet Salledegarde ===
 import { initializeApp } from "firebase/app";
-import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
+import { initializeAuth, browserLocalPersistence, indexedDBLocalPersistence, browserSessionPersistence, browserPopupRedirectResolver, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -495,7 +495,11 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+// Session conservée au rechargement : localStorage d'abord (fiable sur téléphone), IndexedDB ensuite, session d'onglet en dernier recours
+const auth = initializeAuth(app, {
+  persistence: [browserLocalPersistence, indexedDBLocalPersistence, browserSessionPersistence],
+  popupRedirectResolver: browserPopupRedirectResolver
+});
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
@@ -757,7 +761,6 @@ window._handleLogoutBulletin = async function(){
     // localStorage.removeItem("sdg_auto_hist_v1");
     // localStorage.removeItem("sdg_auto_state_v1");
     const { getAuth, signOut } = await import("firebase/auth");
-    const auth = getAuth();
     await signOut(auth);
     // Force écran de connexion avant de voir évolutions
     document.getElementById("main-ui").style.display="none";
@@ -830,7 +833,6 @@ window._handleAvatarUpload = async function(event){
     const { getFirestore, doc, setDoc } = await import("firebase/firestore");
     const { getAuth } = await import("firebase/auth");
     const db = getFirestore();
-    const auth = getAuth();
     const user = auth.currentUser;
     if(user){
       await setDoc(doc(db, "medecins", user.uid), { photoURL: photoURL, photoUpdatedAt: new Date().toISOString() }, { merge:true });
