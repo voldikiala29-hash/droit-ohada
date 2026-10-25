@@ -790,24 +790,26 @@ onAuthStateChanged(auth, async (user)=>{
 });
 
 window._handleLogoutBulletin = async function(){
+  const btn = document.getElementById("btn-logout-bulletin");
+  if(btn){ btn.disabled = true; btn.textContent = "Déconnexion…"; }
+  let ok = true;
   try{
-    // Déconnexion totale
-    localStorage.removeItem("sdg_guest_mode");
-    wipe(KEY); wipe(HKEY);
-    // Optionnel : on garde l'historique local pour le retrouver à la reconnexion, mais on bloque l'accès
-    // Si tu veux tout effacer aussi, décommente la ligne suivante :
-    // localStorage.removeItem("sdg_auto_hist_v1");
-    // localStorage.removeItem("sdg_auto_state_v1");
-    const { getAuth, signOut } = await import("firebase/auth");
     await signOut(auth);
-    // Force écran de connexion avant de voir évolutions
-    document.getElementById("main-ui").style.display="none";
-    document.getElementById("profile-overlay")?.classList.remove("open");
-    window.showLanding();
-    // Recharge pour être sûr que plus rien n'est visible sans connexion
-    setTimeout(()=> location.reload(), 300);
   }catch(e){
-    location.reload();
+    ok = false;
+    console.warn("signOut:", e && e.message);
+  }
+  // On efface l'état local quoi qu'il arrive : plus de session de cas ni d'accès à l'app
+  localStorage.removeItem("sdg_guest_mode");
+  wipe(KEY); wipe(HKEY);
+  if(ok){
+    document.getElementById("profile-overlay")?.classList.remove("open");
+    document.getElementById("main-ui").style.display="none";
+    window.showLanding();
+    setTimeout(()=> location.reload(), 300);
+  }else{
+    if(btn){ btn.disabled = false; btn.textContent = "🚪 Déconnexion"; }
+    alert("La déconnexion n'a pas pu être finalisée (connexion internet ?). Réessaie dans un instant.");
   }
 };
 document.getElementById("btn-logout-bulletin")?.addEventListener("click", window._handleLogoutBulletin);
