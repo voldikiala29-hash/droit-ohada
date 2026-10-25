@@ -1705,6 +1705,14 @@ function suggestPanel(){
 }
 function fmtTime(ms){var t=Math.floor(ms/1000),m=Math.floor(t/60);t=t%60;return (m<10?"0":"")+m+":"+(t<10?"0":"")+t;}
 var _caseTimer=null;
+/* Refaire le même cas (même patient) : remise à zéro de la consultation et du minuteur */
+function retryCase(){
+  var old=S, d=DB[old.did];
+  S={t:Date.now(),did:old.did,pt:old.pt,stage:0,maxStage:0,done:false,
+     chat:[{r:"p",t:openerLine(d.plainte)}],exams:[],paras:[],asked:[],examIds:[],testIds:[],hyp:"",dx:"",tx:"",ori:ORIS[1],ev:null,spent:0};
+  draft.chat=draft.exam=draft.para=draft.dx=draft.tx="";draft.ori=ORIS[1];
+  save(KEY,S);view="case";err="";render();window.scrollTo(0,0);
+}
 function startCaseTimer(){
   if(_caseTimer)return;
   _caseTimer=setInterval(function(){
@@ -1904,7 +1912,8 @@ function evalView(){
 
   root.append(h("p",{class:"small muted"},"Cas écrits pour l'entraînement. Vérifie toujours les doses et les conduites dans tes protocoles nationaux et tes ouvrages de référence."));
   root.append(h("div",{class:"row"},
-    h("button",{class:"btn",type:"button",onclick:function(){S=null;wipe(KEY);go("home");}},"Nouveau cas"),
+    h("button",{class:"btn",type:"button",onclick:retryCase},"Refaire ce cas"),
+    h("button",{class:"btn ghost",type:"button",onclick:function(){S=null;wipe(KEY);go("home");}},"Nouveau cas"),
     h("button",{class:"btn ghost",type:"button",onclick:function(){go("progress");}},"Ma progression")));
   return root;
 }
