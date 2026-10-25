@@ -1217,7 +1217,7 @@ function buildFacts(S){
 function guardLLM(S,text){
   var d=DB[S.did],n=N(text);
   function dxHit(s){var re=d.dx&&d.dx.full;if(!re)return false;var ns=N(s);return re.test(String(s).toLowerCase())||re.test(ns)||new RegExp(N(re.source)).test(ns);}
-  if(dxHit(text)&&!dxHit(buildFacts(S)))return "Je ne sais pas docteur, aidez-moi.";
+  if(dxHit(text))return "Je ne sais pas docteur, aidez-moi.";
   if(/je ne (te |vous )?comprends? pas|pas compris|comprends pas|intelligence artificielle|\bia\b|modele de langage/.test(n))return reformulate(d);
   return text;
 }
