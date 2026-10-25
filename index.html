@@ -722,6 +722,7 @@ document.getElementById("btn-google").onclick = async ()=>{
 // Logout
 document.getElementById("btn-logout").onclick = async ()=>{
   localStorage.removeItem("sdg_guest_mode");
+  wipe(KEY); wipe(HKEY);
   await signOut(auth);
   showAuth();
 };
@@ -750,6 +751,7 @@ window._handleLogoutBulletin = async function(){
   try{
     // Déconnexion totale
     localStorage.removeItem("sdg_guest_mode");
+    wipe(KEY); wipe(HKEY);
     // Optionnel : on garde l'historique local pour le retrouver à la reconnexion, mais on bloque l'accès
     // Si tu veux tout effacer aussi, décommente la ligne suivante :
     // localStorage.removeItem("sdg_auto_hist_v1");
@@ -1296,12 +1298,12 @@ function load(k){try{return JSON.parse(localStorage.getItem(k));}catch(e){return
 function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} try{if(window._fbSync)window._fbSync(k,v);}catch(e){}}
 function wipe(k){try{localStorage.removeItem(k);}catch(e){}}
 
-var S=null; try{localStorage.clear();}catch(e){} // fix bouton if(S&&(!S.did||!DB[S.did]||!S.chat))S=null;
+var S=load(KEY); if(S&&(!S.did||!DB[S.did]||!S.chat))S=null;
 var hist=load(HKEY); if(!Array.isArray(hist))hist=[];
 window._fbReloadHist = function(){ try{ hist=load(HKEY); if(!Array.isArray(hist))hist=[]; if(typeof render==='function') render(); }catch(e){} };
 window._fbGetHist = function(){ return hist; };
 window._fbSetHist = function(h){ hist=h; save(HKEY,hist); if(typeof render==='function') render(); };
-var view="home";
+var view=(S&&!S.done)?"case":"home";
 var busy=false, pending=null, err="", confirmWipe=false;
 var draft={svc:SERVICES[0],chat:"",exam:"",para:"",dx:"",tx:"",ori:ORIS[1]};
 
