@@ -1620,9 +1620,48 @@ function stepper(){
   });
   return ol;
 }
+/* Suggestions visibles en permanence : questions à poser (anamnèse) et examens à demander (examen clinique, paraclinique) */
+function suggestPanel(){
+  var d=DB[S.did],asked=S.asked||[],exIds=S.examIds||[],tIds=S.testIds||[],st=S.stage;
+  if(st===3)return null;
+  var items=[],title,sub,empty;
+  if(st===0){
+    title="Questions à poser";
+    sub="Clique sur une question pour la préparer dans la zone de saisie.";
+    empty="Tu as déjà abordé tous les points de l'interrogatoire.";
+    items=(d.hist||[]).filter(function(x){return asked.indexOf(x[0])<0;}).map(function(x){
+      var lab=String(x[1]||"");
+      return {label:lab,go:function(){draft.chat="Pouvez-vous me dire : "+lab.charAt(0).toLowerCase()+lab.slice(1)+" ?";render();setTimeout(function(){var el=document.getElementById("chat-in");if(el)el.focus();},0);}};
+    });
+  } else if(st===1){
+    title="Examens cliniques à faire";
+    sub="Clique sur un geste pour le préparer dans la zone de saisie.";
+    empty="Tous les gestes essentiels ont été faits.";
+    items=(d.exEss||[]).filter(function(id){return exIds.indexOf(id)<0;}).map(function(id){
+      var lab=(EX[id]&&EX[id].l)||id;
+      return {label:lab,go:function(){draft.exam=lab;render();setTimeout(function(){var el=document.getElementById("exam-in");if(el)el.focus();},0);}};
+    });
+  } else {
+    title="Examens à demander";
+    sub="Clique sur un examen pour le préparer dans la zone de saisie.";
+    empty="Tous les examens clés ont été demandés.";
+    items=(d.key||[]).filter(function(g){return !g.some(function(id){return tIds.indexOf(id)>=0;});}).map(function(g){
+      var lab=(TESTS[g[0]]&&TESTS[g[0]].l)||g[0];
+      return {label:lab,go:function(){draft.para=lab;render();setTimeout(function(){var el=document.getElementById("para-in");if(el)el.focus();},0);}};
+    });
+  }
+  return h("section",{class:"card"},
+    h("h2",null,title),
+    h("p",{class:"small muted"},sub),
+    items.length
+      ? h("div",{class:"chips"},items.map(function(it){return h("button",{class:"chip",type:"button",disabled:busy,onclick:it.go},it.label);}))
+      : h("p",{class:"small muted"},empty));
+}
 function caseView(){
   var root=h("div",{class:"stack"});
   root.append(patientCard(),stepper());
+  var sg=suggestPanel();
+  if(sg)root.append(sg);
   root.append([chatPanel,examPanel,paraPanel,conclPanel][S.stage]());
   return root;
 }
