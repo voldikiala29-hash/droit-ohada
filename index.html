@@ -1678,9 +1678,9 @@ function caseView(){
   root.append(patientCard(),
     h("div",{class:"timer"},"Temps : ",h("span",{id:"case-timer"},fmtTime((S&&S.spent)||0))),
     stepper());
+  root.append([chatPanel,examPanel,paraPanel,conclPanel][S.stage]());
   var sg=suggestPanel();
   if(sg)root.append(sg);
-  root.append([chatPanel,examPanel,paraPanel,conclPanel][S.stage]());
   return root;
 }
 function nextStage(){S.stage=Math.min(3,S.stage+1);S.maxStage=Math.max(S.maxStage,S.stage);save(KEY,S);render();window.scrollTo(0,0);}
@@ -1783,7 +1783,6 @@ function paraPanel(){
     h("h2",null,"Examens complémentaires"),
     h("p",{class:"small muted"},"Note d'abord tes hypothèses, puis demande les examens utiles. Les examens inutiles coûtent des points. Sépare les examens par des virgules."),
     h("div",{class:"field"},h("label",{class:"label",for:"hyp"},"Hypothèses diagnostiques"),hyp),
-    patientAsk(),
     ficheExams(),
     log,
     composer("para-in","para","Écris les examens que tu demandes","Examens à demander",sendPara),
