@@ -481,8 +481,7 @@ textarea{ resize:vertical; min-height:96px; line-height:1.6; }
       <div class="auth-field"><label class="label">Mot de passe</label><input id="reg-pass" type="password" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:12px;min-height:44px;" placeholder="Au moins 6 caractères"></div>
       <button id="btn-register" class="btn" type="button" style="width:100%; margin-top:8px;">Créer mon compte gratuit</button>
       <p id="reg-error" class="small" style="color:var(--alert); margin-top:10px;"></p>
-      <p class="small muted" style="margin-top:10px;">Inscription illimitée - Règles Firestore: allow read, write: if true;</p>
-    </div>
+          </div>
 
     <div class="auth-sep"></div>
     <!-- Mode invité désactivé : connexion obligatoire pour voir progression -->
@@ -578,7 +577,7 @@ function showApp(user){
   document.getElementById("main-ui").style.display="block";
   const info = document.getElementById("user-info") || {};
   if(user) {
-    info.innerHTML = `<b>${user.email}</b> • Progression sauvegardée en illimité`;
+    info.innerHTML = `<b>${esc(user.email)}</b> • Progression sauvegardée en illimité`;
   } else {
     info.innerHTML = `<b>Mode invité</b> • Sauvegarde locale seulement`;
   }
@@ -676,10 +675,10 @@ function showApp(user){
         const overlayTextEl = document.getElementById("avatar-overlay-text");
         if(user.photoURL){
           // Photo existante
-          av.innerHTML = `<img src="${user.photoURL}" alt="avatar" style="width:100%;height:100%;object-fit:cover;"><div class="avatar-overlay"><span style="font-size:18px;">📷</span><span id="avatar-overlay-text">Changer</span></div>`;
+          av.innerHTML = `<img src="${imgSrc(user.photoURL)}" alt="avatar" style="width:100%;height:100%;object-fit:cover;"><div class="avatar-overlay"><span style="font-size:18px;">📷</span><span id="avatar-overlay-text">Changer</span></div>`;
           av.classList.add("has-photo");
         }else{
-          av.innerHTML = `${(user.email[0]||'D').toUpperCase()}<div class="avatar-overlay"><span style="font-size:18px;">📷</span><span id="avatar-overlay-text">Ajouter</span></div>`;
+          av.innerHTML = `${esc((user.email[0]||'D').toUpperCase())}<div class="avatar-overlay"><span style="font-size:18px;">📷</span><span id="avatar-overlay-text">Ajouter</span></div>`;
           av.classList.remove("has-photo");
         }
         // Essaie de charger infos medecin depuis Firestore
@@ -689,15 +688,15 @@ function showApp(user){
           const db = getFirestore();
           const snap = await getDoc(doc(db, "medecins", user.uid));
           if(snap.exists()){
+            const d = snap.data();
             // Si photoURL dans Firestore et pas déjà dans auth
             if(d.photoURL && !user.photoURL){
               const av2 = document.getElementById("profile-avatar");
-              av2.innerHTML = `<img src="${d.photoURL}" alt="avatar" style="width:100%;height:100%;object-fit:cover;"><div class="avatar-overlay"><span style="font-size:18px;">📷</span><span>Changer</span></div>`;
+              av2.innerHTML = `<img src="${imgSrc(d.photoURL)}" alt="avatar" style="width:100%;height:100%;object-fit:cover;"><div class="avatar-overlay"><span style="font-size:18px;">📷</span><span>Changer</span></div>`;
               av2.classList.add("has-photo");
               const btnP = document.getElementById("btn-profile-open");
-              if(btnP) btnP.innerHTML = `<img src="${d.photoURL}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+              if(btnP) btnP.innerHTML = `<img src="${imgSrc(d.photoURL)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
             }
-            const d = snap.data();
             if(d.nom){ document.getElementById("profile-nom").textContent = d.nom; document.getElementById("info-nom").textContent = d.nom; }
             if(d.hopital){ document.getElementById("info-hop").textContent = d.hopital; }
             else if(d.hop){ document.getElementById("info-hop").textContent = d.hop; }
@@ -752,6 +751,7 @@ document.getElementById("btn-register").onclick = async ()=>{
   const pass = document.getElementById("reg-pass").value;
   const errEl = document.getElementById("reg-error");
   errEl.textContent="";
+  if(pass.length<8){ errEl.textContent="Le mot de passe doit contenir au moins 8 caractères."; return; }
   try{
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
     // Enregistre dans Firestore collection medecins (infini)
@@ -871,7 +871,7 @@ window._handleAvatarUpload = async function(event){
     loading.textContent = '⏳ Sauvegarde...';
     
     // Preview immédiat
-    avatarEl.innerHTML = `<img src="${photoURL}" alt="avatar" style="width:100%;height:100%;object-fit:cover;"><div class="avatar-overlay"><span style="font-size:18px;">📷</span><span>Changer</span></div><div class="photo-uploading">⏳ Sauvegarde...</div>`;
+    avatarEl.innerHTML = `<img src="${imgSrc(photoURL)}" alt="avatar" style="width:100%;height:100%;object-fit:cover;"><div class="avatar-overlay"><span style="font-size:18px;">📷</span><span>Changer</span></div><div class="photo-uploading">⏳ Sauvegarde...</div>`;
     avatarEl.classList.add('has-photo');
     
     // Sauvegarde dans Firestore collection medecins (100% gratuit, pas besoin de Storage)
@@ -884,11 +884,11 @@ window._handleAvatarUpload = async function(event){
       // Met à jour bouton header
       const btnProfile = document.getElementById("btn-profile-open");
       if(btnProfile){
-        btnProfile.innerHTML = `<img src="${photoURL}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        btnProfile.innerHTML = `<img src="${imgSrc(photoURL)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
       }
       // Met à jour aussi user-info bar
       const info = document.getElementById("user-info");
-      if(info) info.innerHTML = `<b>${user.email}</b> • Photo ajoutée ✅`;
+      if(info) info.innerHTML = `<b>${esc(user.email)}</b> • Photo ajoutée ✅`;
     }
     
     // Nettoie
@@ -1310,7 +1310,6 @@ async function answerPatient(S,t){
   }
   return patientReply(S,t);
 }
-window._sdgDbg=function(){return {S:S,DB:DB,guardLLM:guardLLM,N:N};};
 
 /* Le patient ne dit jamais « je ne comprends pas » ni ne sort du contexte : il reformule et rappelle sa plainte */
 function patientReply(S,q){
@@ -1341,6 +1340,10 @@ D.forEach(function(d){normCase(d);DB[d.id]=d;});
 /* =====================================================================
    ÉTAT
    ===================================================================== */
+/* Sécurité : toute donnée venant de l'utilisateur ou de Firestore est échappée avant affichage */
+function esc(x){return String(x==null?"":x).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
+/* N'accepte que des images https ou data:image (pas de javascript:) */
+function imgSrc(u){var s=String(u||"");if(/^https:\/\/[^\s"'<>]+$/.test(s)||/^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(s))return esc(s);return "";}
 function load(k){try{return JSON.parse(localStorage.getItem(k));}catch(e){return null;}}
 function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} try{if(window._fbSync)window._fbSync(k,v);}catch(e){}}
 function wipe(k){try{localStorage.removeItem(k);}catch(e){}}

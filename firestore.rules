@@ -1,0 +1,48 @@
+rules_version = '2';
+// Salle de Garde — règles Firestore.
+// Chaque médecin ne lit et n'écrit que SES propres documents (id = uid Firebase).
+// À publier : Firebase console → Firestore → Règles, ou « firebase deploy --only firestore:rules ».
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // Progression (historique des cas)
+    match /progression/{uid} {
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['hist', 'email', 'updatedAt'])
+        && request.resource.data.hist.size() < 5000;
+      allow delete: if false;
+    }
+
+    // État de la consultation en cours
+    match /etats/{uid} {
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['etat', 'updatedAt']);
+      allow delete: if false;
+    }
+
+    // Profil médecin
+    match /medecins/{uid} {
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && request.resource.data.keys().hasOnly([
+            'nom', 'hopital', 'email', 'createdAt', 'projectId',
+            'photo', 'photoURL', 'photoUpdatedAt', 'provider'])
+        && (!('photoURL' in request.resource.data) || request.resource.data.photoURL.size() < 900000);
+      allow delete: if false;
+    }
+
+    // Tout le reste est fermé
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
