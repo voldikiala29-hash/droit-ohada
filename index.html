@@ -217,6 +217,7 @@ textarea{ resize:vertical; min-height:96px; line-height:1.6; }
 .pt-m-douleur .head{ animation:pt-nod 1.4s ease-in-out infinite alternate; }
 .pt-m-frustre .hand{ animation:pt-shake .9s ease-in-out infinite alternate; }
 .pt-m-triste .tear{ opacity:1; }
+.timer{ font-size:13px; color:#64748b; text-align:right; margin:-4px 0 0; }
 .pt-scene-cap{ font-size:11px; color:#64748b; text-align:center; margin-top:4px; max-width:96px; line-height:1.2; }
 @keyframes pt-breath{ 50%{ transform:translateY(-1.2px); } }
 @keyframes pt-blink{ 0%,92%,100%{ transform:scaleY(1); } 95%{ transform:scaleY(.1); } }
@@ -887,7 +888,7 @@ function uniq(a){return a.filter(function(x,i){return a.indexOf(x)===i;});}
 var SERVICES=["Au hasard","Médecine interne","Pédiatrie","Gynéco-obstétrique","Chirurgie et urgences"];
 var ORIS=["Traitement ambulatoire","Hospitalisation","Soins intensifs / réanimation","Référence vers un niveau supérieur","Bloc opératoire / chirurgie"];
 var STEPS=["Anamnèse","Examen clinique","Paraclinique","Conclusion"];
-var AXES=[["interrogatoire","Interrogatoire"],["examen_clinique","Examen clinique"],["examens_complementaires","Examens complémentaires"],["diagnostic","Diagnostic"],["traitement","Traitement"]];
+var AXES=[["interrogatoire","Interrogatoire"],["examen_clinique","Examen clinique"],["examens_complementaires","Examens complémentaires"],["diagnostic","Diagnostic"],["traitement","Traitement"],["temps","Temps de résolution"]];
 var CHAT_CHIPS=["Depuis quand ?","Où avez-vous mal ?","Avez-vous de la fièvre ?","Avez-vous vomi ?","Quels sont vos antécédents ?","Quels médicaments avez-vous pris ?","Avez-vous des allergies ?"];
 var EXAM_CHIPS=["constantes","état général","hydratation","cœur","poumons","abdomen","neurologique","gynéco-obstétrical","ostéo-articulaire","ORL","ganglions"];
 var KEY="sdg_auto_state_v1", HKEY="sdg_auto_hist_v1";
@@ -1371,7 +1372,7 @@ function paraReply(S,q){
     TORDER.forEach(function(id){var T=TESTS[id];if(T.re.test(t)&&!(T.not&&T.not.test(t)))hit.push(id);});
     if(!hit.length&&/echo/.test(t))hit.push(d.eDef||"echoabdo");
     if(!hit.length)unk.push(c);
-    hit.forEach(function(id){ids.push(id);lines.push(d.res[id]||TESTS[id].n);});
+    hit.forEach(function(id){ids.push(id);lines.push(d.res[id]||"Rien à signaler.");});
   });
   unk.forEach(function(c){lines.push("Examen non reconnu : « "+c+" ». Reformule avec le nom de l'examen.");});
   return {text:lines.join("\n"),ids:uniq(ids)};
@@ -1417,10 +1418,13 @@ function evaluate(S){
   (d.bad||[]).forEach(function(b){if(b[1].test(txN)){pen+=b[2];badHit.push(b[0]);}});
   var sTx=round(8*gotW/totW+(oriOk?2:0)-pen);
 
-  var scores={interrogatoire:sInt,examen_clinique:sEx,examens_complementaires:sPara,diagnostic:sDx,traitement:sTx};
-  var total=(sInt+sEx+sPara+sDx+sTx)*2;
+  var mins=(S.spent||0)/60000;
+  var sTemps=mins<=15?10:mins<=25?8:mins<=35?6:mins<=50?4:2;
+  var scores={interrogatoire:sInt,examen_clinique:sEx,examens_complementaires:sPara,diagnostic:sDx,traitement:sTx,temps:sTemps};
+  var total=Math.round((sInt+sEx+sPara+sDx+sTx)*1.8+sTemps);
 
   var com={};
+  com.temps="Cas résolu en "+Math.round(mins)+" min (cible : 15 min).";
   com.interrogatoire=hitH+"/"+essH.length+" points essentiels abordés."+(missH.length?" Il manquait : "+labelsOf(missH,3)+".":"")+(nQ<3?" Pose au moins quelques questions avant de passer à l'examen.":"");
   com.examen_clinique=hitE+"/"+d.exEss.length+" systèmes essentiels examinés."+(missE.length?" Il manquait : "+labelsOf(missE,3)+".":"")+(exBadHit?" "+d.exBad.short:"");
   com.examens_complementaires=(d.key.length?hitT+"/"+d.key.length+" examens clés demandés.":(d.paraNote||""))+(missT.length?" Il manquait : "+labelsOf(missT,3)+".":"")+(useless.length?" Examens peu utiles ici : "+labelsOf(useless,3)+".":"");
@@ -1658,9 +1662,22 @@ function suggestPanel(){
     h("p",{class:"small muted"},sub),
     h("ul",{class:"stack small"},pistes.map(function(t){return h("li",null,t);})));
 }
+function fmtTime(ms){var t=Math.floor(ms/1000),m=Math.floor(t/60);t=t%60;return (m<10?"0":"")+m+":"+(t<10?"0":"")+t;}
+var _caseTimer=null;
+function startCaseTimer(){
+  if(_caseTimer)return;
+  _caseTimer=setInterval(function(){
+    if(!S||S.done||view!=="case"||document.visibilityState==="hidden")return;
+    S.spent=(S.spent||0)+1000;
+    var el=document.getElementById("case-timer");if(el)el.textContent=fmtTime(S.spent);
+    if(S.spent%10000===0)save(KEY,S);
+  },1000);
+}
 function caseView(){
   var root=h("div",{class:"stack"});
-  root.append(patientCard(),stepper());
+  root.append(patientCard(),
+    h("div",{class:"timer"},"Temps : ",h("span",{id:"case-timer"},fmtTime((S&&S.spent)||0))),
+    stepper());
   var sg=suggestPanel();
   if(sg)root.append(sg);
   root.append([chatPanel,examPanel,paraPanel,conclPanel][S.stage]());
@@ -1737,6 +1754,24 @@ async function sendExam(){
   draft.exam="";pending=null;busy=false;save(KEY,S);render();afterSend();
 }
 
+/* Fiche de tous les examens possibles : le résultat dépend du cas, sinon « Rien à signaler. » */
+function requestTest(id){
+  if(busy||!TESTS[id])return;
+  var d=DB[S.did];
+  var txt=(d.res&&d.res[id])?d.res[id]:"Rien à signaler.";
+  S.paras.push({q:TESTS[id].l,a:txt});
+  S.testIds=uniq((S.testIds||[]).concat([id]));
+  save(KEY,S);render();afterSend();
+}
+function ficheExams(){
+  return h("section",{class:"card"},
+    h("h2",null,"Fiche des examens"),
+    h("p",{class:"small muted"},"Clique sur un examen pour le demander. Le résultat apparaît dans le journal ci-dessous."),
+    h("div",{class:"chips"},Object.keys(TESTS).map(function(id){
+      return h("button",{class:"chip",type:"button",disabled:busy,onclick:function(){requestTest(id);}},TESTS[id].l);
+    })));
+}
+
 /* Étape 3 : examens complémentaires */
 function paraPanel(){
   var log=h("div",{class:"stack"},entries(S.paras,"Demandé : "));
@@ -1749,6 +1784,7 @@ function paraPanel(){
     h("p",{class:"small muted"},"Note d'abord tes hypothèses, puis demande les examens utiles. Les examens inutiles coûtent des points. Sépare les examens par des virgules."),
     h("div",{class:"field"},h("label",{class:"label",for:"hyp"},"Hypothèses diagnostiques"),hyp),
     patientAsk(),
+    ficheExams(),
     log,
     composer("para-in","para","Écris les examens que tu demandes","Examens à demander",sendPara),
     navRow("Conclusion"));
@@ -1781,7 +1817,7 @@ function finish(){
   if(!draft.dx.trim()||!draft.tx.trim()){err="Renseigne le diagnostic et la conduite à tenir avant de valider.";render();window.scrollTo(0,0);return;}
   S.dx=draft.dx.trim();S.tx=draft.tx.trim();S.ori=draft.ori;err="";
   S.ev=evaluate(S);S.done=true;
-  hist.push({t:Date.now(),did:S.did,svc:DB[S.did].svc,dx:DB[S.did].name,total:S.ev.total,ax:S.ev.scores});
+  hist.push({t:Date.now(),did:S.did,svc:DB[S.did].svc,dx:DB[S.did].name,total:S.ev.total,ax:S.ev.scores,temps:S.spent||0});
   if(hist.length>200)hist=hist.slice(-200);
   save(HKEY,hist);save(KEY,S);
   view="eval";render();window.scrollTo(0,0);
@@ -1915,6 +1951,7 @@ window._appRender = function(){ app.replaceChildren(); navCase.setAttribute("ari
   else if(view==="progress")app.append(progressView());
   else{view="home";app.append(homeView());}
 }
+startCaseTimer();
 render();
 })();
 
