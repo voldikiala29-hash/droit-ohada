@@ -1496,19 +1496,19 @@ function startCase(){
 /* ===== Illustrations du patient (SVG animé, sans photo) ===== */
 var PT_CAPS={enfant:"Enfant accompagné",ventre:"Touche son ventre",plaie:"Montre sa plaie",tete:"Touche sa tête",poitrine:"Touche sa poitrine",neutre:"En attente"};
 function ptCategory(d,p){
-  var t=String(d.plainte||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+  var t=String(d.plainte||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
   var scene="neutre";
   if(p.kid)scene="enfant";
-  else if(/enceinte|accouch|vagin/.test(t))scene="ventre";
-  else if(/plaie|accident|casse|fracture|\bos\b/.test(t))scene="plaie";
-  else if(/tete|\bvue\b|convuls|crise|travers|raidi/.test(t))scene="tete";
-  else if(/ventre|nombril|selles|vomi|aine|\bdos\b|abdomen/.test(t))scene="ventre";
-  else if(/poitrine|respir|toux|souffle|siffle|cote/.test(t))scene="poitrine";
-  else if(/fievre|frisson|chaud|sueur/.test(t))scene="tete";
+  else if(/enceinte|accouch|vagin|travail|contraction|pelvienne|apres rapport|apres les rapports/.test(t))scene="ventre";
+  else if(/plaie|accident|casse|fracture|\bos\b|chute|tomb|blessure|morsure|raccourci|bloque|genou|epaule|pied/.test(t))scene="plaie";
+  else if(/tete|\bvue\b|convuls|crise|travers|raidi|yeux|\boeil|bouche|tordu|\bcou\b|grosseur dans le cou/.test(t))scene="tete";
+  else if(/poitrine|respir|toux|tousse|crachat|souffle|siffle|cote|coeur|palpit|bleu/.test(t))scene="poitrine";
+  else if(/ventre|nombril|selles|vomi|aine|\bdos\b|abdomen|estomac|urin|brule|acetone|mousse/.test(t))scene="ventre";
+  else if(/fievre|frisson|chaud|sueur|transpire|tremble|tremblent|sue\b/.test(t))scene="tete";
   var mood="anxieux";
-  if(/pleure|triste|faible|fatigue|enfle/.test(t))mood="triste";
-  if(/\bmal\b|terrible|douleur|brule|saign|mal a/.test(t))mood="douleur";
-  if(/une semaine|depuis 10|un mois|2 mois|des semaines|ne passe pas|malgre/.test(t))mood="frustre";
+  if(/pleure|triste|faible|fatigue|enfle|gonfl/.test(t))mood="triste";
+  if(/\bmal\b|terrible|douleur|brule|saign|mal a|atroce|brutal/.test(t))mood="douleur";
+  if(/une semaine|depuis 10|un mois|2 mois|des semaines|ne passe pas|malgre|depuis 2 ans|depuis des mois/.test(t))mood="frustre";
   return {scene:scene,mood:mood,caption:PT_CAPS[scene]};
 }
 function ptSvg(sc,kid,sex){
