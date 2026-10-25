@@ -473,7 +473,6 @@ textarea{ resize:vertical; min-height:96px; line-height:1.6; }
       <button class="tab" id="nav-case" type="button">Cas</button>
       <button class="tab" id="nav-prog" type="button">Progression</button>
     </nav>
-    <button id="btn-logout" class="btn ghost logout-top" type="button" aria-label="Déconnexion" title="Déconnexion"><span class="lo-txt">Déconnexion</span><span class="lo-ico" aria-hidden="true">⏻</span></button>
   </div>
 </header>
 
@@ -745,12 +744,7 @@ document.getElementById("btn-google").onclick = async ()=>{
 // Mode invité désactivé : connexion obligatoire pour voir évolutions
 // document.getElementById("btn-guest") supprimé
 // Logout
-document.getElementById("btn-logout").onclick = async ()=>{
-  localStorage.removeItem("sdg_guest_mode");
-  wipe(KEY); wipe(HKEY);
-  await signOut(auth);
-  showAuth();
-};
+// Déconnexion : bouton dans la bulle du profil (btn-logout-bulletin)
 
 // Auth state
 onAuthStateChanged(auth, async (user)=>{
