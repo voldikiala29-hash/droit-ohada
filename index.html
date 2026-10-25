@@ -218,6 +218,9 @@ textarea{ resize:vertical; min-height:96px; line-height:1.6; }
 .pt-m-frustre .hand{ animation:pt-shake .9s ease-in-out infinite alternate; }
 .pt-m-triste .tear{ opacity:1; }
 .timer{ font-size:13px; color:#64748b; text-align:right; margin:-4px 0 0; }
+.logout-top{ min-height:32px; padding:6px 10px; font-size:.8rem; white-space:nowrap; }
+.logout-top .lo-ico{ display:none; }
+@media (max-width:560px){ .logout-top .lo-txt{ display:none; } .logout-top .lo-ico{ display:inline; font-size:1rem; } }
 .pt-scene-cap{ font-size:11px; color:#64748b; text-align:center; margin-top:4px; max-width:96px; line-height:1.2; }
 @keyframes pt-breath{ 50%{ transform:translateY(-1.2px); } }
 @keyframes pt-blink{ 0%,92%,100%{ transform:scaleY(1); } 95%{ transform:scaleY(.1); } }
@@ -428,6 +431,7 @@ textarea{ resize:vertical; min-height:96px; line-height:1.6; }
       <button class="tab" id="nav-case" type="button">Cas</button>
       <button class="tab" id="nav-prog" type="button">Progression</button>
     </nav>
+    <button id="btn-logout" class="btn ghost logout-top" type="button" aria-label="Déconnexion" title="Déconnexion"><span class="lo-txt">Déconnexion</span><span class="lo-ico" aria-hidden="true">⏻</span></button>
   </div>
 </header>
 
@@ -440,10 +444,6 @@ textarea{ resize:vertical; min-height:96px; line-height:1.6; }
 <aside class="pub" id="pub-bas" aria-label="Publicité" hidden></aside>
 
 
-  <div style="max-width:720px; margin:10px auto; display:flex; justify-content:space-between; align-items:center;">
-    <div id="user-info" class="user-bar"></div>
-    <button id="btn-logout" class="btn ghost" type="button" style="min-height:32px; padding:6px 10px; font-size:.85rem;">Déconnexion</button>
-  </div>
 </div>
 
 <script type="importmap">
@@ -502,7 +502,7 @@ localStorage.removeItem("sdg_guest_mode");
 function showApp(user){
   document.getElementById("auth-root").style.display="none";
   document.getElementById("main-ui").style.display="block";
-  const info = document.getElementById("user-info");
+  const info = document.getElementById("user-info") || {};
   if(user) {
     info.innerHTML = `<b>${user.email}</b> • Progression sauvegardée en illimité`;
   } else {
