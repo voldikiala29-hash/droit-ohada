@@ -546,6 +546,7 @@ localStorage.removeItem("sdg_guest_mode");
 
 
 function showApp(user){
+  document.getElementById("landing-root").style.display="none";
   document.getElementById("auth-root").style.display="none";
   document.getElementById("main-ui").style.display="block";
   const info = document.getElementById("user-info") || {};
