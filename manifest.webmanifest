@@ -1,0 +1,23 @@
+{
+  "name": "Salle de Garde — simulateur de patient virtuel",
+  "short_name": "Salle de Garde",
+  "description": "Simulateur de patient virtuel pour étudiants en médecine d'Afrique francophone.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#121416",
+  "theme_color": "#121416",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "favicon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

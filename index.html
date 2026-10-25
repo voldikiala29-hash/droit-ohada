@@ -10,6 +10,8 @@
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
 <link rel="apple-touch-icon" href="logo.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#121416">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Salle de Garde">
 <meta property="og:title" content="Salle de Garde — simulateur de patient virtuel pour étudiants en médecine">
@@ -379,7 +381,10 @@ textarea{ resize:vertical; min-height:96px; line-height:1.6; }
           <button class="btn" type="button" onclick="showAuth()">Commencer gratuitement →</button>
           <a class="btn ghost" href="#features">Voir comment ça marche</a>
         </div>
-        <p class="ld-note">✓ Gratuit &nbsp;•&nbsp; Sans installation &nbsp;•&nbsp; Progression sauvegardée</p>
+        <div class="ld-install" id="ld-install" style="display:none">
+          <button class="btn ghost" type="button" id="btn-install">📲 Installer l'application sur mon appareil</button>
+          <p class="small muted" id="ld-install-ios" style="display:none;margin-top:8px">Sur iPhone : touche Partager (□↑) puis « Sur l'écran d'accueil ».</p>
+        </div>
       </div>
       <div class="ld-sim" aria-label="Exemple de consultation">
         <div class="ld-sim-head"><span class="ld-dot"></span><span class="ld-dot g"></span><span>Consultation en cours</span></div>
@@ -2125,6 +2130,28 @@ showLanding();
     at(10500,play);
   }
   box.classList.add("anim");play();
+})();
+</script>
+<script>
+/* Installation locale de l'application (PWA) : proposée sur la page d'accueil */
+(function(){
+  var box=document.getElementById("ld-install"), btn=document.getElementById("btn-install"), ios=document.getElementById("ld-install-ios");
+  if(!box) return;
+  var standalone=(window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||window.navigator.standalone===true;
+  if(standalone) return;
+  var deferred=null;
+  var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  if(isIOS){ box.style.display="block"; ios.style.display="block"; btn.style.display="none"; }
+  window.addEventListener("beforeinstallprompt", function(e){
+    e.preventDefault(); deferred=e; box.style.display="block"; btn.style.display="inline-flex";
+  });
+  btn.addEventListener("click", function(){
+    if(!deferred) return;
+    deferred.prompt();
+    deferred.userChoice.then(function(){ deferred=null; box.style.display="none"; });
+  });
+  window.addEventListener("appinstalled", function(){ box.style.display="none"; });
+  if("serviceWorker" in navigator){ navigator.serviceWorker.register("sw.js").catch(function(){}); }
 })();
 </script>
 </body>
