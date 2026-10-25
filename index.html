@@ -206,6 +206,26 @@ textarea{ resize:vertical; min-height:96px; line-height:1.6; }
 .pt-avatar.f{ background:#FCE7F3; color:#BE185D; }
 .pt-avatar.kid{ background:#FEF3C7; color:#B45309; }
 .pt-avatar-icon{ font-size:28px; }
+.pt-avatar.pt-scene-box{ width:84px; height:84px; border-radius:18px; overflow:hidden; padding:0; font-size:0; }
+.pt-scene{ width:100%; height:100%; display:block; }
+.pt-scene .body{ animation:pt-breath 3.6s ease-in-out infinite; }
+.pt-scene .eye{ transform-box:fill-box; transform-origin:center; animation:pt-blink 4.8s infinite; }
+.pt-scene .hand{ transform-box:fill-box; transform-origin:center; }
+.pt-scene .tear{ transform-box:fill-box; animation:pt-tear 2.4s ease-in infinite; }
+.pt-scene .sweat{ transform-box:fill-box; animation:pt-sweat 2s ease-in-out infinite; }
+.pt-scene .head{ transform-box:fill-box; transform-origin:50% 100%; }
+.pt-m-douleur .head{ animation:pt-nod 1.4s ease-in-out infinite alternate; }
+.pt-m-frustre .hand{ animation:pt-shake .9s ease-in-out infinite alternate; }
+.pt-m-triste .tear{ opacity:1; }
+.pt-scene-cap{ font-size:11px; color:#64748b; text-align:center; margin-top:4px; max-width:96px; line-height:1.2; }
+@keyframes pt-breath{ 50%{ transform:translateY(-1.2px); } }
+@keyframes pt-blink{ 0%,92%,100%{ transform:scaleY(1); } 95%{ transform:scaleY(.1); } }
+@keyframes pt-tear{ 0%{ opacity:0; transform:translateY(0); } 20%{ opacity:1; } 100%{ opacity:0; transform:translateY(12px); } }
+@keyframes pt-sweat{ 0%,100%{ transform:translateY(0); opacity:.9; } 50%{ transform:translateY(3px); opacity:.4; } }
+@keyframes pt-nod{ from{ transform:rotate(-3deg); } to{ transform:rotate(3deg); } }
+@keyframes pt-shake{ from{ transform:rotate(-7deg); } to{ transform:rotate(7deg); } }
+@media (prefers-reduced-motion: reduce){ .pt-scene *{ animation:none !important; } }
+
 .pt-info{ flex:1; min-width:0; display:flex; flex-direction:column; gap:4px; }
 .pt-info .name{ font:700 1.25rem var(--f-display); letter-spacing:-0.02em; line-height:1.2; }
 .pt-info .muted{ font-size:.88rem; }
@@ -1472,6 +1492,93 @@ function startCase(){
 /* =====================================================================
    CONSULTATION
    ===================================================================== */
+
+/* ===== Illustrations du patient (SVG animé, sans photo) ===== */
+var PT_CAPS={enfant:"Enfant accompagné",ventre:"Touche son ventre",plaie:"Montre sa plaie",tete:"Touche sa tête",poitrine:"Touche sa poitrine",neutre:"En attente"};
+function ptCategory(d,p){
+  var t=String(d.plainte||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+  var scene="neutre";
+  if(p.kid)scene="enfant";
+  else if(/enceinte|accouch|vagin/.test(t))scene="ventre";
+  else if(/plaie|accident|casse|fracture|\bos\b/.test(t))scene="plaie";
+  else if(/tete|\bvue\b|convuls|crise|travers|raidi/.test(t))scene="tete";
+  else if(/ventre|nombril|selles|vomi|aine|\bdos\b|abdomen/.test(t))scene="ventre";
+  else if(/poitrine|respir|toux|souffle|siffle|cote/.test(t))scene="poitrine";
+  else if(/fievre|frisson|chaud|sueur/.test(t))scene="tete";
+  var mood="anxieux";
+  if(/pleure|triste|faible|fatigue|enfle/.test(t))mood="triste";
+  if(/\bmal\b|terrible|douleur|brule|saign|mal a/.test(t))mood="douleur";
+  if(/une semaine|depuis 10|un mois|2 mois|des semaines|ne passe pas|malgre/.test(t))mood="frustre";
+  return {scene:scene,mood:mood,caption:PT_CAPS[scene]};
+}
+function ptSvg(sc,kid,sex){
+  var SK="#F2C7A5",INK="#1E293B",F=sex==="F";
+  var CL=kid?"#60A5FA":(F?"#F472B6":"#3B82F6");
+  var HAIR=F?"#1F2937":"#262626";
+  var BG=kid?"#FEF3C7":(F?"#FCE7F3":"#DBEAFE");
+  var hr=kid?28:24, hy=kid?56:50, m=sc.mood, sn=sc.scene;
+  var o="";
+  o+='<svg class="pt-scene pt-m-'+m+'" viewBox="0 0 120 120" role="img" aria-label="'+sc.caption+'">';
+  o+='<rect width="120" height="120" fill="'+BG+'"/>';
+  o+='<g class="body">';
+  o+='<path d="M14 120 Q18 86 60 82 Q102 86 106 120 Z" fill="'+CL+'"/>';
+  o+='<rect x="53" y="'+(hy+hr-6)+'" width="14" height="14" fill="'+SK+'"/>';
+  o+='</g>';
+  // bras / mains selon la scène
+  if(sn==="tete"){
+    o+='<path d="M92 118 Q106 84 82 '+(hy-2)+'" stroke="'+CL+'" stroke-width="13" fill="none" stroke-linecap="round"/>';
+    o+='<circle class="hand" cx="80" cy="'+(hy-4)+'" r="6.5" fill="'+SK+'"/>';
+  } else if(sn==="plaie"){
+    o+='<path d="M34 118 Q26 92 20 74" stroke="'+CL+'" stroke-width="13" fill="none" stroke-linecap="round"/>';
+    o+='<rect x="13" y="68" width="14" height="10" rx="2" fill="#F8FAFC" stroke="#94A3B8" transform="rotate(-25 20 73)"/>';
+    o+='<circle cx="22" cy="78" r="2.4" fill="#DC2626"/>';
+    o+='<circle class="hand" cx="34" cy="90" r="6.5" fill="'+SK+'"/>';
+  } else if(sn==="ventre"){
+    o+='<circle class="hand" cx="50" cy="98" r="7" fill="'+SK+'"/>';
+    o+='<circle class="hand" cx="70" cy="98" r="7" fill="'+SK+'"/>';
+  } else if(sn==="poitrine"){
+    o+='<path d="M90 118 Q88 100 70 90" stroke="'+CL+'" stroke-width="12" fill="none" stroke-linecap="round"/>';
+    o+='<circle class="hand" cx="68" cy="89" r="7" fill="'+SK+'"/>';
+  } else if(sn==="enfant"){
+    o+='<path d="M118 120 Q104 100 86 96" stroke="#F9A8D4" stroke-width="10" fill="none" stroke-linecap="round"/>';
+    o+='<circle class="hand" cx="84" cy="95" r="6" fill="'+SK+'"/>';
+  } else {
+    o+='<path d="M22 120 Q20 98 26 90" stroke="'+CL+'" stroke-width="12" fill="none" stroke-linecap="round"/>';
+    o+='<path d="M98 120 Q100 98 94 90" stroke="'+CL+'" stroke-width="12" fill="none" stroke-linecap="round"/>';
+    o+='<circle class="hand" cx="26" cy="89" r="6" fill="'+SK+'"/>';
+    o+='<circle class="hand" cx="94" cy="89" r="6" fill="'+SK+'"/>';
+  }
+  // tête
+  o+='<g class="head">';
+  o+='<ellipse cx="60" cy="'+(hy-4)+'" rx="'+(hr+1)+'" ry="'+hr+'" fill="'+HAIR+'"/>';
+  o+='<ellipse cx="60" cy="'+(hy+2)+'" rx="'+(hr-3)+'" ry="'+(hr+2)+'" fill="'+SK+'"/>';
+  o+='<path d="M'+(60-hr+3)+' '+(hy-2)+' Q60 '+(hy-hr-6)+' '+(60+hr-3)+' '+(hy-2)+' Q60 '+(hy-hr+6)+' '+(60-hr+3)+' '+(hy-2)+' Z" fill="'+HAIR+'"/>';
+  // yeux
+  if(m==="douleur"){
+    o+='<path d="M45 '+hy+' Q50 '+(hy-4)+' 55 '+hy+'" stroke="'+INK+'" stroke-width="2" fill="none"/>';
+    o+='<path d="M65 '+hy+' Q70 '+(hy-4)+' 75 '+hy+'" stroke="'+INK+'" stroke-width="2" fill="none"/>';
+    o+='<path d="M44 '+(hy-6)+' Q50 '+(hy-10)+' 56 '+(hy-6)+'" stroke="'+INK+'" stroke-width="2" fill="none"/>';
+    o+='<path d="M64 '+(hy-6)+' Q70 '+(hy-10)+' 76 '+(hy-6)+'" stroke="'+INK+'" stroke-width="2" fill="none"/>';
+  } else {
+    o+='<g class="eyes"><ellipse class="eye" cx="50" cy="'+hy+'" rx="2.8" ry="3.4" fill="'+INK+'"/><ellipse class="eye" cx="70" cy="'+hy+'" rx="2.8" ry="3.4" fill="'+INK+'"/></g>';
+    if(m==="frustre"){
+      o+='<path d="M44 '+(hy-8)+' L56 '+(hy-5)+'" stroke="'+INK+'" stroke-width="2" stroke-linecap="round"/>';
+      o+='<path d="M76 '+(hy-8)+' L64 '+(hy-5)+'" stroke="'+INK+'" stroke-width="2" stroke-linecap="round"/>';
+    } else {
+      o+='<path d="M44 '+(hy-5)+' L56 '+(hy-8)+'" stroke="'+INK+'" stroke-width="2" stroke-linecap="round"/>';
+      o+='<path d="M76 '+(hy-5)+' L64 '+(hy-8)+'" stroke="'+INK+'" stroke-width="2" stroke-linecap="round"/>';
+    }
+  }
+  // bouche
+  if(m==="douleur") o+='<ellipse cx="60" cy="'+(hy+18)+'" rx="5" ry="4" fill="'+INK+'"/>';
+  else if(m==="frustre") o+='<path d="M52 '+(hy+19)+' Q60 '+(hy+14)+' 68 '+(hy+19)+'" stroke="'+INK+'" stroke-width="2" fill="none" stroke-linecap="round"/>';
+  else o+='<path d="M53 '+(hy+18)+' Q60 '+(hy+15)+' 67 '+(hy+18)+'" stroke="'+INK+'" stroke-width="2" fill="none" stroke-linecap="round"/>';
+  if(m==="triste") o+='<circle class="tear" cx="46" cy="'+(hy+6)+'" r="2" fill="#60A5FA"/>';
+  if(m==="anxieux") o+='<path class="sweat" d="M82 '+(hy-14)+' q4 6 0 9 q-4 -3 0 -9z" fill="#93C5FD"/>';
+  o+='</g></svg>';
+  return o;
+}
+
 function patientCard(){
   var d=DB[S.did],p=S.pt;
   var isKid = !!p.kid;
@@ -1483,11 +1590,10 @@ function patientCard(){
   var communeText = p.commune || '';
   
   // Avatar element
-  var avatarEl = h("div",{class:"pt-avatar-wrap"},
-    h("div",{class:"pt-avatar "+avatarClass},
-      h("span",{class:"pt-avatar-icon"}, avatarIcon)
-    )
-  );
+  var sc = ptCategory(d,p);
+  var avBox = h("div",{class:"pt-avatar pt-scene-box "+avatarClass});
+  avBox.innerHTML = ptSvg(sc,isKid,sexe);
+  var avatarEl = h("div",{class:"pt-avatar-wrap"}, avBox, h("div",{class:"pt-scene-cap"}, sc.caption));
   
   // Info element
   var infoEl = h("div",{class:"pt-info"},
