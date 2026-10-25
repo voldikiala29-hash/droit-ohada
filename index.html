@@ -360,8 +360,12 @@ textarea{ resize:vertical; min-height:96px; line-height:1.6; }
   #main-ui nav .tab{ font-size:13px; padding:6px 10px; }
   #main-ui .btn-profile{ width:36px; height:36px; flex:0 0 auto; }
 }
-@media (max-width:360px){
-  #main-ui .brand span{ font-size:.95rem; }
+/* Très petits écrans : on garde le logo, les onglets et le profil sur une seule ligne */
+@media (max-width:440px){
+  #main-ui .brand span{ display:none; }
+  #main-ui .bar{ flex-wrap:nowrap; }
+  #main-ui nav .tab{ font-size:12.5px; padding:6px 8px; }
+  #main-ui nav{ padding:3px; }
 }
 @media (max-width:560px){
   .ld-links{ display:none; }
