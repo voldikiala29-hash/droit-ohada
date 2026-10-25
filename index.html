@@ -1205,11 +1205,11 @@ async function answerPatient(S,t){
     var ctrl=new AbortController(),tm=setTimeout(function(){ctrl.abort();},15000);
     try{
       var res=await fetch(LLM_URL,{method:"POST",headers:{"Content-Type":"application/json"},signal:ctrl.signal,
-        body:JSON.stringify({persona:buildPersona(S),facts:buildFacts(S),step:STEPS[S.stage],history:S.chat.slice(0,-1).slice(-12),message:t})});
+        body:JSON.stringify({persona:buildPersona(S),facts:buildFacts(S),step:STEPS[S.stage],history:S.chat.slice(0,-1).slice(-12),message:t,question:t})});
       if(res.ok){
         var j=await res.json();
         var rep=j&&(j.reponse||j.reply);
-        if(rep){
+        if(rep&&j.source!=="error"){
           var txt=String(rep).replace(/^\s*(patient|patiente|mère|mere)\s*:\s*/i,"").trim();
           return {text:guardLLM(S,txt),ids:[]};
         }
