@@ -218,6 +218,9 @@ textarea{ resize:vertical; min-height:96px; line-height:1.6; }
 .pt-m-frustre .hand{ animation:pt-shake .9s ease-in-out infinite alternate; }
 .pt-m-triste .tear{ opacity:1; }
 .timer{ font-size:13px; color:#64748b; text-align:right; margin:-4px 0 0; }
+.case-bar{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:-4px; }
+.case-bar .timer{ margin:0; }
+.quit-case{ min-height:34px; padding:6px 12px; font-size:.85rem; }
 .logout-top{ min-height:32px; padding:6px 10px; font-size:.8rem; white-space:nowrap; }
 .logout-top .lo-ico{ display:none; }
 @media (max-width:560px){ .logout-top .lo-txt{ display:none; } .logout-top .lo-ico{ display:inline; font-size:1rem; } }
@@ -1722,10 +1725,17 @@ function startCaseTimer(){
     if(S.spent%10000===0)save(KEY,S);
   },1000);
 }
+/* Quitter le cas en cours : la consultation est abandonnée et n'entre pas dans la progression */
+function quitCase(){
+  if(!window.confirm("Quitter ce cas ? La consultation en cours sera perdue."))return;
+  S=null; wipe(KEY); go("home");
+}
 function caseView(){
   var root=h("div",{class:"stack"});
   root.append(patientCard(),
-    h("div",{class:"timer"},"Temps : ",h("span",{id:"case-timer"},fmtTime((S&&S.spent)||0))),
+    h("div",{class:"case-bar"},
+      h("button",{class:"btn ghost quit-case",type:"button",onclick:quitCase},"← Quitter le cas"),
+      h("div",{class:"timer"},"Temps : ",h("span",{id:"case-timer"},fmtTime((S&&S.spent)||0)))),
     stepper());
   root.append([chatPanel,examPanel,paraPanel,conclPanel][S.stage]());
   var sg=suggestPanel();
