@@ -1,22 +1,9 @@
 /*
- * Salle de Garde — Worker du patient virtuel (Cloudflare Worker, module).
- * Les clés API restent ICI, dans les secrets du Worker : elles ne doivent jamais
- * figurer dans index.html ni dans le dépôt.
- *
- * Fournisseurs (essayés dans l'ordre ci-dessous ; au premier échec, on passe au suivant) :
- *   gemini      -> secret GEMINI_KEY       (modèle : variable GEMINI_MODEL)
- *   groq        -> secret GROQ_KEY         (modèle : variable GROQ_MODEL)
- *   huggingface -> secret HF_KEY           (modèle : variable HF_MODEL)
- * Un fournisseur sans clé est simplement ignoré.
- *
- * Déploiement :
- *   wrangler secret put GEMINI_KEY
- *   wrangler secret put GROQ_KEY
- *   wrangler secret put HF_KEY
- *   wrangler deploy   (variables dans wrangler.toml : GEMINI_MODEL, GROQ_MODEL, HF_MODEL,
- *                      ALLOWED_ORIGIN = "https://salledegarde.online")
- * Puis mets l'URL du Worker dans index.html : window.SDG_LLM_URL.
+ * Salle de Garde — Worker du patient virtuel, version Workers AI (à coller dans Cloudflare).
+ * Liaison requise : AI (Workers AI). Variable optionnelle : ALLOWED_ORIGIN = "https://salledegarde.online".
+ * Contrat : POST { persona, facts, step, history, message, question } -> { reponse }.
  */
+const MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const MAX_MSG = 600, MAX_HIST = 12, MAX_FACTS = 6000, MAX_PERSONA = 600;
 
 function buildSystem(persona, facts, step) {
@@ -31,20 +18,13 @@ function buildSystem(persona, facts, step) {
     "- Si on te demande un symptôme que tu n'as pas, nie-le simplement.",
     "- Ne donne JAMAIS de diagnostic ni de nom de maladie. Si on te le demande : « Je ne sais pas docteur, aidez-moi. »",
     "- Ne dis jamais « je ne comprends pas ». Si la question est confuse, demande gentiment de reformuler en rappelant ce qui te gêne.",
-    "- Ne propose pas toi-même d'examen ni de traitement."
+    "- Ne propose pas toi-même d'examen ni de traitement.",
+    "- Utilise uniquement le français. N'emploie aucun mot d'une autre langue."
   ].join("\n");
 }
 
 function json(obj, status, headers) {
   return new Response(JSON.stringify(obj), { status, headers: { ...headers, "Content-Type": "application/json" } });
-}
-
-function providers(env) {
-  const list = [];
-  if (env.GEMINI_KEY) list.push({ name: "gemini", url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", key: env.GEMINI_KEY, model: env.GEMINI_MODEL || "gemini-2.0-flash" });
-  if (env.GROQ_KEY) list.push({ name: "groq", url: "https://api.groq.com/openai/v1/chat/completions", key: env.GROQ_KEY, model: env.GROQ_MODEL || "llama-3.3-70b-versatile" });
-  if (env.HF_KEY) list.push({ name: "huggingface", url: "https://router.huggingface.co/v1/chat/completions", key: env.HF_KEY, model: env.HF_MODEL || "meta-llama/Llama-3.1-8B-Instruct" });
-  return list;
 }
 
 export default {
@@ -76,22 +56,14 @@ export default {
       ...hist,
       { role: "user", content: message.trim() }
     ];
-    let text = null, used = null;
-    for (const pr of providers(env)) {
-      try {
-        const upstream = await fetch(pr.url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + pr.key },
-          body: JSON.stringify({ model: pr.model, messages, temperature: 0.9, max_tokens: 220 }),
-          signal: AbortSignal.timeout(10000)
-        });
-        if (!upstream.ok) continue;
-        const data = await upstream.json();
-        const t = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-        if (t && String(t).trim()) { text = String(t).trim(); used = pr.name; break; }
-      } catch (e) { /* fournisseur suivant */ }
+
+    try {
+      const out = await env.AI.run(MODEL, { messages, temperature: 0.9, max_tokens: 220 });
+      const text = out && (out.response || out.result && out.result.response);
+      if (!text || !String(text).trim()) return json({ error: "unavailable" }, 502, cors);
+      return json({ reponse: String(text).trim().slice(0, 800) }, 200, cors);
+    } catch (e) {
+      return json({ error: "unavailable", details: [String(e && e.message || e).slice(0, 200)] }, 502, cors);
     }
-    if (!text) return json({ error: "unavailable" }, 502, cors);
-    return json({ reponse: text.slice(0, 800) }, 200, cors);
   }
 };
