@@ -351,6 +351,18 @@ textarea{ resize:vertical; min-height:96px; line-height:1.6; }
   .kpi b{ font-size:1.2rem; }
   .kpi span{ font-size:.7rem; }
 }
+/* En-tête de l'application sur téléphone : passe sur deux lignes au lieu de déborder */
+@media (max-width:560px){
+  #main-ui .bar{ flex-wrap:wrap; gap:8px 10px; padding-inline:2px; }
+  #main-ui .brand{ font-size:1rem; gap:6px; }
+  #main-ui .brand .logo-icon{ width:30px; height:30px; }
+  #main-ui nav{ flex:1 1 auto; justify-content:center; }
+  #main-ui nav .tab{ font-size:13px; padding:6px 10px; }
+  #main-ui .btn-profile{ width:36px; height:36px; flex:0 0 auto; }
+}
+@media (max-width:360px){
+  #main-ui .brand span{ font-size:.95rem; }
+}
 @media (max-width:560px){
   .ld-links{ display:none; }
   .ld-cta .btn{ width:100%; justify-content:center; }
