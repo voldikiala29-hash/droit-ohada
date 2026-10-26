@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Salle de Garde — 302 cas cliniques, simulateur de patient virtuel pour étudiants en médecine</title>
-<meta name="description" content="Simulateur de patient virtuel pour étudiants en médecine d'Afrique francophone : 302 cas cliniques, un patient qui parle français. Interrogatoire et évaluation.">
+<meta name="description" content="Simulateur de patient virtuel pour étudiants en médecine francophones : 302 cas cliniques, un patient qui parle français. Interrogatoire et évaluation.">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://salledegarde.online/">
 <link rel="icon" href="favicon.ico" sizes="any">
@@ -16,7 +16,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Salle de Garde">
 <meta property="og:title" content="Salle de Garde — simulateur de patient virtuel pour étudiants en médecine">
-<meta property="og:description" content="Simulateur de patient virtuel pour étudiants en médecine d'Afrique francophone : 302 cas cliniques, un patient qui parle français. Interrogatoire et évaluation.">
+<meta property="og:description" content="Simulateur de patient virtuel pour étudiants en médecine francophones : 302 cas cliniques, un patient qui parle français. Interrogatoire et évaluation.">
 <meta property="og:url" content="https://salledegarde.online/">
 <meta property="og:locale" content="fr_FR">
 <meta property="og:image" content="https://salledegarde.online/logo.png">
@@ -25,8 +25,8 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://salledegarde.online/logo.png">
 <meta name="twitter:title" content="Salle de Garde — simulateur de patient virtuel pour étudiants en médecine">
-<meta name="twitter:description" content="Simulateur de patient virtuel pour étudiants en médecine d'Afrique francophone : 302 cas cliniques, un patient qui parle français. Interrogatoire et évaluation.">
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "Salle de Garde", "url": "https://salledegarde.online/", "description": "Simulateur de patient virtuel pour étudiants en médecine d'Afrique francophone : 302 cas cliniques, un patient qui parle français. Interrogatoire et évaluation.", "applicationCategory": "EducationalApplication", "operatingSystem": "Any", "inLanguage": "fr", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "audience": {"@type": "EducationalAudience", "educationalRole": "student"}, "image": "https://salledegarde.online/logo.png", "publisher": {"@type": "Organization", "name": "Salle de Garde", "url": "https://salledegarde.online/", "logo": {"@type": "ImageObject", "url": "https://salledegarde.online/logo.png", "width": 512, "height": 512}}}</script>
+<meta name="twitter:description" content="Simulateur de patient virtuel pour étudiants en médecine francophones : 302 cas cliniques, un patient qui parle français. Interrogatoire et évaluation.">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "Salle de Garde", "url": "https://salledegarde.online/", "description": "Simulateur de patient virtuel pour étudiants en médecine francophones : 302 cas cliniques, un patient qui parle français. Interrogatoire et évaluation.", "applicationCategory": "EducationalApplication", "operatingSystem": "Any", "inLanguage": "fr", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "audience": {"@type": "EducationalAudience", "educationalRole": "student"}, "image": "https://salledegarde.online/logo.png", "publisher": {"@type": "Organization", "name": "Salle de Garde", "url": "https://salledegarde.online/", "logo": {"@type": "ImageObject", "url": "https://salledegarde.online/logo.png", "width": 512, "height": 512}}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -493,6 +493,10 @@ input::placeholder,textarea::placeholder{ color:var(--muted-2); }
 
 a.btn{ text-decoration:none; }
 
+/* Sélecteur de langue */
+.lang-btn{min-height:34px;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);font:600 .78rem var(--f-body);letter-spacing:.04em;cursor:pointer;flex:0 0 auto;}
+.lang-btn:hover{border-color:var(--accent);}
+
 /* Landing dark */
 .ld-final{ background:var(--card); color:var(--fg); border-top:1px solid var(--line-2); }
 .ld-final .ld-h2{ color:var(--fg); }
@@ -523,7 +527,7 @@ a.btn{ text-decoration:none; }
         <span>Salle de Garde</span>
       </div>
       <div class="ld-links"><a href="#features">Fonctionnalités</a><a href="#how">Comment ça marche</a></div>
-      <button class="btn" type="button" onclick="showAuth()">Se connecter</button>
+      <div style="display:flex;gap:8px;align-items:center"><button type="button" class="lang-btn" data-lang-toggle aria-label="Change language">EN</button><button class="btn" type="button" onclick="showAuth()">Se connecter</button></div>
     </div>
   </header>
 
@@ -532,7 +536,7 @@ a.btn{ text-decoration:none; }
       <div>
         <span class="ld-badge"><span id="ld-count">302</span> CAS CLINIQUES • FRANCOPHONE</span>
         <h1 class="ld-h1">Deviens le médecin que <span>l'Afrique attend.</span></h1>
-        <p class="ld-lead">Salle de Garde est le simulateur de patient virtuel pensé pour les étudiants en médecine d'Afrique francophone. Un vrai patient qui parle avec ses mots, comprend tes fautes, et ne te donne jamais le diagnostic.</p>
+        <p class="ld-lead">Salle de Garde est le simulateur de patient virtuel pensé pour les étudiants en médecine francophones. Un vrai patient qui parle avec ses mots, comprend tes fautes, et ne te donne jamais le diagnostic.</p>
         <div class="ld-cta">
           <button class="btn" type="button" onclick="showAuth()">Commencer gratuitement →</button>
           <a class="btn ghost" href="#features">Voir comment ça marche</a>
@@ -600,7 +604,7 @@ a.btn{ text-decoration:none; }
       <button class="btn" type="button" onclick="showAuth()">Commencer maintenant →</button>
     </div>
   </section>
-  <footer class="ld-foot"><div class="ld-wrap">Salle de Garde • Fait pour les étudiants en médecine d'Afrique francophone • 2026</div></footer>
+  <footer class="ld-foot"><div class="ld-wrap">Salle de Garde • Fait pour les étudiants en médecine francophones • 2026</div></footer>
 </div>
 
 
@@ -634,7 +638,7 @@ a.btn{ text-decoration:none; }
       <div class="auth-field"><label class="label">Nom complet</label><input id="reg-nom" type="text" placeholder="Dr Voldi Kiala"></div>
       <div class="auth-field"><label class="label">Hôpital / Service</label><input id="reg-hop" type="text" placeholder="Ex: Hôpital Général, Médecine interne"></div>
       <div class="auth-field"><label class="label">Email</label><input id="reg-email" type="text" placeholder="ton.email@exemple.com"></div>
-      <div class="auth-field"><label class="label">Mot de passe</label><input id="reg-pass" type="password" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:12px;min-height:44px;" placeholder="Au moins 6 caractères"></div>
+      <div class="auth-field"><label class="label">Mot de passe</label><input id="reg-pass" type="password" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:12px;min-height:44px;" placeholder="Au moins 8 caractères"></div>
       <button id="btn-register" class="btn" type="button" style="width:100%; margin-top:8px;">Créer mon compte gratuit</button>
       <p id="reg-error" class="small" style="color:var(--alert); margin-top:10px;"></p>
           </div>
@@ -656,6 +660,7 @@ a.btn{ text-decoration:none; }
       <button class="tab" id="nav-case" type="button">Cas</button>
       <button class="tab" id="nav-prog" type="button">Progression</button>
     </nav>
+    <button type="button" class="lang-btn" data-lang-toggle aria-label="Change language">EN</button>
   </div>
 </header>
 
@@ -2405,6 +2410,50 @@ showLanding();
   });
   window.addEventListener("appinstalled", function(){ box.style.display="none"; });
   if("serviceWorker" in navigator){ navigator.serviceWorker.register("sw.js").catch(function(){}); }
+})();
+</script>
+<script>
+/* Bilingue FR / EN : textes statiques de la landing, de la connexion et de la barre de navigation. */
+(function(){
+  var PAIRS=[["CAS CLINIQUES • FRANCOPHONE", "CLINICAL CASES • FRENCH-SPEAKING"], ["Deviens le médecin que", "Become the doctor"], ["l'Afrique attend.", "the world is waiting for."], ["Salle de Garde est le simulateur de patient virtuel pensé pour les étudiants en médecine francophones. Un vrai patient qui parle avec ses mots, comprend tes fautes, et ne te donne jamais le diagnostic.", "Salle de Garde is a virtual patient simulator for medical students. A realistic patient who speaks in their own words, understands your typos, and never gives you the diagnosis. The patient speaks French."], ["Commencer gratuitement →", "Start for free →"], ["Voir comment ça marche", "See how it works"], ["Se connecter", "Sign in"], ["Fonctionnalités", "Features"], ["Comment ça marche", "How it works"], ["Consultation en cours", "Consultation in progress"], ["Toi", "You"], ["Patient écrit…", "Patient is typing…"], ["✓ Tolère les fautes", "✓ Accepts typos"], ["✓ Comprend les fautes", "✓ Understands typos"], ["✓ Jamais de diagnostic", "✓ Never gives the diagnosis"], ["cas cliniques", "clinical cases"], ["services de garde", "departments"], ["compétences évaluées", "skills assessed"], ["gratuit pour les étudiants", "free for students"], ["Pourquoi Salle de Garde", "Why Salle de Garde"], ["Un vrai patient, pas un QCM.", "A real patient, not a quiz."], ["Tu interroges, tu examines, tu demandes tes examens, tu conclus. Comme en garde, avec une évaluation mesurable à la fin.", "You ask, you examine, you order tests, you conclude. Like on call, with a measurable assessment at the end."], ["Un patient qui parle vraiment", "A patient who really talks"], ["Écris librement ce que tu demanderais en consultation. Le patient répond avec ses propres mots, jamais avec une liste de choix.", "Type what you would ask in a real consultation. The patient answers in their own words, never from a list of choices."], ["Il te comprend toujours", "They always understand you"], ["Jamais de diagnostic donné", "Never gives the diagnosis"], ["Comme en vrai, il décrit ses symptômes. Le diagnostic, c'est à toi de le trouver.", "Like in real life, they describe their symptoms. Finding the diagnosis is up to you."], ["Anamnèse et examen structurés", "Structured history and examination"], ["Une frise d'anamnèse qui se complète au fil de tes questions, des constantes, et une grille d'examen clinique par appareil.", "A history timeline that fills in as you ask questions, vital signs, and a clinical exam checklist by system."], ["Des résultats mesurables", "Measurable results"], ["Score sur 100, temps, examens demandés et utiles, courbe de progression : tu vois où tu progresses et où tu perds des points.", "Score out of 100, time, useful and unnecessary tests, progress curve: see where you improve and where you lose points."], ["Sur téléphone, sauvegardé", "Saved on your phone"], ["Aucune installation. Connecte-toi avec Google : ta progression te suit sur tous tes appareils.", "No install needed. Sign in with Google: your progress follows you across all your devices."], ["En 3 étapes", "3 steps"], ["Une consultation complète en quelques minutes.", "A full consultation in a few minutes."], ["Reçois un patient", "Receive a patient"], ["Choisis un service ou laisse le hasard décider : un patient arrive avec sa plainte.", "Pick a department or let chance decide: a patient arrives with their complaint."], ["Mène la consultation", "Run the consultation"], ["Interroge, examine, demande tes examens complémentaires, puis donne ton diagnostic et ta conduite à tenir.", "Ask, examine, order tests, then give your diagnosis and management plan."], ["Reçois ton feedback", "Get your feedback"], ["Une note sur 100, ce qui était juste, ce que tu as manqué, les pièges classiques et les notions à réviser.", "A score out of 100, what you got right, what you missed, classic pitfalls and topics to review."], ["Prêt pour ta première garde ?", "Ready for your first shift?"], ["Crée ton compte gratuit et reçois ton premier patient en moins d'une minute.", "Create your free account and receive your first patient in under a minute."], ["Commencer maintenant →", "Start now →"], ["Salle de Garde • Fait pour les étudiants en médecine francophones • 2026", "Salle de Garde • Built for medical students • 2026"], ["Connecte-toi pour sauvegarder ta progression à l'infini. Gratuit, illimité.", "Sign in to keep your progress forever. Free, unlimited."], ["Connexion", "Log in"], ["Inscription", "Sign up"], ["Mot de passe", "Password"], ["Nom complet", "Full name"], ["Hôpital / Service", "Hospital / Department"], ["Continuer avec Google", "Continue with Google"], ["Créer mon compte gratuit", "Create my free account"], ["ou", "or"], ["Cas", "Cases"], ["Progression", "Progress"]], PH=[["Ex: Hôpital Général, Médecine interne", "e.g. General Hospital, Internal medicine"], ["Au moins 8 caractères", "At least 8 characters"]];
+  var FR2EN={}, EN2FR={}, PH2EN={}, PH2FR={};
+  PAIRS.forEach(function(p){FR2EN[p[0]]=p[1];EN2FR[p[1]]=p[0];});
+  PH.forEach(function(p){PH2EN[p[0]]=p[1];PH2FR[p[1]]=p[0];});
+  var mdesc=document.querySelector('meta[name=description]');
+  var META={fr:{title:document.title,desc:mdesc?mdesc.getAttribute('content'):''},
+            en:{title:"Salle de Garde — 302 clinical cases, virtual patient simulator for medical students",desc:"Virtual patient simulator for medical students: 302 clinical cases, a patient who speaks French. History taking and assessment."}};
+  function roots(){return [document.getElementById('landing-root'),document.getElementById('auth-root'),document.querySelector('#main-ui header.top')].filter(Boolean);}
+  function apply(lang){
+    var en=(lang==='en');
+    var map=en?FR2EN:EN2FR, pmap=en?PH2EN:PH2FR;
+    roots().forEach(function(root){
+      var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),n;
+      while((n=w.nextNode())){
+        var t=n.nodeValue.trim();
+        if(t&&map[t]) n.nodeValue=n.nodeValue.replace(t,map[t]);
+      }
+      root.querySelectorAll('[placeholder]').forEach(function(el){
+        var v=el.getAttribute('placeholder'); if(pmap[v]) el.setAttribute('placeholder',pmap[v]);
+      });
+    });
+    document.documentElement.lang=en?'en':'fr';
+    document.title=META[en?'en':'fr'].title;
+    if(mdesc) mdesc.setAttribute('content',META[en?'en':'fr'].desc);
+    document.querySelectorAll('[data-lang-toggle]').forEach(function(b){
+      b.textContent=en?'FR':'EN';
+      b.setAttribute('aria-label',en?'Passer en français':'Switch to English');
+    });
+  }
+  function saved(){ try{ return localStorage.getItem('sdg_lang'); }catch(e){ return null; } }
+  var lang=saved()||((navigator.language||'fr').toLowerCase().indexOf('en')===0?'en':'fr');
+  document.addEventListener('click',function(e){
+    var b=e.target.closest&&e.target.closest('[data-lang-toggle]'); if(!b) return;
+    lang=(document.documentElement.lang==='en')?'fr':'en';
+    try{ localStorage.setItem('sdg_lang',lang); }catch(err){}
+    apply(lang);
+  });
+  if(lang==='en') apply('en');
+  else document.querySelectorAll('[data-lang-toggle]').forEach(function(b){b.textContent='EN';});
 })();
 </script>
 </body>
