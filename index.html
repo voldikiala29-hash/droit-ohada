@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -11,7 +11,8 @@
 <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
 <link rel="apple-touch-icon" href="logo.png">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#121416">
+<meta name="theme-color" content="#0B0F14">
+<meta name="color-scheme" content="dark">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Salle de Garde">
 <meta property="og:title" content="Salle de Garde — simulateur de patient virtuel pour étudiants en médecine">
@@ -28,11 +29,10 @@
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "Salle de Garde", "url": "https://salledegarde.online/", "description": "Simulateur de patient virtuel pour étudiants en médecine d'Afrique francophone : 302 cas cliniques, un patient qui parle français. Interrogatoire et évaluation.", "applicationCategory": "EducationalApplication", "operatingSystem": "Any", "inLanguage": "fr", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "audience": {"@type": "EducationalAudience", "educationalRole": "student"}, "image": "https://salledegarde.online/logo.png", "publisher": {"@type": "Organization", "name": "Salle de Garde", "url": "https://salledegarde.online/", "logo": {"@type": "ImageObject", "url": "https://salledegarde.online/logo.png", "width": 512, "height": 512}}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 
 /* ===== DESIGN PROFESSIONNEL - Salle de Garde Autonome ===== */
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
 :root{
   --bg:#F6F8F9; --surface:#FFFFFF; --surface-2:#F1F5F5; --surface-3:#E8EFEE;
@@ -397,6 +397,121 @@ textarea{ resize:vertical; min-height:96px; line-height:1.6; }
   .ld-cta .btn{ width:100%; justify-content:center; }
 }
 </style>
+
+<style id="pro-dark">
+/* =====================================================================
+   DESIGN PRO DARK — couche finale (surcharge les tokens, garde tout le reste)
+   ===================================================================== */
+:root[data-theme="dark"], :root:not([data-theme="light"]){
+  color-scheme:dark;
+  --bg:#0B0F14; --card:#151A21;
+  --surface:#151A21; --surface-2:#1B222B; --surface-3:#222B36;
+  --fg:#E6EDF3; --muted:#8B98A5; --muted-2:#6B7785;
+  --line:#2A333E; --line-2:#222A34;
+  --accent:#2DD4BF; --accent-2:#5EEAD4; --accent-fg:#04201E;
+  --accent-soft:rgba(45,212,191,.16); --accent-soft-2:rgba(45,212,191,.08);
+  --alert:#F87171; --alert-soft:rgba(248,113,113,.12);
+  --ok:#34D399; --ok-soft:rgba(52,211,153,.12);
+  --warn:#FBBF24; --warn-soft:rgba(251,191,36,.12);
+  --glass:rgba(11,15,20,.78);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+  --shadow-md:0 6px 18px rgba(0,0,0,.40);
+  --shadow-lg:0 16px 40px rgba(0,0,0,.50);
+  --radius-sm:8px; --radius-md:12px; --radius-lg:12px;
+  --f-display:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+html,body{ background:var(--bg); color:var(--fg); }
+body{ font:15px/1.55 var(--f-body); letter-spacing:-.005em; }
+h1,h2,h3{ font-family:var(--f-display); letter-spacing:-.02em; }
+input[type=text],input[type=password],select,textarea{ color:var(--fg); background:var(--surface-2); border-color:var(--line); }
+input::placeholder,textarea::placeholder{ color:var(--muted-2); }
+::selection{ background:var(--accent-soft); }
+
+/* Header 56px sticky + blur */
+.top{ height:56px; background:rgba(11,15,20,.78) !important; border-bottom:1px solid var(--line-2); backdrop-filter:blur(14px) saturate(1.3); -webkit-backdrop-filter:blur(14px) saturate(1.3); }
+.ld-top .ld-wrap{ min-height:56px; }
+.brand{ font:700 1.05rem var(--f-display); }
+.tab[aria-current="page"]{ background:var(--accent); color:var(--accent-fg); }
+.btn-profile{ background:var(--accent); color:var(--accent-fg); }
+.profile-avatar,.ld-step-n{ background:var(--accent); color:var(--accent-fg); }
+.brand .logo-icon{ background:var(--accent); color:var(--accent-fg); }
+
+/* Une seule colonne */
+.wrap{ max-width:720px; padding:20px 16px 56px; }
+.stack{ gap:14px; }
+.card{ background:var(--card); border:1px solid var(--line-2); border-radius:12px; padding:18px; gap:12px; transition:border-color .2s ease, box-shadow .2s ease, transform .2s ease; }
+.card:hover{ border-color:var(--accent); box-shadow:var(--shadow-md); }
+.card.pt{ background:var(--card); }
+.ld-card:hover{ border-color:var(--accent); }
+
+/* KPI 5 colonnes */
+.kpi5{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; }
+.kpi5 .kpi{ background:var(--card); border:1px solid var(--line-2); border-radius:12px; padding:12px 6px; text-align:center; min-width:0; transition:border-color .2s ease, transform .2s ease; }
+.kpi5 .kpi:hover{ border-color:var(--accent); transform:translateY(-1px); }
+.kpi5 .kpi b{ font:700 1.2rem/1.2 var(--f-display); font-variant-numeric:tabular-nums; color:var(--fg); }
+.kpi5 .kpi.hl b{ color:var(--accent); }
+.kpi5 .kpi span{ display:block; margin-top:2px; font-size:.66rem; line-height:1.2; letter-spacing:.02em; color:var(--muted); }
+@media (max-width:420px){ .kpi5{ gap:5px; } .kpi5 .kpi{ padding:10px 3px; } .kpi5 .kpi b{ font-size:1rem; } .kpi5 .kpi span{ font-size:.58rem; } }
+
+/* Constantes */
+.vitals{ display:grid; grid-template-columns:repeat(auto-fit,minmax(104px,1fr)); gap:8px; }
+.vital{ background:var(--surface-2); border:1px solid var(--line-2); border-radius:12px; padding:10px 12px; display:flex; flex-direction:column; gap:2px; transition:border-color .2s ease; min-width:0; }
+.vital:hover{ border-color:var(--accent); }
+.vital small{ font:600 .64rem var(--f-body); letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+.vital b{ font:700 1.1rem/1.25 var(--f-display); font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+.vital.temp b{ color:var(--accent); }
+.vital.hot{ border-color:var(--warn); background:var(--warn-soft); }
+.vital.hot b{ color:var(--warn); }
+.vital.crit{ border-color:var(--alert); background:var(--alert-soft); }
+.vital.crit b{ color:var(--alert); }
+
+/* Onglets d'examen clinique */
+.etabs{ display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; scrollbar-width:thin; -webkit-overflow-scrolling:touch; }
+.etab{ flex:0 0 auto; display:inline-flex; align-items:center; gap:6px; background:var(--surface-2); color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:7px 12px; min-height:34px; font:500 .82rem var(--f-body); cursor:pointer; transition:all .2s ease; white-space:nowrap; }
+.etab:hover:not(:disabled){ border-color:var(--accent); color:var(--fg); }
+.etab.done{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent-2); }
+.etab.done::before{ content:"✓"; font-weight:700; }
+.etab:disabled{ opacity:.5; cursor:default; }
+.etab-count{ font:600 .8rem var(--f-body); color:var(--accent); }
+
+/* Bulles + chips + saisie */
+.bubble{ box-shadow:none; }
+.bubble.p{ background:var(--surface-2); border-color:var(--line); }
+.bubble.d .who{ color:rgba(4,32,30,.7); }
+.chip{ background:var(--surface-2); border:1px solid var(--line); box-shadow:none; color:var(--fg); }
+.chip:hover:not(:disabled){ border-color:var(--accent); background:var(--accent-soft-2); }
+.chip:disabled{ opacity:.5; cursor:not-allowed; }
+.res{ background:var(--surface-2); border-color:var(--line-2); }
+.steps button{ background:var(--card); box-shadow:none; }
+.steps button:hover:not(:disabled){ border-color:var(--accent); }
+.steps button.cur{ background:var(--card); border-color:var(--accent); }
+.btn:hover{ background:var(--accent-2); }
+.btn.ghost{ background:var(--surface-2); color:var(--fg); border-color:var(--line); }
+.btn.ghost:hover{ background:var(--surface-3); border-color:var(--accent); }
+.btn:focus-visible,.chip:focus-visible,.etab:focus-visible,.tab:focus-visible,.steps button:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+a.btn{ text-decoration:none; }
+
+/* Landing dark */
+.ld-final{ background:var(--card); color:var(--fg); border-top:1px solid var(--line-2); }
+.ld-final .ld-h2{ color:var(--fg); }
+.ld-final .btn{ background:var(--accent); color:var(--accent-fg); }
+.ld-final .btn:hover{ background:var(--accent-2); }
+.ld-hero{ background:radial-gradient(900px 480px at 10% -10%,rgba(45,212,191,.14) 0%,transparent 60%),radial-gradient(700px 380px at 100% 0%,rgba(45,212,191,.06) 0%,transparent 55%); }
+.ld-sec.alt{ background:var(--card); }
+.ld-chat{ background:var(--bg); }
+.ld-badge{ color:var(--accent); }
+.pt-avatar.m,.pt-avatar.f,.pt-avatar.kid{ border-color:var(--card); }
+.timer{ color:var(--muted); }
+.pt-scene-cap{ color:var(--muted); }
+
+/* Animations */
+@media (prefers-reduced-motion:no-preference){
+  @keyframes slideIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:none; } }
+  .chat > .bubble:last-child, .entry:last-child, .banner{ animation:slideIn .28s ease-out both; }
+}
+</style>
 </head>
 <body>
 <!-- ===================== LANDING PUBLIQUE ===================== -->
@@ -416,7 +531,7 @@ textarea{ resize:vertical; min-height:96px; line-height:1.6; }
     <div class="ld-wrap">
       <div>
         <span class="ld-badge"><span id="ld-count">302</span> CAS CLINIQUES • FRANCOPHONE</span>
-        <h1 class="ld-h1">Deviens le médecin que <span>l'Afrique attend.</span></h1>
+        <h1 class="ld-h1">Deviens le médecin que <span>la RDC attend.</span></h1>
         <p class="ld-lead">Salle de Garde est le simulateur de patient virtuel pensé pour les étudiants en médecine d'Afrique francophone. Un vrai patient qui parle avec ses mots, comprend tes fautes, et ne te donne jamais le diagnostic.</p>
         <div class="ld-cta">
           <button class="btn" type="button" onclick="showAuth()">Commencer gratuitement →</button>
@@ -1343,7 +1458,13 @@ function normCase(d){
 
 /* ===== Patient autonome (IA) — la clé API reste dans le Worker ===== */
 /* Mettre ici l'URL du Worker (voir worker/patient-worker.js). Vide = mode local (moteur de règles). */
-var LLM_URL=window.SDG_LLM_URL||"https://muddy-shadow-c8d5.voldikiala29.workers.dev";
+var WORKER_URL="https://muddy-shadow-c8d5.voldikiala29.workers.dev";
+var LLM_URL=window.SDG_LLM_URL||WORKER_URL;
+/* Ce que Cava reçoit du cas : jamais le diagnostic ni les examens */
+function casPublic(S){
+  var d=DB[S.did],p=S.pt;
+  return {id:d.id,service:d.svc,plainte:d.plainte,patient:{prenom:p.prenom,age:p.age,sexe:p.sexe,enfant:!!p.kid}};
+}
 function fillX(t,p){return String(t).replace(/\{(\w+)\}/g,function(m,k){return p[k]!=null?p[k]:m;});}
 function buildPersona(S){
   var p=S.pt,d=DB[S.did];
@@ -1367,7 +1488,7 @@ async function answerPatient(S,t){
     var ctrl=new AbortController(),tm=setTimeout(function(){ctrl.abort();},15000);
     try{
       var res=await fetch(LLM_URL,{method:"POST",headers:{"Content-Type":"application/json"},signal:ctrl.signal,
-        body:JSON.stringify({persona:buildPersona(S),facts:buildFacts(S),step:STEPS[S.stage],history:S.chat.slice(0,-1).slice(-12),message:t,question:t})});
+        body:JSON.stringify({persona:buildPersona(S),facts:buildFacts(S),step:STEPS[S.stage],history:S.chat.slice(0,-1).slice(-12),message:t,question:t,cas:casPublic(S)})});
       if(res.ok){
         var j=await res.json();
         var rep=j&&(j.reponse||j.reply);
@@ -1380,6 +1501,8 @@ async function answerPatient(S,t){
   }
   return patientReply(S,t);
 }
+/* Cava : le patient virtuel. Worker d'abord, moteur local si le Worker ne répond pas. */
+function smartPatientReply(question){ return answerPatient(S,question); }
 /* Point d'accès de test : seulement si l'URL contient ?debug=1 (jamais en usage normal) */
 if(/[?&]debug=1/.test(location.search)){ window._sdgDbg=function(){return {S:S,DB:DB,guardLLM:guardLLM,N:N};}; }
 
@@ -1609,7 +1732,7 @@ function fmtDate(t){return new Date(t).toLocaleDateString("fr-FR",{day:"2-digit"
    ===================================================================== */
 function homeView(){
   var root=h("div",{class:"stack"});
-  root.append(h("div",{class:"hero"},
+  root.append(kpiRow(false),h("div",{class:"hero"},
     h("h1",null,"Reçois un patient, mène la consultation."),
     h("p",{class:"muted"},"Interroge, examine, demande tes examens, conclus. L'évaluation te dit ce qui était juste et ce qui manquait.")));
 
@@ -1838,14 +1961,46 @@ function quitCase(){
   if(!window.confirm("Quitter ce cas ? La consultation en cours sera perdue."))return;
   S=null; wipe(KEY); go("home");
 }
+/* KPI : 5 colonnes. En consultation, la 5e est le chronomètre du cas. */
+function kpiRow(inCase){
+  var n=hist.length;
+  var avg=n?Math.round(hist.reduce(function(s,x){return s+x.total;},0)/n):null;
+  var last=n?hist[n-1].total:null;
+  var best=n?Math.max.apply(null,hist.map(function(x){return x.total;})):null;
+  function cell(v,l,cls,id){return h("div",{class:"kpi"+(cls?" "+cls:"")},h("b",id?{id:id}:null,String(v)),h("span",null,l));}
+  return h("div",{class:"kpi5",role:"group","aria-label":"Indicateurs"},
+    cell(D.length,"cas"),
+    cell(n,"terminés"),
+    cell(avg==null?"--":avg,"moyenne"),
+    cell(last==null?"--":last,"dernier"),
+    inCase?cell(fmtTime((S&&S.spent)||0),"temps","hl","case-timer"):cell(best==null?"--":best,"meilleur","hl"));
+}
+/* Constantes du cas (jamais figées : elles viennent du dossier) */
+var VITAL_LBL={"T°":"Température","TA":"Tension","FC":"Pouls","FR":"Fréq. resp.","SpO2":"SpO₂","Poids":"Poids","TRC":"TRC"};
+function vitalsCard(){
+  var d=DB[S.did];
+  /* les constantes sont affichées : elles comptent comme geste d'examen réalisé */
+  if((S.examIds||[]).indexOf("const")<0){S.examIds=uniq((S.examIds||[]).concat(["const"]));save(KEY,S);}
+  var raw=String((d.ex&&d.ex.const)||EX.const.n).replace(/\.\s*$/,"");
+  var cells=raw.split(/\s·\s/).map(function(part){
+    var i=part.indexOf(" "),key=i>0?part.slice(0,i):"",val=i>0?part.slice(i+1):part;
+    var num=parseFloat(String(val).replace(",","."));
+    var cls="vital";
+    if(key==="T°"){cls+=" temp";if(num>=40||num<35.5)cls+=" crit";else if(num>=38)cls+=" hot";}
+    if(key==="SpO2"){if(num<92)cls+=" crit";else if(num<95)cls+=" hot";}
+    return h("div",{class:cls},h("small",null,VITAL_LBL[key]||key||"Constante"),h("b",null,val));
+  });
+  return h("section",{class:"card"},h("div",{class:"label"},"Constantes"),h("div",{class:"vitals"},cells));
+}
 function caseView(){
   var root=h("div",{class:"stack"});
-  root.append(patientCard(),
+  root.append(kpiRow(true),patientCard(),
     h("div",{class:"case-bar"},
-      h("button",{class:"btn ghost quit-case",type:"button",onclick:quitCase},"← Quitter le cas"),
-      h("div",{class:"timer"},"Temps : ",h("span",{id:"case-timer"},fmtTime((S&&S.spent)||0)))),
+      h("button",{class:"btn ghost quit-case",type:"button",onclick:quitCase},"← Quitter le cas")),
     stepper());
-  root.append([chatPanel,examPanel,paraPanel,conclPanel][S.stage]());
+  if(S.stage===0)root.append(chatPanel(),vitalsCard());
+  else if(S.stage===1)root.append(vitalsCard(),examPanel());
+  else root.append([null,null,paraPanel,conclPanel][S.stage]());
   var sg=suggestPanel();
   if(sg)root.append(sg);
   return root;
@@ -1885,7 +2040,7 @@ function chatPanel(){
     h("h2",null,"Interrogatoire"),
     h("p",{class:"small muted"},"Écris tes questions librement, comme en consultation. Le patient repère les mots-clés (fièvre, toux, depuis quand, médicaments, antécédents…) et répond en conséquence. Pose une ou deux questions à la fois."),
     log,
-    composer("chat-in","chat","Pose ta question au patient…","Ta question",sendChat),
+    composer("chat-in","chat","Pose ta question au patient…","Ta question",sendChat,CHAT_CHIPS),
     navRow("Examen clinique"));
 }
 async function sendChat(){
@@ -1893,7 +2048,7 @@ async function sendChat(){
   S.chat.push({r:"d",t:t});draft.chat="";save(KEY,S);
   pending="chat";busy=true;render();afterSend();
   await delay(450);
-  var r=await answerPatient(S,t);
+  var r=await smartPatientReply(t);
   S.chat.push({r:"p",t:r.text});S.asked=uniq((S.asked||[]).concat(r.ids));
   pending=null;busy=false;save(KEY,S);render();afterSend();
 }
@@ -1905,11 +2060,20 @@ function entries(list,prefix){
 function examPanel(){
   var log=h("div",{class:"stack"},entries(S.exams,"Examiné : "));
   if(pending==="exam")log.append(h("div",{class:"entry"},h("div",{class:"res pending"},"…")));
+  var done=S.examIds||[];
+  var nDone=EXORDER.filter(function(id){return done.indexOf(id)>=0;}).length;
+  var tabs=h("div",{class:"etabs",role:"group","aria-label":"Appareils à examiner"},EXORDER.map(function(id){
+    var ok=done.indexOf(id)>=0;
+    return h("button",{type:"button",class:"etab"+(ok?" done":""),disabled:busy||ok,
+      title:ok?"Déjà examiné":"Examiner : "+EX[id].l,
+      onclick:function(){draft.exam=EX[id].l;sendExam();}},EX[id].l);
+  }));
   return h("section",{class:"card"},
-    h("h2",null,"Examen clinique"),
-    h("p",{class:"small muted"},"Dis ce que tu examines. Tu ne reçois que les constatations des gestes demandés."),
+    h("div",{class:"row between"},h("h2",null,"Examen clinique"),h("span",{class:"etab-count"},nDone+"/"+EXORDER.length+" examinés")),
+    h("p",{class:"small muted"},"Touche un appareil ou décris ton geste. Tu ne reçois que les constatations des gestes demandés."),
+    tabs,
     log,
-    composer("exam-in","exam","Décris le geste que tu fais","Ce que tu examines",sendExam),
+    composer("exam-in","exam","Décris le geste que tu fais","Ce que tu examines",sendExam,EXAM_CHIPS),
     navRow("Examens complémentaires"));
 }
 async function sendExam(){
