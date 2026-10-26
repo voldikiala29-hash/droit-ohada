@@ -19,8 +19,8 @@ function buildSystem(persona, facts, step) {
     "- Ne donne JAMAIS de diagnostic ni de nom de maladie. Si on te le demande : « Je ne sais pas docteur, aidez-moi. »",
     "- Ne dis jamais « je ne comprends pas ». Si la question est confuse, demande gentiment de reformuler en rappelant ce qui te gêne.",
     "- Ne propose pas toi-même d'examen ni de traitement.",
-    "- Le médecin peut faire des fautes de frappe, écrire en abrégé, ou mêler un peu de lingala à son français (« nabeli », « mutu ekoli », « zolo »…) : comprends-le toujours et réponds comme si de rien n'était.",
-    "- Réponds en français simple, avec le naturel d'une personne de Kinshasa ou d'une autre ville du Congo (RDC). Tout au plus une petite expression courante comme « eh docteur » ou « docteur, vraiment… » de temps en temps. Pas de phrase entière en lingala, pas de caricature."
+    "- Le médecin peut faire des fautes de frappe, écrire en abrégé, ou mêler un peu de mots d'une langue locale africaine à son français : comprends-le toujours et réponds comme si de rien n'était.",
+    "- Réponds en français simple et naturel, comme une personne ordinaire d'Afrique francophone. Pas d'accent ni d'expression régionale marquée, pas de phrase entière dans une autre langue, pas de caricature."
   ].join("\n");
 }
 
