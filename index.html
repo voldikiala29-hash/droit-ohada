@@ -187,26 +187,51 @@ textarea{ resize:vertical; min-height:96px; line-height:1.6; }
 .user-bar b{ color:var(--fg); }
 
 /* PROFILE BULLETIN PRO */
-#profile-overlay{ position:fixed; inset:0; z-index:100; background:rgba(14,30,34,0.55); backdrop-filter:blur(8px) saturate(1.1); -webkit-backdrop-filter:blur(8px) saturate(1.1); display:none; align-items:center; justify-content:center; padding:16px; }
+#profile-overlay{ position:fixed; inset:0; z-index:100; background:rgba(14,30,34,0.5); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); display:none; align-items:flex-end; justify-content:center; padding:0; }
 #profile-overlay.open{ display:flex; }
-.profile-bulletin{ background:var(--surface); border:1px solid var(--line-2); border-radius:var(--radius-lg); max-width:460px; width:100%; max-height:90vh; overflow:auto; box-shadow:var(--shadow-lg); animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1); }
-@keyframes slideUp{ from{ transform:translateY(16px) scale(0.98); opacity:0; } to{ transform:translateY(0) scale(1); opacity:1; } }
-.profile-head{ padding:22px 22px 18px; border-bottom:1px solid var(--line-2); display:flex; gap:16px; align-items:center; }
-.profile-avatar{ width:60px; height:60px; border-radius:50%; background:var(--fg); color:var(--bg); display:flex; align-items:center; justify-content:center; font:700 1.6rem var(--f-display); flex-shrink:0; overflow:hidden; box-shadow:var(--shadow-sm); border:2px solid var(--surface); }
+@media (min-width:600px){ #profile-overlay{ align-items:center; padding:16px; } .profile-bulletin{ border-radius:var(--radius-lg); max-height:88vh; } }
+.profile-bulletin{ background:var(--surface); border:1px solid var(--line-2); border-radius:var(--radius-lg) var(--radius-lg) 0 0; width:100%; max-width:460px; max-height:92vh; max-height:92dvh; overflow:hidden; display:flex; flex-direction:column; box-shadow:var(--shadow-lg); animation:pmSheet .28s cubic-bezier(.16,1,.3,1); }
+@keyframes pmSheet{ from{ transform:translateY(24px); opacity:0; } to{ transform:none; opacity:1; } }
+@media (prefers-reduced-motion: reduce){ .profile-bulletin{ animation:none; } }
+.pm-scroll{ overflow-y:auto; -webkit-overflow-scrolling:touch; flex:1 1 auto; min-height:0; padding-bottom:12px; }
+.pm-hero{ position:relative; padding:26px 20px 18px; text-align:center; background:var(--surface-2); border-bottom:1px solid var(--line-2); }
+.pm-close{ position:absolute; top:12px; right:12px; width:40px; height:40px; border-radius:50%; border:1px solid var(--line); background:var(--surface); color:var(--fg); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.pm-close:hover{ background:var(--surface-3); }
+.profile-avatar{ position:relative; cursor:pointer; width:84px; height:84px; margin:0 auto 12px; border-radius:50%; background:var(--fg); color:var(--bg); display:flex; align-items:center; justify-content:center; font:700 2rem var(--f-display); overflow:hidden; flex-shrink:0; border:3px solid var(--surface); box-shadow:var(--shadow-sm); }
 .profile-avatar img{ width:100%; height:100%; object-fit:cover; }
-.profile-name{ font:700 1.3rem var(--f-display); line-height:1.2; letter-spacing:-0.02em; }
-.profile-meta{ font-size:.88rem; color:var(--muted); }
-.profile-body{ padding:18px 22px; display:flex; flex-direction:column; gap:16px; }
-.profile-kpis{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
-.profile-kpi{ background:var(--surface-2); border:1px solid var(--line-2); border-radius:var(--radius-md); padding:14px 10px; text-align:center; transition:all 0.2s ease; }
-.profile-kpi:hover{ transform:translateY(-1px); box-shadow:var(--shadow-sm); }
-.profile-kpi b{ display:block; font:700 1.5rem var(--f-display); letter-spacing:-0.02em; }
-.profile-kpi span{ font-size:.75rem; color:var(--muted); font-weight:500; }
-.profile-section{ background:var(--surface-2); border:1px solid var(--line-2); border-radius:var(--radius-md); padding:14px; }
-.profile-row{ display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px dashed var(--line-2); font-size:.9rem; }
+.profile-name{ font:700 1.2rem var(--f-display); line-height:1.25; letter-spacing:-0.02em; overflow-wrap:anywhere; }
+.profile-meta{ font-size:.88rem; color:var(--muted); margin-top:2px; overflow-wrap:anywhere; }
+#profile-badges{ margin-top:12px; display:flex; gap:6px; flex-wrap:wrap; justify-content:center; }
+.profile-badge{ display:inline-flex; align-items:center; gap:6px; max-width:100%; background:var(--accent-soft); color:var(--accent-2); border:1px solid var(--accent); border-radius:var(--radius-full); padding:5px 12px; font-size:.78rem; font-weight:600; letter-spacing:-0.01em; text-align:left; }
+.pm-stats{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; padding:16px 20px 0; }
+.profile-kpi{ background:var(--surface-2); border:1px solid var(--line-2); border-radius:var(--radius-md); padding:12px 6px; text-align:center; min-width:0; }
+.profile-kpi i{ font-style:normal; font-size:1.05rem; display:block; }
+.profile-kpi b{ display:block; font:700 1.3rem var(--f-display); letter-spacing:-0.02em; color:var(--fg); }
+.profile-kpi span{ display:block; font-size:.72rem; color:var(--muted); font-weight:600; line-height:1.2; margin-top:2px; }
+.pm-card{ margin:12px 20px 0; background:var(--surface-2); border:1px solid var(--line-2); border-radius:var(--radius-md); padding:12px 16px; }
+.pm-card h3{ margin:0 0 4px; font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:700; }
+.profile-row{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; padding:9px 0; border-bottom:1px solid var(--line-2); font-size:.9rem; min-width:0; }
 .profile-row:last-child{ border-bottom:0; }
-.profile-badge{ display:inline-flex; align-items:center; gap:6px; background:var(--accent-soft); color:var(--accent-2); border:1px solid var(--accent); border-radius:var(--radius-full); padding:5px 12px; font-size:.78rem; font-weight:600; letter-spacing:-0.01em; }
-.profile-actions{ display:flex; gap:10px; padding:0 22px 22px; justify-content:flex-end; align-items:center; }
+.profile-row .k{ color:var(--muted); flex:0 0 auto; }
+.profile-row > b{ text-align:right; min-width:0; overflow-wrap:anywhere; }
+.pm-uid{ display:flex; align-items:center; gap:8px; min-width:0; justify-content:flex-end; font-family:var(--f-mono); font-size:.72rem; color:var(--muted); }
+.pm-uid > span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:150px; }
+.pm-copy{ flex:0 0 auto; border:1px solid var(--line); background:var(--surface); color:var(--accent-2); border-radius:var(--radius-full); padding:4px 10px; font-size:.75rem; font-weight:600; cursor:pointer; min-height:30px; }
+.pm-actions{ display:grid; gap:8px; padding-top:6px; }
+.pm-btn{ display:flex; align-items:center; gap:10px; width:100%; min-height:46px; padding:10px 14px; border-radius:var(--radius-md); border:1px solid var(--line); background:var(--surface); color:var(--fg); font:600 .92rem var(--f-body); cursor:pointer; text-align:left; transition:background .15s ease, border-color .15s ease; }
+.pm-btn:hover{ background:var(--surface-3); }
+.pm-btn:active{ transform:scale(.99); }
+.pm-btn .ico{ width:30px; height:30px; border-radius:8px; background:var(--accent-soft); display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+.pm-danger{ justify-content:center; color:var(--alert); border-color:var(--alert); font-weight:700; }
+.pm-danger:hover{ background:var(--alert-soft); }
+.pm-foot{ border-top:1px solid var(--line-2); padding:14px 20px calc(14px + env(safe-area-inset-bottom, 0px)); background:var(--surface); }
+.pm-confirm{ margin-bottom:10px; background:var(--alert-soft); border:1px solid var(--alert); border-radius:var(--radius-md); padding:12px 14px; }
+.pm-confirm[hidden], #btn-logout-bulletin[hidden]{ display:none !important; }
+.pm-confirm p{ margin:0 0 10px; font-size:.9rem; color:var(--fg); }
+.pm-confirm .row{ display:flex; gap:8px; }
+.pm-confirm .row button{ flex:1; min-height:44px; border-radius:var(--radius-md); font-weight:700; cursor:pointer; font-size:.92rem; }
+.pm-note{ margin:14px 20px 0; font-size:.8rem; color:var(--muted); text-align:center; }
+#profile-overlay button:focus-visible, #profile-overlay [role=button]:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
 .btn-profile{ width:40px; height:40px; border-radius:50%; background:var(--fg); color:var(--bg); border:0; display:flex; align-items:center; justify-content:center; cursor:pointer; font:700 0.9rem var(--f-display); box-shadow:var(--shadow-sm); transition:all 0.2s ease; }
 .btn-profile:hover{ transform:scale(1.05); box-shadow:var(--shadow-md); }
 
@@ -617,6 +642,7 @@ function showApp(user){
   window._openProfile = async function(){
     const overlay = document.getElementById("profile-overlay");
     overlay.classList.add("open");
+    setTimeout(function(){ const c=overlay.querySelector(".pm-close"); if(c) c.focus(); },50);
     // Remplit avec données auth + Firestore + hist
     try{
       const user = window._fbAuth ? window._fbAuth.currentUser : null;
@@ -638,7 +664,7 @@ function showApp(user){
         // calcule ancienneté depuis premier cas
         const first = hist[0]?.t ? new Date(hist[0].t) : new Date();
         const days = Math.floor((Date.now() - first.getTime())/(1000*60*60*24));
-        const totalMinutes = n * 12; // estimation 12min par cas
+        const totalMinutes = Math.round(hist.reduce((s,x)=>s+(x.temps||0),0)/60000); // temps réel passé sur les cas
         const hours = Math.floor(totalMinutes/60);
         const mins = totalMinutes%60;
         const tempsStr = hours>0 ? `${hours}h ${mins}min` : `${mins}min`;
@@ -694,7 +720,7 @@ function showApp(user){
           av.innerHTML = `<img src="${imgSrc(user.photoURL)}" alt="avatar" style="width:100%;height:100%;object-fit:cover;"><div class="avatar-overlay"><span style="font-size:18px;">📷</span><span id="avatar-overlay-text">Changer</span></div>`;
           av.classList.add("has-photo");
         }else{
-          av.innerHTML = `${esc((user.email[0]||'D').toUpperCase())}<div class="avatar-overlay"><span style="font-size:18px;">📷</span><span id="avatar-overlay-text">Ajouter</span></div>`;
+          av.innerHTML = `${esc(initialesNom(user))}<div class="avatar-overlay"><span style="font-size:18px;">📷</span><span id="avatar-overlay-text">Ajouter</span></div>`;
           av.classList.remove("has-photo");
         }
         // Essaie de charger infos medecin depuis Firestore
@@ -726,7 +752,16 @@ function showApp(user){
   };
 }
 
-window._closeProfile = function(){ document.getElementById("profile-overlay")?.classList.remove("open"); };
+window._closeProfile = function(){
+  const ov=document.getElementById("profile-overlay"); if(!ov) return;
+  ov.classList.remove("open");
+  const c=document.getElementById("logout-confirm"); if(c) c.hidden=true;
+  const b=document.getElementById("btn-logout-bulletin"); if(b) b.hidden=false;
+  const p=document.getElementById("btn-profile-open"); if(p) p.focus();
+};
+document.addEventListener("keydown", function(e){
+  if(e.key==="Escape" && document.getElementById("profile-overlay")?.classList.contains("open")) window._closeProfile();
+});
 
 
 function showAuth(){
@@ -811,7 +846,7 @@ onAuthStateChanged(auth, async (user)=>{
 });
 
 window._handleLogoutBulletin = async function(){
-  const btn = document.getElementById("btn-logout-bulletin");
+  const btn = document.getElementById("btn-logout-confirm");
   if(btn){ btn.disabled = true; btn.textContent = "Déconnexion…"; }
   let ok = true;
   try{
@@ -829,11 +864,30 @@ window._handleLogoutBulletin = async function(){
     window.showLanding();
     setTimeout(()=> location.reload(), 300);
   }else{
-    if(btn){ btn.disabled = false; btn.textContent = "🚪 Déconnexion"; }
+    if(btn){ btn.disabled = false; btn.textContent = "Se déconnecter"; }
     alert("La déconnexion n'a pas pu être finalisée (connexion internet ?). Réessaie dans un instant.");
   }
 };
-document.getElementById("btn-logout-bulletin")?.addEventListener("click", window._handleLogoutBulletin);
+window._askLogout = function(){
+  const c=document.getElementById("logout-confirm"); if(c) c.hidden=false;
+  const b=document.getElementById("btn-logout-bulletin"); if(b) b.hidden=true;
+  const cancel=c && c.querySelector("button"); if(cancel) cancel.focus();
+};
+window._cancelLogout = function(){
+  const c=document.getElementById("logout-confirm"); if(c) c.hidden=true;
+  const b=document.getElementById("btn-logout-bulletin"); if(b){ b.hidden=false; b.focus(); }
+};
+window._copyUid = async function(){
+  const t=document.getElementById("info-uid")?.textContent||"";
+  const btn=document.getElementById("btn-copy-uid");
+  try{
+    await navigator.clipboard.writeText(t);
+    if(btn){ btn.textContent="Copié ✓"; setTimeout(function(){ btn.textContent="Copier"; },1500); }
+  }catch(e){
+    if(btn){ btn.textContent="Non copié"; setTimeout(function(){ btn.textContent="Copier"; },1500); }
+  }
+};
+window._goProgress = function(){ window._closeProfile(); document.getElementById("nav-prog")?.click(); };
 
 // === GESTION PHOTO DE PROFIL - VERSION 100% GRATUITE SANS STORAGE (FIRESTORE SEULEMENT) ===
 window._handleAvatarUpload = async function(event){
@@ -1363,6 +1417,9 @@ function esc(x){return String(x==null?"":x).replace(/&/g,"&amp;").replace(/</g,"
 /* N'accepte que des images https ou data:image (pas de javascript:) */
 function imgSrc(u){var s=String(u||"");if(/^https:\/\/[^\s"'<>]+$/.test(s)||/^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(s))return esc(s);return "";}
 function load(k){try{return JSON.parse(localStorage.getItem(k));}catch(e){return null;}}
+/* Initiales du nom (ou de l'email à défaut) pour l'avatar sans photo */
+function initialesNom(u){var n=String((u&&u.displayName)||'').trim().split(/\s+/).filter(Boolean);var s=n.slice(0,2).map(function(w){return w.charAt(0);}).join('');return (s||String((u&&u.email)||'D').charAt(0)||'D').toUpperCase();}
+window.initialesNom=initialesNom;
 window.esc=esc; window.imgSrc=imgSrc;
 /* Point d'accès de test : uniquement si l'URL contient ?debug=1 */
 
@@ -2071,52 +2128,54 @@ render();
 </div>
 <!-- BULLETIN DE PROFIL DOCTEUR -->
 <div id="profile-overlay" onclick="if(event.target===this) window._closeProfile()">
-  <div class="profile-bulletin">
-    <div class="profile-head">
-      <div id="profile-avatar" class="profile-avatar" onclick="document.getElementById('avatar-file-input').click()" title="Clique pour ajouter une photo">
-        D
-        <div class="avatar-overlay">
-          <span style="font-size:18px;">📷</span>
-          <span id="avatar-overlay-text">Ajouter</span>
-        </div>
-      </div>
-      <input type="file" id="avatar-file-input" class="avatar-input" accept="image/*">
-      <div style="flex:1; min-width:0;">
+  <div class="profile-bulletin" role="dialog" aria-modal="true" aria-labelledby="profile-nom">
+    <div class="pm-scroll">
+      <div class="pm-hero">
+        <button class="pm-close" type="button" aria-label="Fermer le profil" onclick="window._closeProfile()">✕</button>
+        <div id="profile-avatar" class="profile-avatar" role="button" tabindex="0" aria-label="Changer la photo de profil" title="Changer la photo" onclick="document.getElementById('avatar-file-input').click()">D<div class="avatar-overlay"><span style="font-size:18px;">📷</span><span id="avatar-overlay-text">Ajouter</span></div></div>
+        <input type="file" id="avatar-file-input" class="avatar-input" accept="image/*">
         <div id="profile-nom" class="profile-name">Docteur</div>
         <div id="profile-email" class="profile-meta">email@example.com</div>
-        <div id="profile-badges" style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;">
-        <span id="badge-temps" class="profile-badge" style="background:var(--surface-2); color:var(--fg); border-color:var(--line);">⏱️ Nouveau</span>
-        <span id="badge-score" class="profile-badge" style="background:var(--accent-soft);">🎯 En formation</span>
-      </div>
-      </div>
-      <button class="btn ghost" style="min-height:32px; padding:4px 10px;" onclick="window._closeProfile()">✕</button>
-    </div>
-    <div class="profile-body">
-      <div class="profile-kpis">
-        <div class="profile-kpi"><b id="kpi-cases">0</b><span>Cas terminés</span></div>
-        <div class="profile-kpi"><b id="kpi-moy">--</b><span>Moyenne /100</span></div>
-        <div class="profile-kpi"><b id="kpi-last">--</b><span>Dernier score</span></div>
-      </div>
-      
-      <div class="profile-section">
-        <div class="label" style="margin-bottom:8px;">Informations du médecin</div>
-        <div class="profile-row"><span class="muted">Nom complet</span><b id="info-nom">--</b></div>
-        <div class="profile-row"><span class="muted">Hôpital / Service</span><b id="info-hop">--</b></div>
-        <div class="profile-row"><span class="muted">Email</span><b id="info-email" style="font-size:.85rem;">--</b></div>
-        <div class="profile-row"><span class="muted">ID utilisateur</span><span id="info-uid" class="small muted" style="font-family:var(--f-mono); font-size:.7rem; overflow:hidden; text-overflow:ellipsis; max-width:160px;">--</span></div>
+        <div id="profile-badges"><span id="badge-temps" class="profile-badge">⏱️ Nouveau</span><span id="badge-score" class="profile-badge">🎯 En formation</span></div>
       </div>
 
-      
+      <div class="pm-stats">
+        <div class="profile-kpi"><i aria-hidden="true">📚</i><b id="kpi-cases">0</b><span>Cas terminés</span></div>
+        <div class="profile-kpi"><i aria-hidden="true">📊</i><b id="kpi-moy">--</b><span>Moyenne /100</span></div>
+        <div class="profile-kpi"><i aria-hidden="true">🕑</i><b id="kpi-last">--</b><span>Dernier score</span></div>
+      </div>
 
-      <p class="small muted" style="text-align:center;">Ta progression est sauvegardée et tu peux la retrouver sur un autre appareil.</p>
+      <section class="pm-card" aria-labelledby="pm-pro-title">
+        <h3 id="pm-pro-title">Informations professionnelles</h3>
+        <div class="profile-row"><span class="k">Nom complet</span><b id="info-nom">--</b></div>
+        <div class="profile-row"><span class="k">Hôpital / service</span><b id="info-hop">--</b></div>
+        <div class="profile-row"><span class="k">Email</span><b id="info-email">--</b></div>
+        <div class="profile-row"><span class="k">Identifiant</span><span class="pm-uid"><span id="info-uid">--</span><button type="button" id="btn-copy-uid" class="pm-copy" onclick="window._copyUid()">Copier</button></span></div>
+      </section>
+
+      <section class="pm-card" aria-labelledby="pm-act-title">
+        <h3 id="pm-act-title">Actions rapides</h3>
+        <div class="pm-actions">
+          <button class="pm-btn" type="button" onclick="window._goProgress()"><span class="ico" aria-hidden="true">📈</span>Voir ma progression</button>
+          <button class="pm-btn" type="button" onclick="document.getElementById('avatar-file-input').click()"><span class="ico" aria-hidden="true">📷</span>Changer ma photo</button>
+        </div>
+      </section>
+
+      <p class="pm-note">Ta progression est sauvegardée et tu peux la retrouver sur un autre appareil.</p>
     </div>
-    <div class="profile-actions">
-      <button id="btn-logout-bulletin" onclick="window._handleLogoutBulletin && window._handleLogoutBulletin()" class="btn danger" type="button" style="flex:1;">🚪 Déconnexion</button>
-      <button class="btn ghost" type="button" onclick="window._closeProfile()" style="flex:0 0 auto; min-height:32px; padding:6px 14px; font-size:.8rem;">Fermer</button>
+
+    <div class="pm-foot">
+      <div id="logout-confirm" class="pm-confirm" hidden>
+        <p>Te déconnecter de ce compte ? Ta progression reste sauvegardée.</p>
+        <div class="row">
+          <button type="button" style="background:var(--surface);color:var(--fg);border:1px solid var(--line);" onclick="window._cancelLogout()">Annuler</button>
+          <button type="button" id="btn-logout-confirm" style="background:var(--alert);color:#fff;border:0;" onclick="window._handleLogoutBulletin()">Se déconnecter</button>
+        </div>
+      </div>
+      <button id="btn-logout-bulletin" class="pm-btn pm-danger" type="button" onclick="window._askLogout()">🚪 Se déconnecter</button>
     </div>
   </div>
 </div>
-
 <script>
 /* Navigation : landing (public) -> connexion -> app */
 function showLanding(){
