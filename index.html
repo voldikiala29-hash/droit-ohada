@@ -970,13 +970,19 @@ window._handleLogoutBulletin = async function(){
     ok = false;
     console.warn("signOut:", e && e.message);
   }
-  // On efface l'état local quoi qu'il arrive : plus de session de cas ni d'accès à l'app
-  localStorage.removeItem("sdg_guest_mode");
-  wipe(KEY); wipe(HKEY);
+  // Efface l'état local quoi qu'il arrive. Clés en dur : ce script ne voit pas KEY/HKEY/wipe (autre script).
+  try{
+    localStorage.removeItem("sdg_guest_mode");
+    localStorage.removeItem("sdg_auto_state_v1");
+    localStorage.removeItem("sdg_auto_hist_v1");
+  }catch(e){}
   if(ok){
-    document.getElementById("profile-overlay")?.classList.remove("open");
-    document.getElementById("main-ui").style.display="none";
-    window.showLanding();
+    // Ferme le profil et revient à l'accueil public, même si la suite échoue
+    try{
+      document.getElementById("profile-overlay")?.classList.remove("open");
+      document.getElementById("main-ui").style.display="none";
+      if(typeof window.showLanding==="function") window.showLanding();
+    }catch(e){ console.warn("ui:", e && e.message); }
     setTimeout(()=> location.reload(), 300);
   }else{
     if(btn){ btn.disabled = false; btn.textContent = "Se déconnecter"; }
