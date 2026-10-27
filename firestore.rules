@@ -11,13 +11,18 @@ service cloud.firestore {
     function isOwner(uid) {
       return signedIn() && request.auth.uid == uid;
     }
+    // L'email enregistré doit être celui du compte connecté (s'il est présent)
+    function emailOk() {
+      return !('email' in request.resource.data) || request.resource.data.email == request.auth.token.email;
+    }
 
     // Progression (historique des cas)
     match /progression/{uid} {
       allow read: if isOwner(uid);
       allow create, update: if isOwner(uid)
         && request.resource.data.keys().hasOnly(['hist', 'email', 'updatedAt'])
-        && request.resource.data.hist.size() < 5000;
+        && request.resource.data.hist.size() < 5000
+        && emailOk();
       allow delete: if false;
     }
 
@@ -25,7 +30,8 @@ service cloud.firestore {
     match /etats/{uid} {
       allow read: if isOwner(uid);
       allow create, update: if isOwner(uid)
-        && request.resource.data.keys().hasOnly(['etat', 'updatedAt']);
+        && request.resource.data.keys().hasOnly(['etat', 'updatedAt'])
+        && request.resource.data.etat.size() < 200000;
       allow delete: if false;
     }
 
@@ -36,7 +42,8 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly([
             'nom', 'hopital', 'email', 'createdAt', 'projectId',
             'photo', 'photoURL', 'photoUpdatedAt', 'provider'])
-        && (!('photoURL' in request.resource.data) || request.resource.data.photoURL.size() < 900000);
+        && (!('photoURL' in request.resource.data) || request.resource.data.photoURL.size() < 900000)
+        && emailOk();
       allow delete: if false;
     }
 

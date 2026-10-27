@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Confidentialité | Salle de Garde</title>
+<meta name="description" content="Quelles données Salle de Garde collecte, où elles sont stockées et comment les supprimer.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://www.salledegarde.online/confidentialite.html">
+<meta name="theme-color" content="#0B0F14">
+<style>
+:root{color-scheme:dark;--bg:#0B0F14;--card:#151A21;--fg:#E6EDF3;--muted:#8B98A5;--line:#2A333E;--accent:#2DD4BF}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 Inter,system-ui,-apple-system,'Segoe UI',sans-serif}
+main{max-width:720px;margin:0 auto;padding:32px 16px 56px}
+h1{font-size:1.8rem;letter-spacing:-.02em;margin:0 0 8px}
+h2{font-size:1.15rem;margin:28px 0 8px;color:var(--accent)}
+p,li{color:var(--fg)} .muted{color:var(--muted)}
+ul{padding-left:20px} li{margin:4px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-top:16px}
+a{color:var(--accent)}
+.back{display:inline-block;margin-bottom:12px;text-decoration:none}
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="/">← Retour à Salle de Garde</a>
+  <h1>Politique de confidentialité</h1>
+  <p class="muted">Dernière mise à jour : 27 octobre 2026</p>
+
+  <div class="card">
+    <h2>Données que nous collectons</h2>
+    <ul>
+      <li><b>Compte</b> : adresse email, nom complet et hôpital ou service que tu renseignes à l'inscription. Si tu te connectes avec Google, le nom, l'email et la photo de ton compte Google.</li>
+      <li><b>Photo de profil</b> (facultative) : une image compressée stockée avec ton profil.</li>
+      <li><b>Progression</b> : tes scores, dates, durées et axes d'évaluation par cas.</li>
+      <li><b>Consultation en cours</b> : l'état de la consultation, pour la reprendre plus tard.</li>
+    </ul>
+    <p>Les cas cliniques sont fictifs. Le patient est un personnage virtuel : aucune donnée réelle de patient n'est utilisée.</p>
+  </div>
+
+  <div class="card">
+    <h2>Où sont stockées les données</h2>
+    <ul>
+      <li><b>Firebase (Google)</b> : authentification, base Firestore (progression, profil, état de la consultation).</li>
+      <li><b>Cloudflare Workers AI</b> : pour répondre au patient virtuel, le message que tu écris, la plainte du cas et les éléments d'identité fictifs du patient (prénom, âge, sexe) sont envoyés au service. Le diagnostic, les examens et le corrigé ne sont jamais envoyés.</li>
+      <li>Ton historique local est aussi gardé dans le navigateur de ton appareil. La déconnexion l'efface.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Pourquoi</h2>
+    <p>Uniquement pour fournir le service : te connecter, sauvegarder ta progression sur tous tes appareils, et te donner ton évaluation. Nous ne vendons pas tes données et nous ne les utilisons pas pour la publicité.</p>
+  </div>
+
+  <div class="card">
+    <h2>Tes droits</h2>
+    <ul>
+      <li>Accéder à tes données, les corriger, ou demander leur suppression.</li>
+      <li>Pour supprimer ton compte et tes données, écris-nous à : <b>[adresse de contact à compléter]</b>.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Sécurité</h2>
+    <p>Chaque médecin n'accède qu'à ses propres données, grâce aux règles de sécurité de la base. Les mots de passe sont gérés par Firebase et ne sont jamais stockés en clair par le site.</p>
+  </div>
+</main>
+</body>
+</html>

@@ -600,7 +600,7 @@ a.btn{ text-decoration:none; }
       <button class="btn" type="button" onclick="showAuth()">Commencer maintenant →</button>
     </div>
   </section>
-  <footer class="ld-foot"><div class="ld-wrap">Salle de Garde • Fait pour les étudiants en médecine francophones • 2026</div></footer>
+  <footer class="ld-foot"><div class="ld-wrap">Salle de Garde • Fait pour les étudiants en médecine francophones • 2026 • <a href="confidentialite.html" style="color:inherit">Confidentialité</a></div></footer>
 </div>
 
 
@@ -708,7 +708,7 @@ const googleProvider = new GoogleAuthProvider();
 window._fbAuth = auth; window._fbDb = db;
 console.log("Firebase connecté:", firebaseConfig.projectId);
 
-// === Sync vers Firestore (infini, gratuit, rules if true) ===
+// === Sync vers Firestore (règles : voir firestore.rules) ===
 window._fbSync = async function(k,v){
   try{
     const user = auth.currentUser;
