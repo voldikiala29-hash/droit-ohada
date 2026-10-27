@@ -42,6 +42,15 @@ export default {
     if (request.method !== "POST") return json({ error: "method" }, 405, cors);
     if (!allowed.includes(origin)) return json({ error: "origin" }, 403, cors);
 
+    // Limite de débit par IP (20 requêtes / minute). Nécessite la liaison KV « RATE » ; sans elle, pas de limite.
+    if (env.RATE) {
+      const ip = request.headers.get("CF-Connecting-IP") || "inconnu";
+      const key = "rl:" + ip + ":" + Math.floor(Date.now() / 60000);
+      const n = parseInt((await env.RATE.get(key)) || "0", 10);
+      if (n >= 20) return json({ error: "rate" }, 429, cors);
+      await env.RATE.put(key, String(n + 1), { expirationTtl: 120 });
+    }
+
     let body;
     try { body = await request.json(); } catch (e) { return json({ error: "json" }, 400, cors); }
     const { persona, facts, step, history, message } = body || {};
