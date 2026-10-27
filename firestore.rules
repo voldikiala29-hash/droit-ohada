@@ -11,9 +11,12 @@ service cloud.firestore {
     function isOwner(uid) {
       return signedIn() && request.auth.uid == uid;
     }
-    // L'email enregistré doit être celui du compte connecté (s'il est présent)
+    // 🔒 L'email enregistré doit être celui du compte connecté ET vérifié
     function emailOk() {
-      return !('email' in request.resource.data) || request.resource.data.email == request.auth.token.email;
+      return !('email' in request.resource.data) || (
+        request.resource.data.email == request.auth.token.email &&
+        request.auth.token.email_verified == true
+      );
     }
 
     // Progression (historique des cas)
@@ -35,13 +38,20 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Profil médecin
+    // 🔒 Profil médecin - email DOIT être vérifié
     match /medecins/{uid} {
       allow read: if isOwner(uid);
-      allow create, update: if isOwner(uid)
+      allow create: if isOwner(uid)
+        && request.auth.token.email_verified == true
         && request.resource.data.keys().hasOnly([
             'nom', 'hopital', 'email', 'createdAt', 'projectId',
-            'photo', 'photoURL', 'photoUpdatedAt', 'provider'])
+            'photo', 'photoURL', 'photoUpdatedAt', 'provider', 'emailVerified'])
+        && (!('photoURL' in request.resource.data) || request.resource.data.photoURL.size() < 900000)
+        && emailOk();
+      allow update: if isOwner(uid)
+        && request.resource.data.keys().hasOnly([
+            'nom', 'hopital', 'email', 'createdAt', 'projectId',
+            'photo', 'photoURL', 'photoUpdatedAt', 'provider', 'emailVerified'])
         && (!('photoURL' in request.resource.data) || request.resource.data.photoURL.size() < 900000)
         && emailOk();
       allow delete: if false;

@@ -604,6 +604,8 @@ a.btn{ text-decoration:none; }
   <footer class="ld-foot"><div class="ld-wrap">Salle de Garde • Fait pour les étudiants en médecine francophones • 2026 • <a href="a-propos.html" style="color:inherit">À propos</a> • <a href="contact.html" style="color:inherit">Contact</a> • <a href="politique-confidentialite.html" style="color:inherit">Confidentialité</a></div></footer>
 </div>
 
+<!-- 🔒 Message d'email non vérifié -->
+<div id="verify-email-message" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:50;display:flex;align-items:center;justify-content:center;"></div>
 
 <div id="main-app-wrapper">
 
@@ -684,7 +686,7 @@ a.btn{ text-decoration:none; }
 <script type="module">
 // === CONFIG FIREBASE - Ton projet Salledegarde ===
 import { initializeApp } from "firebase/app";
-import { initializeAuth, browserLocalPersistence, indexedDBLocalPersistence, browserSessionPersistence, browserPopupRedirectResolver, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
+import { initializeAuth, browserLocalPersistence, indexedDBLocalPersistence, browserSessionPersistence, browserPopupRedirectResolver, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, sendEmailVerification } from "firebase/auth";
 import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -921,20 +923,35 @@ document.getElementById("btn-register").onclick = async ()=>{
   if(pass.length<8){ errEl.textContent="Le mot de passe doit contenir au moins 8 caractères."; return; }
   try{
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
-    // Enregistre dans Firestore collection medecins (infini)
-    await setDoc(doc(db, "medecins", cred.user.uid), {
-      nom: nom, hopital: hop, email: email, createdAt: serverTimestamp(), projectId: "salledegarde-89dae"
-    });
+    // 🔒 Envoyer email de vérification
+    try{
+      await sendEmailVerification(cred.user);
+      errEl.textContent="✓ Email de vérification envoyé à "+email+". Vérifie avant de continuer.";
+      errEl.style.color="var(--ok)";
+      document.getElementById("form-register").style.display="none";
+      return;
+    }catch(e){
+      errEl.textContent="Erreur lors de l'envoi: "+e.message;
+      return;
+    }
   }catch(e){ errEl.textContent = e.message; }
 };
 // Google
 document.getElementById("btn-google").onclick = async ()=>{
-  try{ 
+  try{
     const cred = await signInWithPopup(auth, googleProvider);
+    // 🔒 Google vérifie toujours l'email
     await setDoc(doc(db, "medecins", cred.user.uid), {
-      nom: cred.user.displayName || "", email: cred.user.email, photo: cred.user.photoURL || "", createdAt: serverTimestamp(), provider: "google"
+      nom: cred.user.displayName || "", email: cred.user.email, photo: cred.user.photoURL || "", createdAt: serverTimestamp(), provider: "google", emailVerified: true
     }, {merge:true});
-  }catch(e){ document.getElementById("login-error").textContent = e.message; }
+  }catch(e){
+    // 🔒 Gérer le cas où l'email existe déjà avec une autre méthode
+    if(e.code === "auth/account-exists-with-different-credential"){
+      document.getElementById("login-error").textContent = "❌ Cet email est déjà utilisé. Connecte-toi avec ton mot de passe ou réinitialise-le.";
+    }else{
+      document.getElementById("login-error").textContent = e.message;
+    }
+  }
 };
 // Mode invité désactivé : connexion obligatoire pour voir évolutions
 // document.getElementById("btn-guest") supprimé
@@ -944,6 +961,18 @@ document.getElementById("btn-google").onclick = async ()=>{
 // Auth state
 onAuthStateChanged(auth, async (user)=>{
   if(user){
+    // 🔒 Vérifier que l'email est vérifié
+    if(!user.emailVerified){
+      document.getElementById("landing-root").style.display="block";
+      document.getElementById("auth-root").style.display="none";
+      document.getElementById("main-ui").style.display="none";
+      const msg=document.getElementById("verify-email-message");
+      if(msg){
+        msg.innerHTML=`<div style="text-align:center;padding:40px;"><p style="font-size:1.1rem;font-weight:600;">📧 Vérifie ton email</p><p style="color:var(--muted);">Un lien d'activation a été envoyé à <b>${user.email}</b></p><p style="color:var(--muted);font-size:0.9rem;">Clique sur le lien puis rafraîchis cette page.</p><button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer;">Rafraîchir</button></div>`;
+        msg.style.display="block";
+      }
+      return;
+    }
     localStorage.removeItem("sdg_guest_mode");
     // Charger progression depuis Firestore (infini)
     try{
