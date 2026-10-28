@@ -301,6 +301,22 @@ textarea{ resize:vertical; min-height:96px; line-height:1.6; }
 .ld-lead{font-size:1.1rem;line-height:1.65;color:var(--muted);max-width:56ch;margin:0 0 26px}
 .ld-cta{display:flex;flex-wrap:wrap;gap:12px}
 .ld-cta .btn{min-height:50px;padding:12px 24px;font-size:1rem}
+/* ===== Hero animé : ligne ECG, hologramme, bouton ===== */
+.ld-hero{position:relative;overflow:hidden;isolation:isolate}
+.ld-hero::before{content:"";position:absolute;inset:0;z-index:-1;background:url("images/ecg-bg.webp") center/cover no-repeat;opacity:.15;pointer-events:none}
+.ld-ecg{position:absolute;left:0;top:50%;width:100%;height:140px;transform:translateY(-50%);z-index:-1;pointer-events:none;overflow:visible}
+.ld-ecg path{fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 6px var(--accent));stroke-dasharray:1;stroke-dashoffset:0;opacity:.35}
+@media (prefers-reduced-motion: no-preference){
+  .ld-ecg path{stroke-dashoffset:1;animation:ecg-pulse 3.2s ease-in-out infinite}
+  .ld-cta .btn:first-child{animation:btn-soft-pulse 2.6s ease-in-out infinite}
+}
+@keyframes ecg-pulse{0%{stroke-dashoffset:1;opacity:.35}45%{stroke-dashoffset:0;opacity:1}100%{stroke-dashoffset:-1;opacity:.35}}
+@keyframes btn-soft-pulse{0%,100%{box-shadow:0 0 0 0 rgba(45,212,191,0)}50%{box-shadow:0 0 0 8px rgba(45,212,191,.18)}}
+.ld-holo{display:flex;justify-content:center;margin-bottom:12px}
+.ld-holo img{width:100%;max-width:360px;height:auto;display:block;will-change:transform;filter:drop-shadow(0 0 18px rgba(45,212,191,.25))}
+/* ===== Entrées au scroll (activées par JS, seulement si pas prefers-reduced-motion) ===== */
+html.ld-anim #landing-root .ld-card,html.ld-anim #landing-root .kpi{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease,box-shadow .2s ease,border-color .2s ease}
+html.ld-anim #landing-root .ld-card.is-in,html.ld-anim #landing-root .kpi.is-in{opacity:1;transform:none}
 .ld-note{margin:16px 0 0;font-size:.9rem;color:var(--muted)}
 .ld-sim{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);overflow:hidden}
 .ld-sim-head{display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line-2);font:600 .8rem var(--f-body);color:var(--muted)}
@@ -529,6 +545,7 @@ a.btn{ text-decoration:none; }
   </header>
 
   <section class="ld-hero">
+    <svg class="ld-ecg" viewBox="0 0 1000 140" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M0 70 H300 L325 70 L340 25 L360 115 L378 50 L392 70 H600 L625 70 L640 18 L662 122 L680 52 L694 70 H1000"/></svg>
     <div class="ld-wrap">
       <div>
         <span class="ld-badge"><span id="ld-count">302</span> CAS CLINIQUES • FRANCOPHONE</span>
@@ -544,6 +561,7 @@ a.btn{ text-decoration:none; }
         </div>
       </div>
       <div class="ld-sim" aria-label="Exemple de consultation">
+        <div class="ld-holo"><img src="images/hero-ia.webp" alt="Étudiants en médecine et patient virtuel" width="360" height="270" decoding="async" onerror="this.parentNode.remove()"></div>
         <div class="ld-sim-head"><span class="ld-dot"></span><span class="ld-dot g"></span><span>Consultation en cours</span></div>
         <div class="ld-chat" id="ld-chat">
           <div class="bubble p step"><span class="who">Patient</span>Docteur, je me sens très faible, j'ai de la fièvre depuis hier et je n'arrive plus à manger…</div>
@@ -2421,6 +2439,52 @@ showLanding();
     at(10500,play);
   }
   box.classList.add("anim");play();
+})();
+
+/* Animations d'entrée, compteurs et parallax de l'hologramme (désactivés si prefers-reduced-motion) */
+(function(){
+  var reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(reduce||!("IntersectionObserver" in window))return;
+  document.documentElement.classList.add("ld-anim");
+
+  function countUp(b){
+    var end=parseInt(b.textContent,10);
+    if(isNaN(end)||end<=0)return;
+    var start=null,dur=1200;
+    b.textContent="0";
+    function step(ts){
+      if(start===null)start=ts;
+      var p=Math.min(1,(ts-start)/dur);
+      b.textContent=String(Math.round(end*(1-Math.pow(1-p,3))));
+      if(p<1)requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(!en.isIntersecting)return;
+      var el=en.target;
+      el.classList.add("is-in");
+      if(el.classList.contains("kpi")){var b=el.querySelector("b");if(b)countUp(b);}
+      io.unobserve(el);
+    });
+  },{threshold:.15});
+  [].slice.call(document.querySelectorAll("#landing-root .ld-card,#landing-root .kpi")).forEach(function(el){io.observe(el);});
+
+  var holo=document.querySelector(".ld-holo img");
+  if(holo){
+    var ticking=false;
+    window.addEventListener("scroll",function(){
+      if(ticking)return;
+      ticking=true;
+      requestAnimationFrame(function(){
+        var y=Math.min(20,Math.max(0,window.scrollY*0.06));
+        holo.style.transform="translate3d(0,"+y.toFixed(1)+"px,0)";
+        ticking=false;
+      });
+    },{passive:true});
+  }
 })();
 </script>
 <script>
