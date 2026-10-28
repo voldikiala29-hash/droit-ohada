@@ -2524,7 +2524,7 @@ var D=[
  rev:["Prise en charge","Surveillance"]
 },
 {id:"palu_femme_enceinte",svc:"Gynécologie",name:"Paludisme grave femme enceinte",
- pt:{s:"M",age:[20,50],pro:["cultivateur","commerçant","enseignant"]},who:"Patient",
+ pt:{s:"F",age:[20,50],pro:["commerçante","enseignante","cultivatrice"]},who:"Patiente",
  plainte:"Enceinte de 6 mois, fièvre depuis 3 jours, je ne sens plus bien le bébé bouger.",
  hist:[
   ["motif","Motif principal - Paludisme grave femme enceinte",/depuis quand|debut|quand|combien/,"Enceinte de 6 mois, fièvre depuis 3 jours, je ne sens plus bien le bébé bouger. Depuis quelques jours.",1],
@@ -2560,7 +2560,7 @@ var D=[
  rev:["Prise en charge","Surveillance"]
 },
 {id:"menace_accouchement",svc:"Gynécologie",name:"Menace d'accouchement prématuré",
- pt:{s:"M",age:[20,50],pro:["cultivateur","commerçant","enseignant"]},who:"Patient",
+ pt:{s:"F",age:[20,50],pro:["commerçante","enseignante","cultivatrice"]},who:"Patiente",
  plainte:"Enceinte de 7 mois, contractions régulières et pertes vaginales.",
  hist:[
   ["motif","Motif principal - Menace d'accouchement prématuré",/depuis quand|debut|quand|combien/,"Enceinte de 7 mois, contractions régulières et pertes vaginales. Depuis quelques jours.",1],
@@ -2596,7 +2596,7 @@ var D=[
  rev:["Prise en charge","Surveillance"]
 },
 {id:"infection_postpartum",svc:"Gynécologie",name:"Endométrite du post-partum",
- pt:{s:"M",age:[20,50],pro:["cultivateur","commerçant","enseignant"]},who:"Patient",
+ pt:{s:"F",age:[20,50],pro:["commerçante","enseignante","cultivatrice"]},who:"Patiente",
  plainte:"J'ai accouché il y a 5 jours, maintenant j'ai de la fièvre et des pertes qui sentent mauvais.",
  hist:[
   ["motif","Motif principal - Endométrite du post-partum",/depuis quand|debut|quand|combien/,"J'ai accouché il y a 5 jours, maintenant j'ai de la fièvre et des pertes qui sentent mauvais. Depuis quelques jours.",1],
@@ -2632,7 +2632,7 @@ var D=[
  rev:["Prise en charge","Surveillance"]
 },
 {id:"retention_placentaire",svc:"Gynécologie",name:"Rétention placentaire avec hémorragie",
- pt:{s:"M",age:[20,50],pro:["cultivateur","commerçant","enseignant"]},who:"Patient",
+ pt:{s:"F",age:[20,50],pro:["commerçante","enseignante","cultivatrice"]},who:"Patiente",
  plainte:"J'ai accouché il y a 1 heure mais le placenta n'est pas sorti et je saigne beaucoup.",
  hist:[
   ["motif","Motif principal - Rétention placentaire avec hémorragie",/depuis quand|debut|quand|combien/,"J'ai accouché il y a 1 heure mais le placenta n'est pas sorti et je saigne beaucoup. Depuis quelques jours.",1],
@@ -2668,7 +2668,7 @@ var D=[
  rev:["Prise en charge","Surveillance"]
 },
 {id:"procidence_cordon",svc:"Gynécologie",name:"Procidence du cordon",
- pt:{s:"M",age:[20,50],pro:["cultivateur","commerçant","enseignant"]},who:"Patient",
+ pt:{s:"F",age:[20,50],pro:["commerçante","enseignante","cultivatrice"]},who:"Patiente",
  plainte:"Enceinte à terme, poche des eaux rompue et je sens quelque chose qui sort.",
  hist:[
   ["motif","Motif principal - Procidence du cordon",/depuis quand|debut|quand|combien/,"Enceinte à terme, poche des eaux rompue et je sens quelque chose qui sort. Depuis quelques jours.",1],
@@ -2704,7 +2704,7 @@ var D=[
  rev:["Prise en charge","Surveillance"]
 },
 {id:"dystocie_epaule",svc:"Gynécologie",name:"Dystocie des épaules",
- pt:{s:"M",age:[20,50],pro:["cultivateur","commerçant","enseignant"]},who:"Patient",
+ pt:{s:"F",age:[20,50],pro:["commerçante","enseignante","cultivatrice"]},who:"Patiente",
  plainte:"Bébé bloqué après sortie de la tête, accouchement très difficile.",
  hist:[
   ["motif","Motif principal - Dystocie des épaules",/depuis quand|debut|quand|combien/,"Bébé bloqué après sortie de la tête, accouchement très difficile. Depuis quelques jours.",1],
@@ -2884,7 +2884,7 @@ var D=[
  rev:["Prise en charge","Surveillance"]
 },
 {id:"torsion_annexe",svc:"Gynécologie",name:"Torsion d'annexe",
- pt:{s:"M",age:[20,50],pro:["cultivateur","commerçant","enseignant"]},who:"Patient",
+ pt:{s:"F",age:[20,50],pro:["commerçante","enseignante","cultivatrice"]},who:"Patiente",
  plainte:"Douleur brutale en bas à droite, vomissements, jeune fille.",
  hist:[
   ["motif","Motif principal - Torsion d'annexe",/depuis quand|debut|quand|combien/,"Douleur brutale en bas à droite, vomissements, jeune fille. Depuis quelques jours.",1],
@@ -2920,7 +2920,7 @@ var D=[
  rev:["Prise en charge","Surveillance"]
 },
 {id:"rupture_kyste_ovarien",svc:"Gynécologie",name:"Rupture de kyste ovarien",
- pt:{s:"M",age:[20,50],pro:["cultivateur","commerçant","enseignant"]},who:"Patient",
+ pt:{s:"F",age:[20,50],pro:["commerçante","enseignante","cultivatrice"]},who:"Patiente",
  plainte:"Douleur pelvienne brutale après rapport, un peu de saignement.",
  hist:[
   ["motif","Motif principal - Rupture de kyste ovarien",/depuis quand|debut|quand|combien/,"Douleur pelvienne brutale après rapport, un peu de saignement. Depuis quelques jours.",1],
@@ -3388,7 +3388,7 @@ var D=[
  rev:["Prise en charge","Surveillance"]
 },
 {id:"anemie_severe_grossesse",svc:"Gynécologie",name:"Anémie sévère grossesse",
- pt:{s:"M",age:[20,50],pro:["cultivateur","commerçant","enseignant"]},who:"Patient",
+ pt:{s:"F",age:[20,50],pro:["commerçante","enseignante","cultivatrice"]},who:"Patiente",
  plainte:"Enceinte de 8 mois très pâle, essoufflée, palpitations.",
  hist:[
   ["motif","Motif principal - Anémie sévère grossesse",/depuis quand|debut|quand|combien/,"Enceinte de 8 mois très pâle, essoufflée, palpitations. Depuis quelques jours.",1],
@@ -3424,7 +3424,7 @@ var D=[
  rev:["Prise en charge","Surveillance"]
 },
 {id:"fibrome_complique",svc:"Gynécologie",name:"Fibrome en nécrobiose",
- pt:{s:"M",age:[20,50],pro:["cultivateur","commerçant","enseignant"]},who:"Patient",
+ pt:{s:"F",age:[20,50],pro:["commerçante","enseignante","cultivatrice"]},who:"Patiente",
  plainte:"Fibrome connu, douleur brutale bas ventre avec fièvre.",
  hist:[
   ["motif","Motif principal - Fibrome en nécrobiose",/depuis quand|debut|quand|combien/,"Fibrome connu, douleur brutale bas ventre avec fièvre. Depuis quelques jours.",1],
@@ -3460,7 +3460,7 @@ var D=[
  rev:["Prise en charge","Surveillance"]
 },
 {id:"cancer_col_hemorragique",svc:"Gynécologie",name:"Cancer col hémorragique",
- pt:{s:"M",age:[20,50],pro:["cultivateur","commerçant","enseignant"]},who:"Patient",
+ pt:{s:"F",age:[20,50],pro:["commerçante","enseignante","cultivatrice"]},who:"Patiente",
  plainte:"Saignements après rapports depuis des mois, pertes malodorantes.",
  hist:[
   ["motif","Motif principal - Cancer col hémorragique",/depuis quand|debut|quand|combien/,"Saignements après rapports depuis des mois, pertes malodorantes. Depuis quelques jours.",1],
