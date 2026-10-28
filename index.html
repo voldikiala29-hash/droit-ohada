@@ -338,7 +338,7 @@ textarea{ resize:vertical; min-height:96px; line-height:1.6; }
 
 
 
-<script src="./cases_202.js?v=20261025"></script>
+<script src="./cases_202.js?v=20261028"></script>
 <style id="mobile-fit">
 @media (max-width:560px){
   body{ font-size:15px; }
@@ -605,7 +605,7 @@ a.btn{ text-decoration:none; }
 </div>
 
 <!-- 🔒 Message d'email non vérifié -->
-<div id="verify-email-message" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:50;display:flex;align-items:center;justify-content:center;"></div>
+<div id="verify-email-message" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:50;align-items:center;justify-content:center;"></div>
 
 <div id="main-app-wrapper">
 
@@ -960,16 +960,19 @@ document.getElementById("btn-google").onclick = async ()=>{
 
 // Auth state
 onAuthStateChanged(auth, async (user)=>{
+  // Le calque de vérification est caché par défaut ; il n'est affiché que pour un compte connecté non vérifié
+  const verifyMsg = document.getElementById("verify-email-message");
+  if(verifyMsg) verifyMsg.style.display = "none";
   if(user){
     // 🔒 Vérifier que l'email est vérifié
-    if(!user.emailVerified){
+    if(auth.currentUser && auth.currentUser.emailVerified === false){
       document.getElementById("landing-root").style.display="block";
       document.getElementById("auth-root").style.display="none";
       document.getElementById("main-ui").style.display="none";
       const msg=document.getElementById("verify-email-message");
       if(msg){
         msg.innerHTML=`<div style="text-align:center;padding:40px;"><p style="font-size:1.1rem;font-weight:600;">📧 Vérifie ton email</p><p style="color:var(--muted);">Un lien d'activation a été envoyé à <b>${user.email}</b></p><p style="color:var(--muted);font-size:0.9rem;">Clique sur le lien puis rafraîchis cette page.</p><button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer;">Rafraîchir</button></div>`;
-        msg.style.display="block";
+        msg.style.display="flex";
       }
       return;
     }
