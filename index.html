@@ -601,7 +601,7 @@ a.btn{ text-decoration:none; }
       <button class="btn" type="button" onclick="showAuth()">Commencer maintenant →</button>
     </div>
   </section>
-  <footer class="ld-foot"><div class="ld-wrap">Salle de Garde • Fait pour les étudiants en médecine francophones • 2026 • <a href="a-propos.html" style="color:inherit">À propos</a> • <a href="contact.html" style="color:inherit">Contact</a> • <a href="politique-confidentialite.html" style="color:inherit">Confidentialité</a></div></footer>
+  <footer class="ld-foot"><div class="ld-wrap">Salle de Garde • Fait pour les étudiants en médecine francophones • 2026 • <a href="a-propos.html" style="color:inherit">À propos</a> • <a href="contact.html" style="color:inherit">Contact</a> • <a href="politique-confidentialite.html" style="color:inherit">Confidentialité</a> • <a href="conditions-utilisation.html" style="color:inherit">Conditions d'utilisation</a></div></footer>
 </div>
 
 <!-- 🔒 Message d'email non vérifié -->
@@ -627,6 +627,7 @@ a.btn{ text-decoration:none; }
     <div id="form-login">
       <div class="auth-field"><label class="label">Email</label><input id="login-email" type="text" placeholder="ton.email@exemple.com"></div>
       <div class="auth-field"><label class="label">Mot de passe</label><input id="login-pass" type="password" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:12px;min-height:44px;" placeholder="••••••••"></div>
+      <label class="small" style="display:flex;align-items:flex-start;gap:8px;margin-top:8px;cursor:pointer;"><input id="login-cgu" type="checkbox" required style="margin-top:3px;flex:0 0 auto;width:auto;min-height:0;"><span>J'ai lu et j'accepte les <a href="conditions-utilisation.html" target="_blank" rel="noopener">Conditions d'Utilisation</a></span></label>
       <button id="btn-login" class="btn" type="button" style="width:100%; margin-top:8px;">Se connecter</button>
       <div class="auth-sep">ou</div>
       <button id="btn-google" class="btn ghost" type="button" style="width:100%;">Continuer avec Google</button>
@@ -638,6 +639,7 @@ a.btn{ text-decoration:none; }
       <div class="auth-field"><label class="label">Hôpital / Service</label><input id="reg-hop" type="text" placeholder="Ex: Hôpital Général, Médecine interne"></div>
       <div class="auth-field"><label class="label">Email</label><input id="reg-email" type="text" placeholder="ton.email@exemple.com"></div>
       <div class="auth-field"><label class="label">Mot de passe</label><input id="reg-pass" type="password" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:12px;min-height:44px;" placeholder="Au moins 8 caractères"></div>
+      <label class="small" style="display:flex;align-items:flex-start;gap:8px;margin-top:8px;cursor:pointer;"><input id="reg-cgu" type="checkbox" required style="margin-top:3px;flex:0 0 auto;width:auto;min-height:0;"><span>J'ai lu et j'accepte les <a href="conditions-utilisation.html" target="_blank" rel="noopener">Conditions d'Utilisation</a></span></label>
       <button id="btn-register" class="btn" type="button" style="width:100%; margin-top:8px;">Créer mon compte gratuit</button>
       <p id="reg-error" class="small" style="color:var(--alert); margin-top:10px;"></p>
           </div>
@@ -908,6 +910,7 @@ document.getElementById("btn-login").onclick = async ()=>{
   const pass = document.getElementById("login-pass").value;
   const errEl = document.getElementById("login-error");
   errEl.textContent="";
+  if(!document.getElementById("login-cgu").checked){ errEl.textContent="Tu dois accepter les Conditions d'Utilisation pour continuer."; return; }
   try{
     await signInWithEmailAndPassword(auth, email, pass);
   }catch(e){ errEl.textContent = e.message; }
@@ -920,6 +923,7 @@ document.getElementById("btn-register").onclick = async ()=>{
   const pass = document.getElementById("reg-pass").value;
   const errEl = document.getElementById("reg-error");
   errEl.textContent="";
+  if(!document.getElementById("reg-cgu").checked){ errEl.textContent="Tu dois accepter les Conditions d'Utilisation pour continuer."; return; }
   if(pass.length<8){ errEl.textContent="Le mot de passe doit contenir au moins 8 caractères."; return; }
   try{
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
@@ -938,6 +942,7 @@ document.getElementById("btn-register").onclick = async ()=>{
 };
 // Google
 document.getElementById("btn-google").onclick = async ()=>{
+  if(!document.getElementById("login-cgu").checked){ document.getElementById("login-error").textContent="Tu dois accepter les Conditions d'Utilisation pour continuer."; return; }
   try{
     const cred = await signInWithPopup(auth, googleProvider);
     // 🔒 Google vérifie toujours l'email
