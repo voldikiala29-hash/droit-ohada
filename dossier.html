@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Salle de Garde — simulateur de patient virtuel pour étudiants en médecine francophones.">
+<title>Salle de Garde — Dossier du projet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+ --bg:#0A1518;--surface:#111E22;--surface-2:#17272B;--text:#E6F1F2;--muted:#8AA9AD;
+ --accent:#2DD4BF;--accent-dark:#0D5F59;--border:#263B40;--shadow:0 10px 30px rgba(0,0,0,.16);
+ --radius:16px;--mono:"IBM Plex Mono",monospace;--font:"Inter",system-ui,sans-serif;
+}
+@media(prefers-color-scheme:light){
+ :root{--bg:#F3F8F8;--surface:#FFFFFF;--surface-2:#EAF3F3;--text:#102326;--muted:#526D72;--accent:#087F73;--accent-dark:#BCEDE6;--border:#D4E2E3;--shadow:0 10px 30px rgba(18,55,60,.08)}
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:90px}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.65;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;z-index:-2;background:url("images/ecg-bg.webp") center/cover no-repeat;opacity:.15;pointer-events:none}
+a{color:var(--accent);text-underline-offset:4px}
+a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
+.wrap{width:min(1120px,calc(100% - 32px));margin:auto}
+header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.nav{height:72px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.brand{display:flex;align-items:center;gap:11px;color:var(--text);text-decoration:none;font-weight:800;letter-spacing:-.04em}
+.brand-mark{display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:var(--accent-dark);color:var(--accent)}
+.brand-mark svg{width:23px}
+.navlinks{display:flex;gap:22px;align-items:center;font-size:.86rem}
+.navlinks a{color:var(--muted);text-decoration:none}
+.navlinks a:hover{color:var(--text)}
+.hero{position:relative;padding:82px 0 70px;min-height:570px;display:grid;grid-template-columns:1.02fr .98fr;align-items:center;gap:38px}
+.kicker,.eyebrow{font:500 .75rem var(--mono);text-transform:uppercase;letter-spacing:.12em;color:var(--accent)}
+.kicker{display:inline-flex;align-items:center;gap:9px;padding:7px 11px;border:1px solid var(--border);border-radius:999px;background:var(--surface)}
+.kicker:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 15%,transparent)}
+h1{font-size:clamp(2.55rem,5.5vw,5rem);line-height:1.04;letter-spacing:-.065em;margin:22px 0}
+h1 span{color:var(--accent)}
+.lead{font-size:clamp(1.05rem,2vw,1.25rem);color:var(--muted);max-width:570px}
+.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;border:1px solid var(--border);padding:13px 18px;border-radius:12px;font-weight:700;text-decoration:none;transition:transform .2s,background .2s}
+.btn-primary{background:var(--accent);color:#062522;border-color:var(--accent);animation:soft-pulse 2.6s infinite}
+.btn-secondary{color:var(--text);background:var(--surface)}
+.btn:hover{transform:translateY(-2px)}
+.hero-visual{position:relative;min-height:390px;border:1px solid var(--border);border-radius:24px;background:var(--surface);box-shadow:var(--shadow);overflow:hidden;display:grid;place-items:center}
+.hero-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.94}
+.hero-visual.image-ready .visual-fallback{display:none}
+.visual-fallback{position:relative;width:100%;height:100%;min-height:390px;display:grid;place-items:center;background:radial-gradient(ellipse at center,color-mix(in srgb,var(--accent) 10%,var(--surface)),var(--surface) 70%)}
+.holo{width:190px;height:240px;position:relative;display:grid;place-items:center}
+.holo:before{content:"";position:absolute;bottom:10px;width:180px;height:35px;border:1px solid var(--accent);border-radius:50%;box-shadow:0 0 25px color-mix(in srgb,var(--accent) 20%,transparent)}
+.holo-person{width:130px;height:210px;position:relative;filter:drop-shadow(0 0 9px color-mix(in srgb,var(--accent) 40%,transparent))}
+.holo-person .head{position:absolute;top:18px;left:43px;width:44px;height:52px;border:2px solid var(--accent);border-radius:45% 45% 40% 40%;background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.holo-person .body{position:absolute;top:75px;left:16px;width:98px;height:120px;border:2px solid var(--accent);border-radius:48% 48% 14% 14%;background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.holo-person .scan{position:absolute;left:0;right:0;top:0;height:2px;background:var(--accent);box-shadow:0 0 10px var(--accent);animation:scan 3s ease-in-out infinite}
+.visual-label{position:absolute;bottom:20px;left:20px;right:20px;display:flex;justify-content:space-between;gap:12px;font: .7rem var(--mono);color:var(--muted)}
+.visual-label strong{color:var(--accent);font-weight:500}
+.ecg{position:absolute;top:22px;left:22px;right:22px;width:calc(100% - 44px);height:54px;overflow:visible}
+.ecg path{stroke:var(--accent);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 4px var(--accent));animation:ecg-pulse 3s linear infinite}
+.section{padding:76px 0}
+.section-head{display:flex;justify-content:space-between;align-items:end;gap:30px;margin-bottom:28px}
+h2{font-size:clamp(1.8rem,3.3vw,3rem);line-height:1.12;letter-spacing:-.05em;margin:9px 0}
+.section-head p{max-width:480px;color:var(--muted);margin:0}
+.grid{display:grid;gap:16px}
+.stats{grid-template-columns:repeat(4,1fr)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow)}
+.stat-number{font:600 clamp(2rem,4vw,3rem) var(--mono);letter-spacing:-.07em;color:var(--accent);line-height:1.2}
+.stat-label{font-size:.9rem;color:var(--muted);margin-top:8px}
+.stat-note{font-size:.72rem;color:var(--muted);margin-top:10px}
+.path{grid-template-columns:repeat(5,1fr)}
+.step{position:relative;min-height:190px}
+.step-num{font:500 .75rem var(--mono);color:var(--accent);display:block;margin-bottom:20px}
+.step-icon{width:40px;height:40px;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;margin-bottom:15px;color:var(--accent)}
+.step-icon svg{width:22px;height:22px}
+.step h3{font-size:1rem;margin:0 0 7px}
+.step p{font-size:.85rem;color:var(--muted);margin:0}
+.bars-card{padding:26px}
+.bars{display:grid;gap:15px}
+.bar-row{display:grid;grid-template-columns:minmax(130px,1.15fr) minmax(90px,2fr) 42px;gap:14px;align-items:center;font-size:.82rem}
+.bar-label{color:var(--muted)}
+.bar-track{height:9px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.bar-fill{height:100%;width:0;background:var(--accent);border-radius:99px;transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+.bar-value{font:500 .78rem var(--mono);text-align:right;color:var(--text)}
+.total-line{display:flex;justify-content:space-between;gap:15px;border-top:1px solid var(--border);padding-top:18px;margin-top:22px;color:var(--muted);font-size:.85rem}
+.feature-grid{grid-template-columns:repeat(3,1fr)}
+.feature-card{min-height:190px}
+.feature-card .mini-icon{width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--border);border-radius:11px;color:var(--accent);margin-bottom:16px}
+.feature-card h3{font-size:1.05rem;margin:0 0 8px}
+.feature-card p{font-size:.9rem;color:var(--muted);margin:0}
+.guard{grid-template-columns:repeat(3,1fr)}
+.guard-card{border-top:2px solid var(--accent)}
+.guard-card h3{margin:0 0 10px;font-size:1.05rem}
+.guard-card p{color:var(--muted);font-size:.9rem;margin:0}
+.legal-grid{grid-template-columns:1fr 1fr}
+.legal-card{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.legal-card h3{margin:0 0 4px}
+.legal-card p{margin:0;color:var(--muted);font-size:.85rem}
+.status-grid{grid-template-columns:1fr 1fr}
+.status-card h3{margin:0 0 16px}
+.status-list{list-style:none;padding:0;margin:0;display:grid;gap:12px}
+.status-list li{display:flex;gap:11px;align-items:flex-start;font-size:.9rem}
+.status{flex:0 0 auto;font:500 .67rem var(--mono);text-transform:uppercase;padding:4px 7px;border-radius:6px}
+.done{background:color-mix(in srgb,var(--accent) 15%,transparent);color:var(--accent)}
+.pending{background:var(--surface-2);color:var(--muted);border:1px solid var(--border)}
+.not-documented{border:1px dashed var(--border);background:var(--surface-2);padding:22px;border-radius:var(--radius)}
+.not-documented h3{margin:0 0 7px;font-size:1rem}
+.not-documented p{color:var(--muted);margin:0;font-size:.88rem}
+footer{border-top:1px solid var(--border);padding:28px 0 38px;color:var(--muted);font-size:.83rem}
+.footer-inner{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.footer-links{display:flex;gap:18px;flex-wrap:wrap}
+footer a{color:var(--muted)}
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+@keyframes ecg-pulse{0%{stroke-dashoffset:1}55%,100%{stroke-dashoffset:0}}
+@keyframes soft-pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 25%,transparent)}50%{box-shadow:0 0 0 8px color-mix(in srgb,var(--accent) 0%,transparent)}}
+@keyframes scan{0%,100%{top:0;opacity:.2}50%{top:100%;opacity:1}}
+@media(max-width:850px){
+ .navlinks{gap:12px}.navlinks a:nth-child(-n+3){display:none}
+ .hero{grid-template-columns:1fr;padding:54px 0 45px;gap:28px}
+ .hero-visual{min-height:320px}.visual-fallback{min-height:320px}
+ .stats{grid-template-columns:repeat(2,1fr)}
+ .path{grid-template-columns:repeat(2,1fr)}
+ .feature-grid{grid-template-columns:repeat(2,1fr)}
+ .guard{grid-template-columns:1fr}
+ .section-head{display:block}.section-head p{margin-top:12px}
+}
+@media(max-width:520px){
+ .wrap{width:calc(100% - 32px)}
+ .nav{height:64px}.brand{font-size:.9rem}.navlinks{font-size:.78rem}
+ .hero{padding-top:38px}.hero-visual{min-height:270px}.visual-fallback{min-height:270px}
+ .holo{transform:scale(.82)}
+ .section{padding:52px 0}
+ .stats,.path,.feature-grid,.legal-grid,.status-grid{grid-template-columns:1fr}
+ .card{padding:20px}
+ .step{min-height:0}
+ .bar-row{grid-template-columns:minmax(100px,1.15fr) minmax(55px,1.3fr) 30px;gap:9px;font-size:.73rem}
+ .bars-card{padding:17px}
+ .legal-card{align-items:flex-start;flex-direction:column}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+ .reveal{opacity:1!important;transform:none!important}
+ .bar-fill{width:var(--bar-width)!important}
+}
+</style>
+</head>
+<body>
+<header>
+ <nav class="nav wrap" aria-label="Navigation principale">
+  <a class="brand" href="#accueil"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M2 12h5l2-6 4 12 2-6h7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Salle de Garde</a>
+  <div class="navlinks"><a href="#parcours">Parcours</a><a href="#cas">Cas cliniques</a><a href="#fonctionnalites">Fonctionnalités</a><a href="#avancement">Avancement</a><a href="https://salledegarde.online">Le site ↗</a></div>
+ </nav>
+</header>
+<main>
+<section class="hero wrap" id="accueil">
+ <div class="hero-copy">
+  <span class="kicker">Dossier de présentation · Projet pédagogique</span>
+  <h1>La consultation.<br><span>Comme en vrai.</span></h1>
+  <p class="lead">Un simulateur de patient virtuel pour étudiants en médecine francophones. Un patient qui parle avec ses mots, comprend les fautes et ne donne jamais le diagnostic.</p>
+  <div class="actions"><a class="btn btn-primary" href="https://salledegarde.online">Commencer gratuitement <span aria-hidden="true">↗</span></a><a class="btn btn-secondary" href="#parcours">Découvrir le parcours</a></div>
+  <p class="stat-note">Usage pédagogique uniquement · Aucune donnée de vrai patient</p>
+ </div>
+ <div class="hero-visual" id="heroVisual" aria-label="Illustration conceptuelle d'un patient virtuel">
+  <img class="hero-image" src="images/hero-ia.webp" alt="Étudiants en médecine et patient hologramme" width="640" height="480" fetchpriority="high">
+  <div class="visual-fallback">
+   <svg class="ecg" viewBox="0 0 500 54" role="img" aria-label="Ligne ECG animée"><path pathLength="1" d="M0 27 H100 L120 27 L135 8 L153 48 L173 18 L188 27 H280 L300 27 L315 8 L333 48 L353 18 L368 27 H500"/></svg>
+   <div class="holo"><div class="holo-person"><span class="head"></span><span class="body"></span><span class="scan"></span></div></div>
+   <div class="visual-label"><span>SIMULATION PATIENT</span><strong>● EN COURS</strong></div>
+  </div>
+ </div>
+</section>
+<section class="section wrap" aria-labelledby="chiffres">
+ <div class="section-head reveal"><div><span class="eyebrow">En quelques chiffres</span><h2 id="chiffres">Un terrain d'entraînement<br>structuré.</h2></div><p>Un catalogue de cas cliniques et une consultation guidée, conçus pour pratiquer le raisonnement clinique.</p></div>
+ <div class="grid stats">
+  <article class="card reveal"><div class="stat-number" data-count="302">302</div><div class="stat-label">cas cliniques</div><div class="stat-note">Chiffre vérifié dans le code</div></article>
+  <article class="card reveal"><div class="stat-number" data-count="12">12</div><div class="stat-label">services représentés</div></article>
+  <article class="card reveal"><div class="stat-number" data-count="5">5</div><div class="stat-label">étapes de consultation</div></article>
+  <article class="card reveal"><div class="stat-number">0 $</div><div class="stat-label">pour l'étudiant</div><div class="stat-note">Choix du projet</div></article>
+ </div>
+</section>
+<section class="section wrap" id="parcours" aria-labelledby="parcours-title">
+ <div class="section-head reveal"><div><span class="eyebrow">Expérience pédagogique</span><h2 id="parcours-title">Le parcours d'une consultation</h2></div><p>Du premier échange avec le patient jusqu'à l'évaluation de la démarche.</p></div>
+ <div class="grid path">
+  <article class="card step reveal"><span class="step-num">01 / ÉCOUTER</span><div class="step-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H9l-5 4V5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 9h8M8 12h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div><h3>Interrogatoire</h3><p>Recueillir les informations auprès du patient virtuel.</p></article>
+  <article class="card step reveal"><span class="step-num">02 / EXAMINER</span><div class="step-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M8 3v5a4 4 0 0 0 8 0V3M12 12v3a4 4 0 1 0 8 0v-1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="8" cy="3" r="2" stroke="currentColor" stroke-width="1.7"/><circle cx="20" cy="14" r="2" stroke="currentColor" stroke-width="1.7"/></svg></div><h3>Examen clinique</h3><p>Choisir et réaliser les gestes pertinents.</p></article>
+  <article class="card step reveal"><span class="step-num">03 / EXPLORER</span><div class="step-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M8 3h8M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 16h10" stroke="currentColor" stroke-width="1.7"/></svg></div><h3>Examens complémentaires</h3><p>Demander les examens utiles à la situation.</p></article>
+  <article class="card step reveal"><span class="step-num">04 / DÉCIDER</span><div class="step-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/></svg></div><h3>Diagnostic et traitement</h3><p>Formuler son diagnostic et proposer une prise en charge.</p></article>
+  <article class="card step reveal"><span class="step-num">05 / PROGRESSER</span><div class="step-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5M4 19h17M7 15l4-4 3 2 5-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>Évaluation /100</h3><p>Recevoir une évaluation de la démarche clinique.</p></article>
+ </div>
+</section>
+<section class="section wrap" id="cas" aria-labelledby="cas-title">
+ <div class="section-head reveal"><div><span class="eyebrow">Catalogue clinique</span><h2 id="cas-title">Répartition par service</h2></div><p>Les 302 cas cliniques se répartissent dans les services suivants.</p></div>
+ <div class="card bars-card reveal"><div class="bars" id="serviceBars">
+  <div class="bar-row"><span class="bar-label">Médecine interne</span><div class="bar-track"><div class="bar-fill" data-value="103"></div></div><span class="bar-value" data-count="103">103</span></div>
+  <div class="bar-row"><span class="bar-label">Pédiatrie</span><div class="bar-track"><div class="bar-fill" data-value="63"></div></div><span class="bar-value" data-count="63">63</span></div>
+  <div class="bar-row"><span class="bar-label">Chirurgie et urgences</span><div class="bar-track"><div class="bar-fill" data-value="59"></div></div><span class="bar-value" data-count="59">59</span></div>
+  <div class="bar-row"><span class="bar-label">Gynéco-obstétrique</span><div class="bar-track"><div class="bar-fill" data-value="47"></div></div><span class="bar-value" data-count="47">47</span></div>
+  <div class="bar-row"><span class="bar-label">Gynécologie</span><div class="bar-track"><div class="bar-fill" data-value="11"></div></div><span class="bar-value" data-count="11">11</span></div>
+  <div class="bar-row"><span class="bar-label">Chirurgie</span><div class="bar-track"><div class="bar-fill" data-value="6"></div></div><span class="bar-value" data-count="6">6</span></div>
+  <div class="bar-row"><span class="bar-label">Chirurgie pédiatrique</span><div class="bar-track"><div class="bar-fill" data-value="4"></div></div><span class="bar-value" data-count="4">4</span></div>
+  <div class="bar-row"><span class="bar-label">Pneumologie</span><div class="bar-track"><div class="bar-fill" data-value="3"></div></div><span class="bar-value" data-count="3">3</span></div>
+  <div class="bar-row"><span class="bar-label">ORL</span><div class="bar-track"><div class="bar-fill" data-value="2"></div></div><span class="bar-value" data-count="2">2</span></div>
+  <div class="bar-row"><span class="bar-label">Chirurgie orthopédique</span><div class="bar-track"><div class="bar-fill" data-value="2"></div></div><span class="bar-value" data-count="2">2</span></div>
+  <div class="bar-row"><span class="bar-label">Urologie</span><div class="bar-track"><div class="bar-fill" data-value="1"></div></div><span class="bar-value" data-count="1">1</span></div>
+  <div class="bar-row"><span class="bar-label">Chirurgie thoracique</span><div class="bar-track"><div class="bar-fill" data-value="1"></div></div><span class="bar-value" data-count="1">1</span></div>
+ </div><div class="total-line"><span>Total du catalogue</span><strong class="stat-number" style="font-size:1.2rem" data-count="302">302</strong></div></div>
+</section>
+<section class="section wrap" id="fonctionnalites" aria-labelledby="features-title">
+ <div class="section-head reveal"><div><span class="eyebrow">Outils d'apprentissage</span><h2 id="features-title">Pensé pour la pratique.</h2></div><p>Des fonctionnalités au service d'un entraînement progressif et accessible.</p></div>
+ <div class="grid feature-grid">
+  <article class="card feature-card reveal"><div class="mini-icon">↗</div><h3>Progression sauvegardée</h3><p>Retrouver l'avancement de ses consultations.</p></article>
+  <article class="card feature-card reveal"><div class="mini-icon">◎</div><h3>Connexion simple</h3><p>Connexion par e-mail ou compte Google.</p></article>
+  <article class="card feature-card reveal"><div class="mini-icon">▣</div><h3>Application installable</h3><p>Une expérience PWA installable sur appareil compatible.</p></article>
+  <article class="card feature-card reveal"><div class="mini-icon">⌁</div><h3>Patient conversationnel</h3><p>Un patient virtuel qui s'exprime avec ses mots et comprend les fautes.</p></article>
+  <article class="card feature-card reveal"><div class="mini-icon">✓</div><h3>Évaluation</h3><p>Une note sur 100 pour évaluer la démarche de consultation.</p></article>
+  <article class="card feature-card reveal"><div class="mini-icon">⌘</div><h3>Cadre clair</h3><p>Conditions d'utilisation et politique de confidentialité accessibles.</p></article>
+ </div>
+</section>
+<section class="section wrap" aria-labelledby="garde-title">
+ <div class="section-head reveal"><div><span class="eyebrow">Garde-fous</span><h2 id="garde-title">Un cadre pédagogique explicite.</h2></div></div>
+ <div class="grid guard">
+  <article class="card guard-card reveal"><h3>Le patient ne donne pas le diagnostic</h3><p>Il répond comme un patient et ne révèle jamais le diagnostic à l'étudiant.</p></article>
+  <article class="card guard-card reveal"><h3>Usage pédagogique uniquement</h3><p>Le simulateur est conçu pour l'apprentissage, pas pour une prise en charge réelle.</p></article>
+  <article class="card guard-card reveal"><h3>Aucune donnée de vrai patient</h3><p>Les cas présentés ne reposent sur aucune donnée de vrai patient.</p></article>
+ </div>
+</section>
+<section class="section wrap" aria-labelledby="legal-title">
+ <div class="section-head reveal"><div><span class="eyebrow">Cadre juridique</span><h2 id="legal-title">Transparence et conditions.</h2></div><p>Les documents juridiques encadrent l'utilisation du service et l'inscription.</p></div>
+ <div class="grid legal-grid">
+  <a class="card legal-card reveal" href="https://salledegarde.online/conditions-utilisation.html"><div><h3>Conditions générales d'utilisation</h3><p>16 articles · Acceptation obligatoire à l'inscription</p></div><span aria-hidden="true">↗</span></a>
+  <a class="card legal-card reveal" href="https://salledegarde.online/politique-confidentialite.html"><div><h3>Politique de confidentialité</h3><p>Informations sur la confidentialité</p></div><span aria-hidden="true">↗</span></a>
+ </div>
+</section>
+<section class="section wrap" id="avancement" aria-labelledby="status-title">
+ <div class="section-head reveal"><div><span class="eyebrow">État du projet</span><h2 id="status-title">Finitions en cours.</h2></div><p>Les éléments ci-dessous distinguent les fonctionnalités présentes des éléments prévus, non déployés.</p></div>
+ <div class="grid status-grid">
+  <article class="card status-card reveal"><h3>Fait / présent</h3><ul class="status-list">
+   <li><span class="status done">Fait</span><span>Hero animé et ECG en SVG</span></li>
+   <li><span class="status done">Fait</span><span>Animations d'entrée au scroll</span></li>
+   <li><span class="status done">Fait</span><span>Compteurs animés</span></li>
+   <li><span class="status done">Présent</span><span>Cas cliniques et parcours de consultation</span></li>
+  </ul></article>
+  <article class="card status-card reveal"><h3>À venir / à fournir</h3><ul class="status-list">
+   <li><span class="status pending">À venir</span><span>Avatars patients illustrés</span></li>
+   <li><span class="status pending">À venir</span><span>Animations Lottie (fichiers JSON non fournis)</span></li>
+   <li><span class="status pending">À fournir</span><span>Image hero <code>images/hero-ia.webp</code></span></li>
+   <li><span class="status pending">À fournir</span><span>Fond ECG <code>images/ecg-bg.webp</code></span></li>
+   <li><span class="status pending">Non déployé</span><span>Système de cas générés par IA</span></li>
+  </ul></article>
+ </div>
+ <div class="not-documented reveal" style="margin-top:16px"><h3>Non documenté</h3><p>Nombre d'utilisateurs, revenus, partenaires et validation médicale : aucune donnée disponible dans le projet pour ces éléments.</p></div>
+</section>
+<section class="section wrap" aria-label="Architecture">
+ <div class="card reveal"><span class="eyebrow">Architecture · résumé</span><h2 style="font-size:1.65rem">Une architecture web légère.</h2><p style="color:var(--muted);margin-bottom:0">Site statique · Firebase pour l'authentification et Firestore · Worker Cloudflare pour les réponses du patient.</p></div>
+</section>
+</main>
+<footer><div class="wrap footer-inner"><div><strong style="color:var(--text)">Salle de Garde</strong><br>Simulateur de patient virtuel pour étudiants en médecine francophones.</div><div class="footer-links"><a href="https://salledegarde.online">salledegarde.online</a><a href="mailto:contact@salledegarde.online">contact@salledegarde.online</a><a href="https://salledegarde.online/conditions-utilisation.html">CGU</a><a href="https://salledegarde.online/politique-confidentialite.html">Confidentialité</a></div></div></footer>
+<script>
+(function(){
+ "use strict";
+ const reduceMotion=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+ const hero=document.getElementById("heroVisual");
+ const heroImg=hero.querySelector(".hero-image");
+ const holoEl=hero.querySelector(".holo");
+ function imageReady(){hero.classList.add("image-ready")}
+ function imageFailed(){heroImg.remove();hero.classList.remove("image-ready")}
+ heroImg.addEventListener("load",imageReady,{once:true});
+ heroImg.addEventListener("error",imageFailed,{once:true});
+ if(heroImg.complete){heroImg.naturalWidth?imageReady():imageFailed()}
+
+ const revealEls=document.querySelectorAll(".reveal");
+ const countEls=document.querySelectorAll("[data-count]");
+ const barEls=document.querySelectorAll(".bar-fill");
+ const observed=new WeakSet();
+ function animateCount(el){
+  if(el.dataset.animated)return;el.dataset.animated="true";
+  const target=Number(el.dataset.count);if(!Number.isFinite(target))return;
+  if(reduceMotion){el.textContent=target.toLocaleString("fr-FR");return}
+  const start=performance.now(),duration=1200;
+  function frame(now){
+   const t=Math.min((now-start)/duration,1),e=1-Math.pow(1-t,3);
+   el.textContent=Math.round(target*e).toLocaleString("fr-FR");
+   if(t<1)requestAnimationFrame(frame)
+  }
+  requestAnimationFrame(frame)
+ }
+ function reveal(el){
+  el.classList.add("visible");
+  el.querySelectorAll("[data-count]").forEach(animateCount);
+  if(el.id==="serviceBars"||el.querySelector("#serviceBars")){
+   barEls.forEach(bar=>{const val=Number(bar.dataset.value);bar.style.setProperty("--bar-width",(val/103*100)+"%");if(!reduceMotion)bar.style.width=(val/103*100)+"%"});
+  }
+ }
+ if(reduceMotion){
+  revealEls.forEach(el=>el.classList.add("visible"));
+  countEls.forEach(animateCount);
+  barEls.forEach(bar=>{bar.style.setProperty("--bar-width",(Number(bar.dataset.value)/103*100)+"%");bar.style.width=(Number(bar.dataset.value)/103*100)+"%"});
+ }else if("IntersectionObserver"in window){
+  const io=new IntersectionObserver(entries=>{
+   entries.forEach(entry=>{if(entry.isIntersecting&&!observed.has(entry.target)){observed.add(entry.target);reveal(entry.target);io.unobserve(entry.target)}});
+  },{threshold:.15});
+  revealEls.forEach(el=>io.observe(el));
+  countEls.forEach(el=>{
+   const parent=el.closest(".reveal");
+   if(!parent){const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){animateCount(el);observer.disconnect()}},{threshold:.15});observer.observe(el)}
+  });
+ }else{
+  revealEls.forEach(reveal);countEls.forEach(animateCount);
+  barEls.forEach(bar=>bar.style.width=(Number(bar.dataset.value)/103*100)+"%");
+ }
+ let ticking=false;
+ window.addEventListener("scroll",function(){
+  if(reduceMotion||ticking)return;ticking=true;
+  requestAnimationFrame(()=>{const y=Math.min(window.scrollY*.035,20);if(holoEl)holoEl.style.translate="0 "+y+"px";ticking=false});
+ },{passive:true});
+})();
+</script>
+</body>
+</html>
