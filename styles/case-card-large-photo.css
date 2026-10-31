@@ -1,0 +1,71 @@
+/* GRANDE PHOTO OUVERTE SUR LES CAS
+   240px à gauche sur desktop, 280px en haut sur mobile.
+   Les badges sont posés SUR la photo (pas de petit badge en haut). */
+
+.case-card-large-photo {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  background: #fff;
+  border: 1px solid #eef2f7;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  margin-bottom: 20px;
+}
+.case-card-large-photo:hover {
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.case-photo-large {
+  position: relative;
+  width: 240px;
+  height: 100%;
+  min-height: 240px;
+  background: #f1f5f9;
+}
+
+.case-photo-large img.photo-ouverte {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Badges posés sur la photo */
+.badges-sur-photo {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.badges-sur-photo span {
+  background: rgba(15, 23, 42, 0.75);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+}
+
+.case-content {
+  padding: 18px 20px;
+  min-width: 0;
+}
+
+/* Mobile : photo en haut, 280px de haut */
+@media (max-width: 640px) {
+  .case-card-large-photo {
+    grid-template-columns: 1fr;
+  }
+  .case-photo-large {
+    width: 100%;
+    height: 280px;
+    min-height: 0;
+  }
+}
