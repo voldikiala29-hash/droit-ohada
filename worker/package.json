@@ -1,0 +1,8 @@
+{
+  "name": "salle-de-garde-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/patient-worker.test.mjs"
+  }
+}

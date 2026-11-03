@@ -1549,7 +1549,13 @@ async function answerPatient(S,t){
   if(LLM_URL){
     var ctrl=new AbortController(),tm=setTimeout(function(){ctrl.abort();},15000);
     try{
-      var res=await fetch(LLM_URL,{method:"POST",headers:{"Content-Type":"application/json"},signal:ctrl.signal,
+      /* Phase 1 : le Worker exige le jeton Firebase de l'utilisateur connecté. Sans jeton, il répond 401 et le moteur local prend le relais. */
+      var hdrs={"Content-Type":"application/json"};
+      try{
+        var fbUser=window._fbAuth&&window._fbAuth.currentUser;
+        if(fbUser){hdrs["Authorization"]="Bearer "+await fbUser.getIdToken();}
+      }catch(e){console.warn("Jeton indisponible:",e&&e.message);}
+      var res=await fetch(LLM_URL,{method:"POST",headers:hdrs,signal:ctrl.signal,
         body:JSON.stringify({persona:buildPersona(S),facts:buildFacts(S),step:STEPS[S.stage],history:S.chat.slice(0,-1).slice(-12),message:t,question:t,cas:casPublic(S)})});
       if(res.ok){
         var j=await res.json();
