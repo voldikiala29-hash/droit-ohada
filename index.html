@@ -609,6 +609,18 @@ body{ font:15px/1.6 var(--f-body); letter-spacing:-.005em; }
   #main-ui header.top nav{ display:flex; }
 }
 
+/* ---------- Icônes SVG (remplacent les emojis) ---------- */
+.ico-svg{ width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:0 0 auto; display:inline-block; vertical-align:middle; }
+.ld-ico{ color:var(--accent); }
+.ld-ico .ico-svg{ width:24px; height:24px; }
+.profile-kpi i{ color:var(--accent); }
+.profile-kpi i .ico-svg{ width:20px; height:20px; }
+.pm-btn .ico{ color:var(--accent); }
+.pm-btn .ico .ico-svg{ width:18px; height:18px; }
+.pm-danger .ico-svg, .pm-danger{ color:var(--alert); }
+.btn .ico-svg{ width:18px; height:18px; }
+.avatar-overlay .ico-svg{ width:18px; height:18px; color:#FFFFFF; }
+
 /* Focus visible sur tous les éléments interactifs */
 :where(a, button, input, select, textarea, [tabindex]):focus-visible{
   outline:2px solid var(--accent); outline-offset:2px;
@@ -622,6 +634,24 @@ body{ font:15px/1.6 var(--f-body); letter-spacing:-.005em; }
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1260174502002838" crossorigin="anonymous"></script>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-voice" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.2A8 8 0 1 1 21 12z"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 3a3 3 0 0 0-3 3v.5A3 3 0 0 0 4 9.5a3 3 0 0 0 1 2.2A3 3 0 0 0 5 15a3 3 0 0 0 4 2.8V21"/><path d="M15 3a3 3 0 0 1 3 3v.5a3 3 0 0 1 2 3 3 3 0 0 1-1 2.2A3 3 0 0 1 19 15a3 3 0 0 1-4 2.8V21"/><path d="M12 3v18"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+    <symbol id="i-stetho" viewBox="0 0 24 24"><path d="M5 3v6a4 4 0 0 0 8 0V3"/><path d="M9 13v3a5 5 0 0 0 10 0v-2"/><circle cx="19" cy="12" r="2"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></symbol>
+    <symbol id="i-trend" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 7h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 4h6a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4z"/><path d="M20 4h-6a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h6z"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  </defs>
+</svg>
+
 <!-- ===================== LANDING PUBLIQUE ===================== -->
 <div id="landing-root">
   <header class="ld-top">
@@ -647,7 +677,7 @@ body{ font:15px/1.6 var(--f-body); letter-spacing:-.005em; }
           <a class="btn ghost" href="#features">Voir comment ça marche</a>
         </div>
         <div class="ld-install" id="ld-install" style="display:none">
-          <button class="btn ghost" type="button" id="btn-install">📲 Installer l'application sur mon appareil</button>
+          <button class="btn ghost" type="button" id="btn-install"><svg class="ico-svg" aria-hidden="true" focusable="false"><use href="#i-download"/></svg> Installer l'application sur mon appareil</button>
           <p class="small muted" id="ld-install-ios" style="display:none;margin-top:8px">Sur iPhone : touche Partager (□↑) puis « Sur l'écran d'accueil ».</p>
         </div>
       </div>
@@ -680,12 +710,12 @@ body{ font:15px/1.6 var(--f-body); letter-spacing:-.005em; }
       <h2 class="ld-h2">Un vrai patient, pas un QCM.</h2>
       <p class="ld-sub">Tu interroges, tu examines, tu demandes tes examens, tu conclus. Comme en garde, avec une évaluation mesurable à la fin.</p>
       <div class="ld-grid3">
-        <article class="ld-card"><div class="ld-ico">🗣️</div><h3>Un patient qui parle vraiment</h3><p>Écris librement ce que tu demanderais en consultation. Le patient répond avec ses propres mots, jamais avec une liste de choix.</p></article>
-        <article class="ld-card"><div class="ld-ico">🧠</div><h3>Il te comprend toujours</h3><p>« pleinte », « atcd », « fievre », « pipi »… Fautes et abréviations passent, et il ne répond jamais « je ne comprends pas ».</p></article>
-        <article class="ld-card"><div class="ld-ico">🚫</div><h3>Jamais de diagnostic donné</h3><p>Comme en vrai, il décrit ses symptômes. Le diagnostic, c'est à toi de le trouver.</p></article>
-        <article class="ld-card"><div class="ld-ico">🩺</div><h3>Anamnèse et examen structurés</h3><p>Une frise d'anamnèse qui se complète au fil de tes questions, des constantes, et une grille d'examen clinique par appareil.</p></article>
-        <article class="ld-card"><div class="ld-ico">📊</div><h3>Des résultats mesurables</h3><p>Score sur 100, temps, examens demandés et utiles, courbe de progression : tu vois où tu progresses et où tu perds des points.</p></article>
-        <article class="ld-card"><div class="ld-ico">📱</div><h3>Sur téléphone, sauvegardé</h3><p>Aucune installation. Connecte-toi avec Google : ta progression te suit sur tous tes appareils.</p></article>
+        <article class="ld-card"><div class="ld-ico"><svg class="ico-svg" aria-hidden="true" focusable="false"><use href="#i-voice"/></svg></div><h3>Un patient qui parle vraiment</h3><p>Écris librement ce que tu demanderais en consultation. Le patient répond avec ses propres mots, jamais avec une liste de choix.</p></article>
+        <article class="ld-card"><div class="ld-ico"><svg class="ico-svg" aria-hidden="true" focusable="false"><use href="#i-brain"/></svg></div><h3>Il te comprend toujours</h3><p>« pleinte », « atcd », « fievre », « pipi »… Fautes et abréviations passent, et il ne répond jamais « je ne comprends pas ».</p></article>
+        <article class="ld-card"><div class="ld-ico"><svg class="ico-svg" aria-hidden="true" focusable="false"><use href="#i-shield"/></svg></div><h3>Jamais de diagnostic donné</h3><p>Comme en vrai, il décrit ses symptômes. Le diagnostic, c'est à toi de le trouver.</p></article>
+        <article class="ld-card"><div class="ld-ico"><svg class="ico-svg" aria-hidden="true" focusable="false"><use href="#i-stetho"/></svg></div><h3>Anamnèse et examen structurés</h3><p>Une frise d'anamnèse qui se complète au fil de tes questions, des constantes, et une grille d'examen clinique par appareil.</p></article>
+        <article class="ld-card"><div class="ld-ico"><svg class="ico-svg" aria-hidden="true" focusable="false"><use href="#i-chart"/></svg></div><h3>Des résultats mesurables</h3><p>Score sur 100, temps, examens demandés et utiles, courbe de progression : tu vois où tu progresses et où tu perds des points.</p></article>
+        <article class="ld-card"><div class="ld-ico"><svg class="ico-svg" aria-hidden="true" focusable="false"><use href="#i-phone"/></svg></div><h3>Sur téléphone, sauvegardé</h3><p>Aucune installation. Connecte-toi avec Google : ta progression te suit sur tous tes appareils.</p></article>
       </div>
     </div>
   </section>
@@ -2448,18 +2478,18 @@ render();
   <div class="profile-bulletin" role="dialog" aria-modal="true" aria-labelledby="profile-nom">
     <div class="pm-scroll">
       <div class="pm-hero">
-        <button class="pm-close" type="button" aria-label="Fermer le profil" onclick="window._closeProfile()">✕</button>
-        <div id="profile-avatar" class="profile-avatar" role="button" tabindex="0" aria-label="Changer la photo de profil" title="Changer la photo" onclick="document.getElementById('avatar-file-input').click()">D<div class="avatar-overlay"><span style="font-size:18px;">📷</span><span id="avatar-overlay-text">Ajouter</span></div></div>
+        <button class="pm-close" type="button" aria-label="Fermer le profil" onclick="window._closeProfile()"><svg class="ico-svg" aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button>
+        <div id="profile-avatar" class="profile-avatar" role="button" tabindex="0" aria-label="Changer la photo de profil" title="Changer la photo" onclick="document.getElementById('avatar-file-input').click()">D<div class="avatar-overlay"><svg class="ico-svg" aria-hidden="true" focusable="false"><use href="#i-camera"/></svg><span id="avatar-overlay-text">Ajouter</span></div></div>
         <input type="file" id="avatar-file-input" class="avatar-input" accept="image/*">
         <div id="profile-nom" class="profile-name">Docteur</div>
         <div id="profile-email" class="profile-meta">email@example.com</div>
-        <div id="profile-badges"><span id="badge-temps" class="profile-badge">⏱️ Nouveau</span><span id="badge-score" class="profile-badge">🎯 En formation</span></div>
+        <div id="profile-badges"><span id="badge-temps" class="profile-badge">Nouveau</span><span id="badge-score" class="profile-badge">En formation</span></div>
       </div>
 
       <div class="pm-stats">
-        <div class="profile-kpi"><i aria-hidden="true">📚</i><b id="kpi-cases">0</b><span>Cas terminés</span></div>
-        <div class="profile-kpi"><i aria-hidden="true">📊</i><b id="kpi-moy">--</b><span>Moyenne /100</span></div>
-        <div class="profile-kpi"><i aria-hidden="true">🕑</i><b id="kpi-last">--</b><span>Dernier score</span></div>
+        <div class="profile-kpi"><i aria-hidden="true"><svg class="ico-svg" aria-hidden="true" focusable="false"><use href="#i-book"/></svg></i><b id="kpi-cases">0</b><span>Cas terminés</span></div>
+        <div class="profile-kpi"><i aria-hidden="true"><svg class="ico-svg" aria-hidden="true" focusable="false"><use href="#i-chart"/></svg></i><b id="kpi-moy">--</b><span>Moyenne /100</span></div>
+        <div class="profile-kpi"><i aria-hidden="true"><svg class="ico-svg" aria-hidden="true" focusable="false"><use href="#i-clock"/></svg></i><b id="kpi-last">--</b><span>Dernier score</span></div>
       </div>
 
       <section class="pm-card" aria-labelledby="pm-pro-title">
@@ -2473,8 +2503,8 @@ render();
       <section class="pm-card" aria-labelledby="pm-act-title">
         <h3 id="pm-act-title">Actions rapides</h3>
         <div class="pm-actions">
-          <button class="pm-btn" type="button" onclick="window._goProgress()"><span class="ico" aria-hidden="true">📈</span>Voir ma progression</button>
-          <button class="pm-btn" type="button" onclick="document.getElementById('avatar-file-input').click()"><span class="ico" aria-hidden="true">📷</span>Changer ma photo</button>
+          <button class="pm-btn" type="button" onclick="window._goProgress()"><span class="ico" aria-hidden="true"><svg class="ico-svg" aria-hidden="true" focusable="false"><use href="#i-trend"/></svg></span>Voir ma progression</button>
+          <button class="pm-btn" type="button" onclick="document.getElementById('avatar-file-input').click()"><span class="ico" aria-hidden="true"><svg class="ico-svg" aria-hidden="true" focusable="false"><use href="#i-camera"/></svg></span>Changer ma photo</button>
         </div>
       </section>
 
@@ -2489,7 +2519,7 @@ render();
           <button type="button" id="btn-logout-confirm" style="background:var(--alert);color:#fff;border:0;" onclick="window._handleLogoutBulletin()">Se déconnecter</button>
         </div>
       </div>
-      <button id="btn-logout-bulletin" class="pm-btn pm-danger" type="button" onclick="window._askLogout()">🚪 Se déconnecter</button>
+      <button id="btn-logout-bulletin" class="pm-btn pm-danger" type="button" onclick="window._askLogout()"><svg class="ico-svg" aria-hidden="true" focusable="false"><use href="#i-logout"/></svg> Se déconnecter</button>
     </div>
   </div>
 </div>
