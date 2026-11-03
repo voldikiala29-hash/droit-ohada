@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "description": "Association entre les catégories de cas cliniques et les images patients. Les images sont des patients FICTIFS générés par IA. Aucun fichier n'est requis : si une image manque, l'illustration SVG actuelle (ptSvg) est affichée.",
+  "fallback": "svg",
+  "sizes": [320, 640, 960],
+  "formats": ["avif", "webp"],
+  "moods": ["anxieux", "triste", "douleur", "frustre"],
+  "lookup_order": [
+    "scene + sexe + mood",
+    "scene + sexe",
+    "scene (sans sexe)",
+    "svg (ptSvg, existant)"
+  ],
+  "scenes": {
+    "enfant":   { "caption": "Enfant accompagné", "base": { "any": null } },
+    "ventre":   { "caption": "Touche son ventre", "base": { "F": null, "M": null } },
+    "plaie":    { "caption": "Montre sa plaie",   "base": { "F": null, "M": null } },
+    "tete":     { "caption": "Touche sa tête",    "base": { "F": null, "M": null } },
+    "poitrine": { "caption": "Touche sa poitrine","base": { "F": null, "M": null } },
+    "neutre":   { "caption": "En attente",        "base": { "F": null, "M": null } }
+  },
+  "mood_variants": {
+    "_comment": "Variantes facultatives, à ajouter seulement là où l'expression change vraiment la lecture du cas. Exemple : \"ventre\": { \"M\": { \"douleur\": null } }",
+    "ventre": {},
+    "plaie": {},
+    "tete": {},
+    "poitrine": {}
+  },
+  "file_pattern": "img/patients/{scene}-{sexe}[-{mood}]-{size}.{format}",
+  "image_count_planned": 11,
+  "status": "en attente de validation des images"
+}
