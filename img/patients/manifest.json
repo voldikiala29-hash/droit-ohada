@@ -1,0 +1,127 @@
+{
+  "version": 2,
+  "description": "Association entre les catégories de cas cliniques et les images patients. Les images sont des patients FICTIFS générés par IA. Aucun fichier n'est requis : si une image manque, l'illustration SVG actuelle (ptSvg) est affichée.",
+  "fallback": "svg",
+  "sizes": [
+    320,
+    640,
+    960
+  ],
+  "formats": [
+    "avif",
+    "webp"
+  ],
+  "moods": [
+    "anxieux",
+    "triste",
+    "douleur",
+    "frustre"
+  ],
+  "lookup_order": [
+    "scene + sexe + mood",
+    "scene + sexe",
+    "scene (sans sexe)",
+    "svg (ptSvg, existant)"
+  ],
+  "scenes": {
+    "enfant": {
+      "caption": "Enfant accompagné",
+      "base": {
+        "any": "enfant"
+      }
+    },
+    "ventre": {
+      "caption": "Touche son ventre",
+      "base": {
+        "F": "ventre-F",
+        "M": "ventre-M"
+      }
+    },
+    "plaie": {
+      "caption": "Montre sa plaie",
+      "base": {
+        "F": "plaie-F",
+        "M": "plaie-M"
+      }
+    },
+    "tete": {
+      "caption": "Touche sa tête",
+      "base": {
+        "F": "tete-F",
+        "M": "tete-M"
+      }
+    },
+    "poitrine": {
+      "caption": "Touche sa poitrine",
+      "base": {
+        "F": "poitrine-F",
+        "M": "poitrine-M"
+      }
+    },
+    "neutre": {
+      "caption": "En attente",
+      "base": {
+        "F": "neutre-F",
+        "M": null
+      }
+    }
+  },
+  "mood_variants": {
+    "note": "Non utilisées pour l'instant. Les variantes d'humeur restent facultatives."
+  },
+  "image_count_planned": 11,
+  "status": "10 images livrées ; neutre-M en attente de régénération (repli SVG)",
+  "generator": "Gemini (images fictives)",
+  "display": {
+    "ratio": "1:1 (object-fit: cover)",
+    "note": "Les fichiers conservent le format d'origine (sans recadrage). Largeur 320/640/960 px, ou largeur source si plus petite (les images source font 928 ou 1024 px)."
+  },
+  "base_files": {
+    "enfant": {
+      "base": "enfant",
+      "status": "livré"
+    },
+    "ventre-F": {
+      "base": "ventre-F",
+      "status": "livré"
+    },
+    "ventre-M": {
+      "base": "ventre-M",
+      "status": "livré"
+    },
+    "plaie-F": {
+      "base": "plaie-F",
+      "status": "livré"
+    },
+    "plaie-M": {
+      "base": "plaie-M",
+      "status": "livré"
+    },
+    "tete-F": {
+      "base": "tete-F",
+      "status": "livré"
+    },
+    "tete-M": {
+      "base": "tete-M",
+      "status": "livré"
+    },
+    "poitrine-F": {
+      "base": "poitrine-F",
+      "status": "livré"
+    },
+    "poitrine-M": {
+      "base": "poitrine-M",
+      "status": "livré"
+    },
+    "neutre-F": {
+      "base": "neutre-F",
+      "status": "livré"
+    },
+    "neutre-M": {
+      "base": null,
+      "status": "en cours de régénération : repli SVG"
+    }
+  },
+  "image_count_delivered": 10,
+  "image_files": 60
+}
