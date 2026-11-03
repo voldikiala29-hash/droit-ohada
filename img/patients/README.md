@@ -34,14 +34,15 @@ Le nom est en minuscules, sans accents ni espaces.
 
 | Élément | Valeur |
 |---|---|
-| Ratio | 4:5 (portrait), sujet centré, marge au-dessus |
-| Tailles | 320, 640 et 960 px de large |
+| Ratio fichier | Conservé tel que généré (1:1 ou 4:5), sans recadrage destructif |
+| Affichage | Carré 1:1 (84 px, 72 px sur mobile) avec `object-fit: cover` |
+| Tailles | 320, 640 et 960 px de large (ou largeur source si plus petite) |
 | Formats | AVIF (prioritaire), WebP (repli) |
-| Poids cible | 60 Ko max en 960 px, 25 Ko en 640 px, 10 Ko en 320 px |
+| Poids mesurés | WebP : 10 à 129 Ko selon la taille ; AVIF : 6 à 72 Ko (30 images sur 2 formats) |
 | Espace colorimétrique | sRGB |
 | Métadonnées | supprimées (EXIF, XMP, nom du fichier source) |
 
-Les masters (PNG ou fichiers ChatGPT d'origine) ne sont **pas** versionnés dans le dépôt. Ils restent en dehors du dépôt.
+Les masters (fichiers Gemini d'origine) ne sont **pas** versionnés dans le dépôt. Ils restent en dehors du dépôt.
 
 ## Conversion (exemple)
 
@@ -73,4 +74,6 @@ convert master.png -resize 320x -strip -quality 75 ventre-F-320.webp
 
 ## Statut
 
-Structure préparée. Aucune image n'est encore intégrée. Le code de rendu n'a pas été modifié.
+- 10 images livrées (flou des écrans appliqué), 60 fichiers.
+- `neutre-M` : en cours de régénération (patient masculin en tenue de patient). Repli sur l'illustration SVG en attendant.
+- Intégration : tableau `PT_PHOTOS` dans `index.html`, avec repli SVG automatique (erreur de chargement ou hors ligne).

@@ -609,6 +609,10 @@ body{ font:15px/1.6 var(--f-body); letter-spacing:-.005em; }
   #main-ui header.top nav{ display:flex; }
 }
 
+/* ---------- Photos des patients (carré 1:1, object-fit: cover) ---------- */
+.pt-photo, .pt-photo picture{ display:block; width:100%; height:100%; }
+.pt-photo img{ display:block; width:100%; height:100%; object-fit:cover; }
+
 /* ---------- Icônes SVG (remplacent les emojis) ---------- */
 .ico-svg{ width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:0 0 auto; display:inline-block; vertical-align:middle; }
 .ld-ico{ color:var(--accent); }
@@ -2041,6 +2045,45 @@ function ptSvg(sc,kid,sex){
   return o;
 }
 
+// Photos des patients fictifs (img/patients/). Clé = scène-sexe, valeur = nom de base du fichier.
+// neutre-M : image en cours de régénération -> absent du tableau, donc repli SVG.
+var PT_PHOTOS={
+  "enfant":"enfant",
+  "ventre-F":"ventre-F","ventre-M":"ventre-M",
+  "plaie-F":"plaie-F","plaie-M":"plaie-M",
+  "tete-F":"tete-F","tete-M":"tete-M",
+  "poitrine-F":"poitrine-F","poitrine-M":"poitrine-M",
+  "neutre-F":"neutre-F"
+};
+var PT_PHOTO_DIR="img/patients/";
+// Affiche la photo (AVIF puis WebP) ; repli automatique sur l'illustration SVG
+// si l'image est absente, si le chargement échoue ou si l'appareil est hors ligne.
+function ptRender(box, sc, kid, sex){
+  var key = kid ? "enfant" : (sc.scene + "-" + (sex==="F" ? "F" : "M"));
+  var base = PT_PHOTOS[key];
+  var fallback = function(){ box.innerHTML = ptSvg(sc, kid, sex); };
+  if(!base || (typeof navigator!=="undefined" && navigator.onLine===false)){ fallback(); return; }
+  var pic = document.createElement("picture");
+  ["avif","webp"].forEach(function(f){
+    var src = document.createElement("source");
+    src.type = "image/"+f;
+    src.srcset = [320,640,960].map(function(w){ return PT_PHOTO_DIR+base+"-"+w+"."+f+" "+w+"w"; }).join(", ");
+    src.sizes = "(max-width:560px) 72px, 84px";
+    pic.appendChild(src);
+  });
+  var img = document.createElement("img");
+  img.alt = "Patient fictif : " + sc.caption;
+  img.width = 84; img.height = 84;
+  img.loading = "lazy"; img.decoding = "async";
+  img.src = PT_PHOTO_DIR+base+"-640.webp";
+  img.onerror = function(){ fallback(); };
+  pic.appendChild(img);
+  var wrap = document.createElement("div");
+  wrap.className = "pt-photo";
+  wrap.appendChild(pic);
+  box.innerHTML = "";
+  box.appendChild(wrap);
+}
 function patientCard(){
   var d=DB[S.did],p=S.pt;
   var isKid = !!p.kid;
@@ -2054,7 +2097,7 @@ function patientCard(){
   // Avatar element
   var sc = ptCategory(d,p);
   var avBox = h("div",{class:"pt-avatar pt-scene-box "+avatarClass});
-  avBox.innerHTML = ptSvg(sc,isKid,sexe);
+  ptRender(avBox, sc, isKid, sexe);
   var avatarEl = h("div",{class:"pt-avatar-wrap"}, avBox, h("div",{class:"pt-scene-cap"}, sc.caption));
   
   // Info element
