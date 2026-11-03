@@ -303,7 +303,6 @@ textarea{ resize:vertical; min-height:96px; line-height:1.6; }
 .ld-cta .btn{min-height:50px;padding:12px 24px;font-size:1rem}
 /* ===== Hero animé : ligne ECG, hologramme, bouton ===== */
 .ld-hero{position:relative;overflow:hidden;isolation:isolate}
-.ld-hero::before{content:"";position:absolute;inset:0;z-index:-1;background:url("images/ecg-bg.webp") center/cover no-repeat;opacity:.15;pointer-events:none}
 .ld-ecg{position:absolute;left:0;bottom:-32px;width:100%;height:96px;transform:none;z-index:-1;pointer-events:none;overflow:visible}
 .ld-ecg path{fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 6px var(--accent));stroke-dasharray:1;stroke-dashoffset:0;opacity:.35}
 @media (prefers-reduced-motion: no-preference){
@@ -485,7 +484,7 @@ input::placeholder,textarea::placeholder{ color:var(--muted-2); }
 
 /* Onglets d'examen clinique */
 .etabs{ display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; scrollbar-width:thin; -webkit-overflow-scrolling:touch; }
-.etab{ flex:0 0 auto; display:inline-flex; align-items:center; gap:6px; background:var(--surface-2); color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:7px 12px; min-height:34px; font:500 .82rem var(--f-body); cursor:pointer; transition:all .2s ease; white-space:nowrap; }
+.etab{ flex:0 0 auto; display:inline-flex; align-items:center; gap:6px; background:var(--surface-2); color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:7px 12px; min-height:44px; font:500 .82rem var(--f-body); cursor:pointer; transition:all .2s ease; white-space:nowrap; }
 .etab:hover:not(:disabled){ border-color:var(--accent); color:var(--fg); }
 .etab.done{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent-2); }
 .etab.done::before{ content:"✓"; font-weight:700; }
@@ -711,7 +710,6 @@ body{ font:15px/1.6 var(--f-body); letter-spacing:-.005em; }
         </div>
       </div>
       <div class="ld-sim" aria-label="Exemple de consultation">
-        <div class="ld-holo"><img src="images/hero-ia.webp" alt="Étudiants en médecine et patient virtuel" width="360" height="270" decoding="async" onerror="this.parentNode.remove()"></div>
         <div class="ld-sim-head"><span class="ld-dot"></span><span class="ld-dot g"></span><span>Consultation en cours</span></div>
         <div class="ld-chat" id="ld-chat">
           <div class="bubble p step"><span class="who">Patient</span>Docteur, je me sens très faible, j'ai de la fièvre depuis hier et je n'arrive plus à manger…</div>
