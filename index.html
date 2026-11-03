@@ -675,7 +675,7 @@ body{ font:15px/1.6 var(--f-body); letter-spacing:-.005em; }
     <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></symbol>
     <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5v1a3 3 0 0 0 3 3M16 6h3v1a3 3 0 0 1-3 3"/><path d="M12 13v4M9 21h6M10 17h4"/></symbol>
     <symbol id="i-trend-down" viewBox="0 0 24 24"><path d="M3 7l6 6 4-4 8 8"/><path d="M14 17h7v-7"/></symbol>
-    <symbol id="i-cake" viewBox="0 0 24 24"><path d="M4 21v-8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8"/><path d="M4 17c2 1.5 4 1.5 6 0s4-1.5 6 0 4 1.5 4 0"/><path d="M12 11V7"/><path d="M12 5v0"/></symbol>
+    <symbol id="i-cake" viewBox="0 0 24 24"><path d="M4 21v-8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8"/><path d="M3 21h18"/><path d="M4 16.5c1.33 1 2.67 1 4 0s2.67-1 4 0 2.67 1 4 0 2.67-1 4 0"/><path d="M12 11V8"/><path d="M12 2.8c.7 1.1 1.5 1.7 1.5 2.7a1.5 1.5 0 0 1-3 0c0-1 .8-1.6 1.5-2.7z"/></symbol>
     <symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M6 3h12M6 21h12"/><path d="M7 3c0 5 10 5 10 9s-10 4-10 9"/><path d="M17 3c0 5-10 5-10 9s10 4 10 9"/></symbol>
     <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></symbol>
   </defs>
@@ -1446,7 +1446,7 @@ var GEN=[
  ["salut",/^(bonjour|bonsoir|salut|bonne)/,function(){return "Bonjour docteur.";}],
  ["motif",/motif|pleinte|plinte|plainte|pourquoi|prkoi|pourqoi|qu.est.ce qui (vous )?amene|plainte|raconte|pourquoi (venez|etes)/,function(p,d){return d.plainte;}],
  ["nom",/\bnom\b|appelez|prenom/,function(p){return p.kid?"Il s'appelle "+p.prenom+".":"Je m'appelle "+p.prenom+".";}],
- ["age",/\bage\b|quel age|\bans\b|naissance/,function(p){return p.kid?p.Pron+" a "+p.age+".":"J'ai "+p.age+".";}],
+ ["age",/\bage\b|quel age|\bans\b|naissance/,function(p){return p.kid?p.Pron+" a "+ageLabel(p.age)+".":"J'ai "+ageLabel(p.age)+".";}],
  ["pro",/profession|travail|metier|activite|ecole|que faites|vous faites/,function(p){return p.kid?p.Pron+" "+p.pro+".":"Je suis "+p.pro+".";}],
  ["habitat",/habit|quartier|commune|domicile|logement/,function(p){return p.kid?"Nous habitons à "+p.commune+".":"J'habite à "+p.commune+".";}],
  ["allerg",/allerg/,function(){return "Pas d'allergie connue.";}],
@@ -1680,8 +1680,8 @@ function casPublic(S){
 function fillX(t,p){return String(t).replace(/\{(\w+)\}/g,function(m,k){return p[k]!=null?p[k]:m;});}
 function buildPersona(S){
   var p=S.pt,d=DB[S.did];
-  if(p.kid)return "Tu es la mère de "+p.prenom+" ("+p.age+"). Tu parles de ton enfant avec inquiétude. Tu t'appelles aussi "+(p.commune?"et tu habites à "+p.commune:"et tu habites en ville")+".";
-  return "Tu es "+p.prenom+", "+p.age+", "+String(p.sexe).toLowerCase()+", "+p.pro+", tu habites à "+p.commune+".";
+  if(p.kid)return "Tu es la mère de "+p.prenom+" ("+ageLabel(p.age)+"). Tu parles de ton enfant avec inquiétude. Tu t'appelles aussi "+(p.commune?"et tu habites à "+p.commune:"et tu habites en ville")+".";
+  return "Tu es "+p.prenom+", "+ageLabel(p.age)+", "+String(p.sexe).toLowerCase()+", "+p.pro+", tu habites à "+p.commune+".";
 }
 function buildFacts(S){
   var d=DB[S.did],p=S.pt,lines=["- Motif de ta venue : "+d.plainte];
@@ -2129,6 +2129,13 @@ function ptRender(box, sc, kid, sex){
   box.innerHTML = "";
   box.appendChild(wrap);
 }
+/* Libellé d'âge pour l'affichage uniquement : « 1 an », « 2 ans » ; la donnée p.age reste inchangée. */
+function ageLabel(a){
+  var s=String(a||"").trim();
+  if(/^1\s+ans?$/.test(s)) return "1 an";
+  if(/^1\s+jours?$/.test(s)) return "1 jour";
+  return s;
+}
 function patientCard(){
   var d=DB[S.did],p=S.pt;
   var isKid = !!p.kid;
@@ -2148,8 +2155,8 @@ function patientCard(){
   var infoEl = h("div",{class:"pt-info"},
     h("div",{class:"label"}, isKid ? "Enfant reçu avec sa mère" : (sexe==='F' ? "Patiente reçue" : "Patient reçu")),
     h("div",{class:"pt-main"},
-      h("div",{class:"name"}, [prenomText, ageText, sexe].filter(Boolean).join(" · ")),
-      h("span",{class:"pt-badge-age"}, badgeIco("cake"), " "+ageText)
+      h("div",{class:"name"}, [prenomText, sexe].filter(Boolean).join(" · ")),
+      h("span",{class:"pt-badge-age"}, badgeIco("cake"), " "+ageLabel(ageText))
     ),
     h("div",{class:"muted"}, communeText),
     h("div",{class:"tags"},
