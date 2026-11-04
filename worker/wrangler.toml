@@ -1,0 +1,32 @@
+# Configuration du Worker du patient virtuel.
+# Ce fichier décrit la cible. Il ne déploie rien par lui-même.
+# ATTENTION : "wrangler deploy" remplace les réglages faits dans le tableau de bord Cloudflare.
+# Remplacer l'identifiant KV par la valeur réelle avant tout déploiement (voir worker/README.md).
+
+name = "muddy-shadow-c8d5"
+main = "patient-worker.js"
+compatibility_date = "2024-09-23"
+
+[ai]
+binding = "AI"
+
+# Plans Premium (lecture seule pour le Worker)
+[[kv_namespaces]]
+binding = "STATE"
+id = "REMPLACER_PAR_ID_KV_STATE"
+
+# Quotas, plafond de messages et limites de débit (atomiques)
+[[durable_objects.bindings]]
+name = "QUOTA"
+class_name = "QuotaLimiter"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["QuotaLimiter"]
+
+[vars]
+ALLOWED_ORIGIN = "https://salledegarde.online"
+FIREBASE_PROJECT_ID = "salledegarde-89dae"
+MAX_MESSAGES_PER_CASE = "40"
+USER_REQUESTS_PER_MINUTE = "20"
+IP_REQUESTS_PER_MINUTE = "20"

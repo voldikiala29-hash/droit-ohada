@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test test/patient-worker.test.mjs"
+    "test": "node --test test/*.test.mjs",
+    "check:case-ids": "node scripts/build-case-ids.mjs --check"
   }
 }

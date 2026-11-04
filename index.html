@@ -1521,7 +1521,8 @@ function normCase(d){
 /* ===== Patient autonome (IA) — la clé API reste dans le Worker ===== */
 /* Mettre ici l'URL du Worker (voir worker/patient-worker.js). Vide = mode local (moteur de règles). */
 var WORKER_URL="https://muddy-shadow-c8d5.voldikiala29.workers.dev";
-var LLM_URL=window.SDG_LLM_URL||WORKER_URL;
+/* Adresse figée : le jeton Firebase n'est jamais envoyé ailleurs (aucune surcharge par variable globale). */
+var LLM_URL=WORKER_URL;
 /* Ce que Cava reçoit du cas : jamais le diagnostic ni les examens */
 function casPublic(S){
   var d=DB[S.did],p=S.pt;
@@ -1571,8 +1572,6 @@ async function answerPatient(S,t){
 }
 /* Cava : le patient virtuel. Worker d'abord, moteur local si le Worker ne répond pas. */
 function smartPatientReply(question){ return answerPatient(S,question); }
-/* Point d'accès de test : seulement si l'URL contient ?debug=1 (jamais en usage normal) */
-if(/[?&]debug=1/.test(location.search)){ window._sdgDbg=function(){return {S:S,DB:DB,guardLLM:guardLLM,N:N};}; }
 
 /* Le patient ne dit jamais « je ne comprends pas » ni ne sort du contexte : il reformule et rappelle sa plainte */
 function patientReply(S,q){
@@ -1612,7 +1611,6 @@ function load(k){try{return JSON.parse(localStorage.getItem(k));}catch(e){return
 function initialesNom(u){var n=String((u&&u.displayName)||'').trim().split(/\s+/).filter(Boolean);var s=n.slice(0,2).map(function(w){return w.charAt(0);}).join('');return (s||String((u&&u.email)||'D').charAt(0)||'D').toUpperCase();}
 window.initialesNom=initialesNom;
 window.esc=esc; window.imgSrc=imgSrc;
-/* Point d'accès de test : uniquement si l'URL contient ?debug=1 */
 
 function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} try{if(window._fbSync)window._fbSync(k,v);}catch(e){}}
 function wipe(k){try{localStorage.removeItem(k);}catch(e){}}

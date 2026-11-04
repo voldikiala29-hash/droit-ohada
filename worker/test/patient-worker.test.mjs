@@ -1,248 +1,276 @@
+// Tests HTTP du Worker : authentification, quotas, plafond de messages, échec fermé, JWKS.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { handleRequest, verifyIdToken } from "../patient-worker.js";
+import { handleRequest } from "../patient-worker.js";
+import CASE_IDS from "../case-ids.js";
+import {
+  makeCtx, bodyFor, reqFor, sign, claims, makeKey, countingFetch, fakeAI,
+  brokenNamespace, FakeKV, makeNamespace, PROJECT
+} from "./helpers.mjs";
 
-const PROJECT = "salledegarde-89dae";
-const ORIGIN = "https://salledegarde.online";
-const enc = new TextEncoder();
+const call = (ctx, body, extra = {}) =>
+  handleRequest(reqFor(body, { token: ctx.token, ...extra }), ctx.env, ctx.opts);
 
-function b64url(bytes) {
-  return Buffer.from(bytes).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
-function b64urlJson(obj) {
-  return b64url(enc.encode(JSON.stringify(obj)));
-}
+/* ---------- Authentification ---------- */
 
-async function makeKey(kid = "k1") {
-  const pair = await crypto.subtle.generateKey(
-    { name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" },
-    true, ["sign", "verify"]);
-  const jwk = await crypto.subtle.exportKey("jwk", pair.publicKey);
-  return { privateKey: pair.privateKey, jwk: { ...jwk, kid, alg: "RS256", use: "sig" }, kid };
-}
-
-async function sign(key, payload, header = {}) {
-  const h = b64urlJson({ alg: "RS256", kid: key.kid, typ: "JWT", ...header });
-  const p = b64urlJson(payload);
-  const sig = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", key.privateKey, enc.encode(h + "." + p));
-  return h + "." + p + "." + b64url(new Uint8Array(sig));
-}
-
-function claims(now, overrides = {}) {
-  const sec = Math.floor(now / 1000);
-  return {
-    iss: "https://securetoken.google.com/" + PROJECT,
-    aud: PROJECT,
-    iat: sec,
-    auth_time: sec,
-    exp: sec + 3600,
-    sub: "uid-medecin-1",
-    email: "medecin@example.org",
-    email_verified: true,
-    ...overrides
-  };
-}
-
-function fakeFetch(jwk) {
-  return async () => new Response(JSON.stringify({ keys: [jwk] }), { status: 200 });
-}
-
-class FakeKV {
-  constructor() { this.m = new Map(); }
-  async get(k) { return this.m.has(k) ? this.m.get(k) : null; }
-  async put(k, v) { this.m.set(k, String(v)); }
-}
-
-function fakeAI(reply = "Oui docteur, ça fait quatre jours.") {
-  const calls = { n: 0 };
-  return {
-    calls,
-    run: async () => { calls.n++; return { response: reply }; }
-  };
-}
-
-const BODY = (caseId = "cas_1") => ({
-  persona: "Homme de 35 ans",
-  facts: "- Motif : fièvre",
-  step: "Anamnèse",
-  history: [],
-  message: "Depuis quand ?",
-  question: "Depuis quand ?",
-  cas: { id: caseId }
-});
-
-function req(body, { auth, origin = ORIGIN, method = "POST" } = {}) {
-  const headers = { "Content-Type": "application/json", Origin: origin };
-  if (auth) headers.Authorization = "Bearer " + auth;
-  return new Request("https://worker.test/", { method, headers, body: method === "POST" ? JSON.stringify(body) : undefined });
-}
-
-async function setup({ now = Date.now(), tokenOverrides = {}, signKey, env = {} } = {}) {
-  const key = await makeKey();
-  const otherKey = await makeKey("k1");
-  const token = await sign(signKey || key, claims(now, tokenOverrides));
-  const state = new FakeKV();
-  const ai = fakeAI();
-  const e = { AI: ai, STATE: state, FIREBASE_PROJECT_ID: PROJECT, ...env };
-  const opts = { nowMs: now, fetchImpl: fakeFetch(key.jwk), jwksCache: { keys: null, expiresAt: 0 } };
-  return { key, otherKey, token, state, ai, env: e, opts };
-}
-
-/* ---------- Vérification du jeton ---------- */
-
-test("jeton valide : accès accordé", async () => {
-  const s = await setup();
-  const res = await handleRequest(req(BODY(), { auth: s.token }), s.env, s.opts);
-  assert.equal(res.status, 200);
-  const j = await res.json();
-  assert.equal(j.reponse, "Oui docteur, ça fait quatre jours.");
-  assert.equal(j.quota.plan, "free");
-  assert.equal(j.quota.used, 1);
-});
-
-test("sans en-tête Authorization : 401", async () => {
-  const s = await setup();
-  const res = await handleRequest(req(BODY()), s.env, s.opts);
-  assert.equal(res.status, 401);
-  assert.equal(s.ai.calls.n, 0);
+test("sans en-tête Authorization : 401, IA non appelée", async () => {
+  const c = await makeCtx();
+  const r = await handleRequest(reqFor(bodyFor(CASE_IDS[0])), c.env, c.opts);
+  assert.equal(r.status, 401);
+  assert.equal(c.ai.calls, 0);
 });
 
 test("jeton signé par une autre clé : 401", async () => {
-  const s = await setup();
-  const forged = await sign(s.otherKey, claims(Date.now()));
-  const res = await handleRequest(req(BODY(), { auth: forged }), s.env, s.opts);
-  assert.equal(res.status, 401);
-  assert.equal(s.ai.calls.n, 0);
+  const c = await makeCtx();
+  const other = await makeKey("k1");
+  const forged = await sign(other, claims(c.now));
+  const r = await handleRequest(reqFor(bodyFor(CASE_IDS[0]), { token: forged }), c.env, c.opts);
+  assert.equal(r.status, 401);
+  assert.equal(c.ai.calls, 0);
 });
 
-test("algorithme 'none' refusé : 401", async () => {
-  const s = await setup();
-  const h = b64urlJson({ alg: "none", typ: "JWT" });
-  const p = b64urlJson(claims(Date.now()));
-  const res = await handleRequest(req(BODY(), { auth: h + "." + p + "." }), s.env, s.opts);
-  assert.equal(res.status, 401);
+test("algorithme 'none' : 401", async () => {
+  const c = await makeCtx();
+  const h = Buffer.from(JSON.stringify({ alg: "none", typ: "JWT" })).toString("base64url");
+  const p = Buffer.from(JSON.stringify(claims(c.now))).toString("base64url");
+  const r = await handleRequest(reqFor(bodyFor(CASE_IDS[0]), { token: h + "." + p + "." }), c.env, c.opts);
+  assert.equal(r.status, 401);
 });
 
-test("mauvaise audience ou émetteur : 401", async () => {
-  const s = await setup({ tokenOverrides: { aud: "autre-projet" } });
-  const bad1 = await sign(s.key, claims(s.opts.nowMs, { aud: "autre-projet" }));
-  const bad2 = await sign(s.key, claims(s.opts.nowMs, { iss: "https://securetoken.google.com/autre" }));
-  assert.equal((await handleRequest(req(BODY(), { auth: bad1 }), s.env, s.opts)).status, 401);
-  assert.equal((await handleRequest(req(BODY(), { auth: bad2 }), s.env, s.opts)).status, 401);
-});
-
-test("jeton expiré : 401", async () => {
-  const now = Date.now();
-  const s = await setup({ now });
-  const expired = await sign(s.key, claims(now, { exp: Math.floor(now / 1000) - 10 }));
-  assert.equal((await handleRequest(req(BODY(), { auth: expired }), s.env, s.opts)).status, 401);
-});
-
-test("email non vérifié : 403", async () => {
-  const s = await setup();
-  const t = await sign(s.key, claims(s.opts.nowMs, { email_verified: false }));
-  const res = await handleRequest(req(BODY(), { auth: t }), s.env, s.opts);
-  assert.equal(res.status, 403);
-  assert.equal(s.ai.calls.n, 0);
-});
-
-test("verifyIdToken renvoie l'identifiant et l'email", async () => {
-  const s = await setup();
-  const user = await verifyIdToken(s.token, { projectId: PROJECT, nowMs: s.opts.nowMs, fetchImpl: s.opts.fetchImpl, jwksCache: { keys: null, expiresAt: 0 } });
-  assert.equal(user.uid, "uid-medecin-1");
-  assert.equal(user.emailVerified, true);
-});
-
-/* ---------- Quotas ---------- */
-
-test("formule gratuite : 5 cas distincts puis refus au 6e", async () => {
-  const s = await setup();
-  for (let i = 1; i <= 5; i++) {
-    const r = await handleRequest(req(BODY("cas_" + i), { auth: s.token }), s.env, s.opts);
-    assert.equal(r.status, 200, "cas " + i);
+test("mauvais émetteur, mauvaise audience, jeton expiré : 401", async () => {
+  const c = await makeCtx();
+  const badIss = await sign(c.key, claims(c.now, { iss: "https://securetoken.google.com/autre" }));
+  const badAud = await sign(c.key, claims(c.now, { aud: "autre" }));
+  const expired = await sign(c.key, claims(c.now, { exp: Math.floor(c.now / 1000) - 10 }));
+  for (const t of [badIss, badAud, expired]) {
+    assert.equal((await handleRequest(reqFor(bodyFor(CASE_IDS[0]), { token: t }), c.env, c.opts)).status, 401);
   }
-  const sixth = await handleRequest(req(BODY("cas_6"), { auth: s.token }), s.env, s.opts);
-  assert.equal(sixth.status, 402);
-  const j = await sixth.json();
-  assert.equal(j.quota.limit, 5);
-  assert.equal(j.quota.used, 5);
 });
 
-test("un cas déjà compté reste accessible même quota atteint", async () => {
-  const s = await setup();
-  for (let i = 1; i <= 5; i++) await handleRequest(req(BODY("cas_" + i), { auth: s.token }), s.env, s.opts);
-  const again = await handleRequest(req(BODY("cas_3"), { auth: s.token }), s.env, s.opts);
-  assert.equal(again.status, 200);
+test("email non vérifié : 403, IA non appelée", async () => {
+  const c = await makeCtx({ emailVerified: false });
+  const r = await call(c, bodyFor(CASE_IDS[0]));
+  assert.equal(r.status, 403);
+  assert.equal(c.ai.calls, 0);
 });
 
-test("Premium actif : quota élevé", async () => {
-  const s = await setup();
-  const until = new Date(s.opts.nowMs + 30 * 24 * 3600 * 1000).toISOString();
-  await s.state.put("plan:uid-medecin-1", JSON.stringify({ plan: "premium", until }));
-  for (let i = 1; i <= 6; i++) {
-    const r = await handleRequest(req(BODY("cas_" + i), { auth: s.token }), s.env, s.opts);
-    assert.equal(r.status, 200, "cas " + i);
+test("jeton valide : 200 avec le détail du quota", async () => {
+  const c = await makeCtx();
+  const r = await call(c, bodyFor(CASE_IDS[0]));
+  assert.equal(r.status, 200);
+  const j = await r.json();
+  assert.equal(j.reponse, "Oui docteur, ça fait quatre jours.");
+  assert.deepEqual(j.quota, { plan: "free", used: 1, limit: 5, msgs: 1, msgCap: 40 });
+});
+
+/* ---------- Quotas en concurrence ---------- */
+
+test("100 requêtes simultanées, compte gratuit, cas distincts : 5 réussies, 5 appels IA", async () => {
+  // Latence de stockage élevée : maximise le chevauchement des réservations.
+  const c = await makeCtx({ env: {}, latencyMs: 25 });
+  const reqs = Array.from({ length: 100 }, (_, i) => call(c, bodyFor(CASE_IDS[i])));
+  const responses = await Promise.all(reqs);
+  const statuses = responses.map(r => r.status);
+  assert.equal(statuses.filter(s => s === 200).length, 5, "exactement 5 réussites");
+  assert.equal(statuses.filter(s => s === 402).length, 95, "le reste refusé pour quota");
+  assert.equal(c.ai.calls, 5, "l'IA n'est appelée que pour les 5 réussites");
+});
+
+test("avec la limite de débit par défaut (20/min) : jamais plus de 5 réussites", async () => {
+  const c = await makeCtx({ env: { USER_REQUESTS_PER_MINUTE: "20" }, latencyMs: 25 });
+  const responses = await Promise.all(Array.from({ length: 100 }, (_, i) => call(c, bodyFor(CASE_IDS[i]))));
+  const ok = responses.filter(r => r.status === 200).length;
+  assert.equal(ok, 5);
+  assert.equal(c.ai.calls, 5);
+});
+
+test("formule Premium (KV plan:<uid> valide) : 60 cas distincts acceptés, le 61e refusé", async () => {
+  const c = await makeCtx();
+  const until = new Date(c.now + 30 * 24 * 3600 * 1000).toISOString();
+  await c.kv.put("plan:" + c.uid, JSON.stringify({ plan: "premium", until }));
+  let last;
+  for (let i = 0; i < 61; i++) {
+    last = await call(c, bodyFor(CASE_IDS[i]));
+    if (i < 60) assert.equal(last.status, 200, "cas " + i);
   }
-  const j = await (await handleRequest(req(BODY("cas_6"), { auth: s.token }), s.env, s.opts)).json();
-  assert.equal(j.quota.plan, "premium");
+  assert.equal(last.status, 402);
+  assert.equal((await last.json()).quota.limit, 60);
 });
 
 test("Premium expiré : retour à la formule gratuite", async () => {
-  const s = await setup();
-  const until = new Date(s.opts.nowMs - 1000).toISOString();
-  await s.state.put("plan:uid-medecin-1", JSON.stringify({ plan: "premium", until }));
-  const r = await handleRequest(req(BODY("cas_1"), { auth: s.token }), s.env, s.opts);
-  assert.equal((await r.json()).quota.plan, "free");
+  const c = await makeCtx();
+  const until = new Date(c.now - 1000).toISOString();
+  await c.kv.put("plan:" + c.uid, JSON.stringify({ plan: "premium", until }));
+  const j = await (await call(c, bodyFor(CASE_IDS[0]))).json();
+  assert.equal(j.quota.plan, "free");
 });
 
-test("enregistrement de plan illisible : formule gratuite", async () => {
-  const s = await setup();
-  await s.state.put("plan:uid-medecin-1", "pas du json");
-  const r = await handleRequest(req(BODY("cas_1"), { auth: s.token }), s.env, s.opts);
-  assert.equal((await r.json()).quota.plan, "free");
+test("plan illisible dans KV : formule gratuite", async () => {
+  const c = await makeCtx();
+  await c.kv.put("plan:" + c.uid, "pas du json");
+  const j = await (await call(c, bodyFor(CASE_IDS[0]))).json();
+  assert.equal(j.quota.plan, "free");
 });
 
-test("échec de l'IA : le quota n'est pas décompté", async () => {
-  const s = await setup();
-  s.env.AI = { run: async () => { throw new Error("boom"); } };
-  const r = await handleRequest(req(BODY("cas_1"), { auth: s.token }), s.env, s.opts);
-  assert.equal(r.status, 502);
-  const raw = await s.state.get("usage:uid-medecin-1:" + new Date(s.opts.nowMs).toISOString().slice(0, 7));
-  assert.equal(raw, null);
+/* ---------- Plafond de messages ---------- */
+
+test("40 messages sur un même cas acceptés, le 41e refusé (402, reason messages)", async () => {
+  const c = await makeCtx();
+  for (let i = 0; i < 40; i++) {
+    const r = await call(c, bodyFor(CASE_IDS[0], "message " + i));
+    assert.equal(r.status, 200, "message " + (i + 1));
+  }
+  const r = await call(c, bodyFor(CASE_IDS[0], "de trop"));
+  assert.equal(r.status, 402);
+  const j = await r.json();
+  assert.equal(j.error, "messages");
+  assert.equal(j.quota.msgCap, 40);
+  assert.equal(c.ai.calls, 40);
 });
 
-/* ---------- Robustesse et configuration ---------- */
-
-test("sans liaison STATE : 503 (échec fermé)", async () => {
-  const s = await setup();
-  const env = { AI: s.ai, FIREBASE_PROJECT_ID: PROJECT };
-  const r = await handleRequest(req(BODY(), { auth: s.token }), env, s.opts);
-  assert.equal(r.status, 503);
-  assert.equal(s.ai.calls.n, 0);
+test("MAX_MESSAGES_PER_CASE configurable : 3 messages puis refus", async () => {
+  const c = await makeCtx({ env: { MAX_MESSAGES_PER_CASE: "3" } });
+  for (let i = 0; i < 3; i++) assert.equal((await call(c, bodyFor(CASE_IDS[0]))).status, 200);
+  assert.equal((await call(c, bodyFor(CASE_IDS[0]))).status, 402);
 });
+
+test("une réponse IA en échec ne consomme pas de message", async () => {
+  const c = await makeCtx();
+  c.env.AI = fakeAI({ fail: 1 });
+  assert.equal((await call(c, bodyFor(CASE_IDS[0]))).status, 502);
+  for (let i = 0; i < 40; i++) assert.equal((await call(c, bodyFor(CASE_IDS[0]))).status, 200, "msg " + i);
+  assert.equal((await call(c, bodyFor(CASE_IDS[0]))).status, 402);
+});
+
+test("une réponse IA vide est traitée comme un échec et libérée", async () => {
+  const c = await makeCtx();
+  c.env.AI = fakeAI({ reply: "   " });
+  assert.equal((await call(c, bodyFor(CASE_IDS[0]))).status, 502);
+  const ok = await call(c, bodyFor(CASE_IDS[0]));
+  assert.equal(ok.status, 502);
+});
+
+/* ---------- Identifiants de cas ---------- */
+
+test("identifiant de cas inventé : 400, IA non appelée", async () => {
+  const c = await makeCtx();
+  for (const id of ["n_importe_quoi", "palu_adulte_fake", "../../etc", "x".repeat(81)]) {
+    assert.equal((await call(c, bodyFor(id))).status, 400, id);
+  }
+  assert.equal(c.ai.calls, 0);
+});
+
+test("identifiant d'un vrai cas : accepté", async () => {
+  const c = await makeCtx();
+  assert.equal((await call(c, bodyFor("palu_adulte"))).status, 200);
+});
+
+/* ---------- Échec fermé ---------- */
+
+test("liaison QUOTA absente : 503, IA non appelée", async () => {
+  const c = await makeCtx();
+  delete c.env.QUOTA;
+  assert.equal((await call(c, bodyFor(CASE_IDS[0]))).status, 503);
+  assert.equal(c.ai.calls, 0);
+});
+
+test("liaison STATE absente : 503, IA non appelée", async () => {
+  const c = await makeCtx();
+  delete c.env.STATE;
+  assert.equal((await call(c, bodyFor(CASE_IDS[0]))).status, 503);
+  assert.equal(c.ai.calls, 0);
+});
+
+test("Durable Object indisponible : 503, IA non appelée", async () => {
+  const c = await makeCtx();
+  c.env.QUOTA = brokenNamespace();
+  assert.equal((await call(c, bodyFor(CASE_IDS[0]))).status, 503);
+  assert.equal(c.ai.calls, 0);
+});
+
+test("variable de configuration invalide : 503 (échec fermé)", async () => {
+  const c = await makeCtx({ env: { MAX_MESSAGES_PER_CASE: "abc" } });
+  assert.equal((await call(c, bodyFor(CASE_IDS[0]))).status, 503);
+  assert.equal(c.ai.calls, 0);
+});
+
+test("STATE (plans) indisponible : 503, IA non appelée", async () => {
+  const c = await makeCtx();
+  c.env.STATE = { get: async () => { throw new Error("kv_down"); }, put: async () => {} };
+  assert.equal((await call(c, bodyFor(CASE_IDS[0]))).status, 503);
+  assert.equal(c.ai.calls, 0);
+});
+
+/* ---------- Origine, méthode, débit par IP ---------- */
 
 test("origine non autorisée : 403", async () => {
-  const s = await setup();
-  const r = await handleRequest(req(BODY(), { auth: s.token, origin: "https://evil.example" }), s.env, s.opts);
-  assert.equal(r.status, 403);
+  const c = await makeCtx();
+  assert.equal((await call(c, bodyFor(CASE_IDS[0]), { origin: "https://evil.example" })).status, 403);
 });
 
-test("identifiant de cas manquant : 400", async () => {
-  const s = await setup();
-  const body = BODY(); delete body.cas;
-  const r = await handleRequest(req(body, { auth: s.token }), s.env, s.opts);
-  assert.equal(r.status, 400);
+test("méthode GET : 405 ; pré-vol OPTIONS autorise Authorization", async () => {
+  const c = await makeCtx();
+  assert.equal((await handleRequest(reqFor(undefined, { method: "GET" }), c.env, c.opts)).status, 405);
+  const pre = await handleRequest(reqFor(undefined, { method: "OPTIONS" }), c.env, c.opts);
+  assert.match(pre.headers.get("Access-Control-Allow-Headers"), /Authorization/);
 });
 
-test("limite de débit par utilisateur : 429 après 20 requêtes par minute", async () => {
-  const s = await setup();
-  let last;
-  for (let i = 0; i < 21; i++) last = await handleRequest(req(BODY("cas_1"), { auth: s.token }), s.env, s.opts);
-  assert.equal(last.status, 429);
+test("débit par IP : la 4e requête d'une même adresse est refusée (429) avant toute vérification de jeton", async () => {
+  const c = await makeCtx({ env: { IP_REQUESTS_PER_MINUTE: "3" } });
+  const statuses = [];
+  for (let i = 0; i < 4; i++) {
+    statuses.push((await handleRequest(reqFor(bodyFor(CASE_IDS[0]), { token: "x.y.z" }), c.env, c.opts)).status);
+  }
+  assert.deepEqual(statuses, [401, 401, 401, 429]);
 });
 
-test("pré-vol CORS autorise l'en-tête Authorization", async () => {
-  const s = await setup();
-  const r = await handleRequest(req(null, { method: "OPTIONS" }), s.env, s.opts);
-  assert.match(r.headers.get("Access-Control-Allow-Headers"), /Authorization/);
+test("limite de débit par utilisateur : 429 au-delà de la valeur configurée", async () => {
+  const c = await makeCtx({ env: { USER_REQUESTS_PER_MINUTE: "2" } });
+  const s = [];
+  for (let i = 0; i < 3; i++) s.push((await call(c, bodyFor(CASE_IDS[i]))).status);
+  assert.deepEqual(s, [200, 200, 429]);
+});
+
+/* ---------- Clés Google (JWKS) ---------- */
+
+test("rotation des clés : un kid inconnu déclenche un rechargement et le jeton est accepté", async () => {
+  const now = Date.now();
+  const newKey = await makeKey("nouvelle");
+  const token = await sign(newKey, claims(now));
+  const fetchImpl = countingFetch(() => [newKey.jwk]);
+  const env = {
+    AI: fakeAI(), STATE: new FakeKV(), QUOTA: makeNamespace(0), FIREBASE_PROJECT_ID: PROJECT,
+    USER_REQUESTS_PER_MINUTE: "1000", IP_REQUESTS_PER_MINUTE: "1000"
+  };
+  // Cache ancien (ne contient pas le nouveau kid), récemment rechargé il y a 10 minutes
+  const jwksCache = { keys: [{ kid: "ancienne", kty: "RSA" }], expiresAt: now + 3600e3, lastFetch: now - 10 * 60e3 };
+  const r = await handleRequest(reqFor(bodyFor(CASE_IDS[0]), { token }), env, { nowMs: now, fetchImpl, jwksCache });
+  assert.equal(r.status, 200);
+  assert.equal(fetchImpl.calls, 1);
+});
+
+test("kid inconnu répété : Google n'est interrogé qu'une fois pendant le délai de carence", async () => {
+  const now = Date.now();
+  const bogus = await makeKey("inconnu");
+  const token = await sign(bogus, claims(now));
+  const fetchImpl = countingFetch(() => []);
+  const env = {
+    AI: fakeAI(), STATE: new FakeKV(), QUOTA: makeNamespace(0), FIREBASE_PROJECT_ID: PROJECT,
+    USER_REQUESTS_PER_MINUTE: "1000", IP_REQUESTS_PER_MINUTE: "1000"
+  };
+  const jwksCache = { keys: null, expiresAt: 0, lastFetch: 0 };
+  const statuses = [];
+  for (let i = 0; i < 20; i++) {
+    statuses.push((await handleRequest(reqFor(bodyFor(CASE_IDS[0]), { token }), env, { nowMs: now, fetchImpl, jwksCache })).status);
+  }
+  assert.ok(statuses.every(s => s === 401));
+  assert.equal(fetchImpl.calls, 1);
+});
+
+test("JWKS indisponible au premier appel : 401, pas de crash", async () => {
+  const c = await makeCtx();
+  const down = async () => new Response("erreur", { status: 500 });
+  const r = await handleRequest(reqFor(bodyFor(CASE_IDS[0]), { token: c.token }), c.env,
+    { nowMs: c.now, fetchImpl: down, jwksCache: { keys: null, expiresAt: 0, lastFetch: 0 } });
+  assert.equal(r.status, 401);
 });
