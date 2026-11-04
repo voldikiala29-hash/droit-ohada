@@ -157,3 +157,12 @@ Ces points demandent un environnement réel. Ils ne sont **pas** validés :
 | `docs/securite-phase-1.md` | Ce document |
 
 Aucun fichier de contenu médical (`cases_202.js`) n'a été modifié.
+
+## 9. État réel de production (constaté le 4 novembre 2026, lecture seule)
+
+- Le Worker `muddy-shadow-c8d5` déployé est **la version d'origine** : pas d'authentification, pas de quota,
+  limite par IP via KV `RATE`. **La protection C2 n'est donc pas active en production.** Elle ne le deviendra
+  qu'après déploiement de cette branche (voir `worker/README.md`, section 9).
+- Le seul namespace KV du compte est `salledegarde-rate`. Le namespace `STATE` n'existe pas encore.
+- Identité du dépôt : déploiement GitHub Pages `success` pour le commit `dd5412a` (= `main`), URL
+  `https://salledegarde.online/`.
