@@ -115,7 +115,7 @@ consultation comptée. Une note sans consultation comptée est refusée.
 | 400 | Contenu invalide | Erreur de programmation côté client | Message technique discret, journal | **Non** |
 | 401 | Authentification | Jeton absent, invalide ou expiré | Demander de se reconnecter | **Non** |
 | 403 `email_unverified` | Authentification | Adresse non vérifiée | Inviter à vérifier l'adresse | **Non** |
-| 403 `origin` | Sécurité | Origine non autorisée | Erreur, aucune réessai automatique | **Non** |
+| 403 `origin` | Sécurité | Origine non autorisée | Erreur, aucun nouvel essai automatique | **Non** |
 | 402 | Quota | Quota de consultations épuisé | Message clair avec date de renouvellement | **Non** |
 | 409 (ou 402, voir F3 de la revue) | Quota | Plafond de messages du cas atteint | Message clair | **Non** |
 | 429 | Débit | Trop de requêtes | Attendre, réessayer après un délai | **Non** |
