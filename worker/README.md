@@ -62,10 +62,19 @@ Le Worker lit cet enregistrement à chaque requête. Un changement peut mettre e
 2. Configuration : liaisons et variables (503 si incomplète).
 3. Validation stricte du contenu (400) : `persona` commence par « Tu es », `facts` = lignes « - », `step` parmi les
    quatre étapes, `history` = `d` ou `p`, `cas.id` parmi les **302 identifiants** autorisés, pas de caractères de contrôle.
-4. Limite de débit par IP (429), via le Durable Object `ip:<adresse>`.
-5. Vérification du jeton Firebase (401) puis de l'email (403).
-6. Réservation atomique (`QUOTA`, objet `uid:<uid>`) : débit (429), quota de cas (402), plafond de messages (409).
-7. Appel à l'IA. Si l'IA échoue ou répond vide, la réservation est **libérée** (502).
+4. Méthode, origine, configuration (503 si `PROTOCOL_CUTOFF` absent ou invalide).
+5. Limite de débit par IP (429), **avant toute lecture du corps**, via le Durable Object `ip:<adresse>`.
+6. Lecture bornée du corps : 64 Ko maximum, contrôlé pendant la lecture (413).
+7. Validation stricte du contenu (400).
+8. Vérification du jeton Firebase (401 ; clés Google indisponibles : 503) puis de l'email (403).
+9. Version du contrat (en-tête `X-SDG-Protocol`) : sans version à jour après la date limite, 426 **avant toute réservation** ; avant la date, réponse 200 avec l'en-tête `X-SDG-Upgrade: requis`.
+10. Réservation atomique (`QUOTA`, objet `uid:<uid>`), identifiée par un `rid` : débit (429), quota de cas (402), plafond de messages (409). La réservation reste « en attente ».
+11. Appel à l'IA, limité à 60 secondes (`AI_TIMEOUT_MS`). Délai, erreur ou réponse vide : 502.
+12. Quand la réponse est prête, la réservation est **confirmée** ; si la confirmation échoue, 503 et aucune réponse n'est livrée.
+13. Dans tous les cas où la réservation n'est pas confirmée, elle est **libérée** (`finally`). Une réservation non confirmée depuis plus de 90 secondes (`PENDING_TTL_MS`) est libérée automatiquement par le Durable Object (filet de sécurité si le Worker s'arrête entre deux étapes).
+
+**Mois de décompte** : le Durable Object ne revient jamais à un mois antérieur à celui qu'il a déjà enregistré. Une requête
+datée d'un mois précédent est traitée dans le mois en cours, sans remise à zéro des compteurs.
 
 ## 6. Codes de réponse
 
@@ -76,13 +85,22 @@ Le Worker lit cet enregistrement à chaque requête. Un changement peut mettre e
 | 401 | `auth` | Jeton absent, invalide, expiré ou d'un autre projet |
 | 402 | `quota` | Quota de cas atteint |
 | 409 | `messages` | Plafond de 40 messages pour ce cas atteint |
+| 413 | `too_large` | Corps supérieur à 64 Ko ; aucune lecture au-delà, aucune réservation |
+| 426 | `upgrade_required` | Navigateur sans version à jour, après la date limite ; aucune réservation |
 | 403 | `origin` / `email_unverified` | Origine non autorisée ou email non vérifié |
 | 405 | `method` | Méthode autre que POST |
 | 429 | `rate` | Trop de requêtes (IP ou utilisateur) |
-| 502 | `unavailable` | L'IA n'a pas répondu ; réservation libérée |
-| 503 | `config` / `unavailable` | Configuration ou stockage indisponible : aucune réponse IA |
+| 502 | `unavailable` | L'IA n'a pas répondu dans le délai, ou réponse vide ; réservation libérée |
+| 503 | `config` / `unavailable` | Configuration, stockage, clés Google ou confirmation indisponibles : aucune réponse IA livrée |
 
-Le navigateur traite **tout code d'erreur** comme un retour au moteur local : la consultation continue sans IA.
+En-tête de succès : `X-SDG-Upgrade: requis` (200) signale qu'un navigateur doit être mis à jour avant la date limite.
+
+**Contrat navigateur** : `X-SDG-Protocol` (version actuelle : 2, constante `CLIENT_PROTOCOL`), autorisé dans les
+en-têtes CORS. **Configuration** : `PROTOCOL_CUTOFF` (dans `wrangler.toml`) doit être fixée au déploiement, à la date
+de déploiement plus 30 jours. Tant qu'elle est un placeholder, toutes les demandes reçoivent 503.
+
+**Ce que le navigateur fait d'un code d'erreur** : cette partie est **non corrigée** côté navigateur. Tant que la
+correction 1.4a n'est pas livrée, le moteur local peut encore répondre après un refus. Le serveur ne peut pas l'empêcher.
 
 ## 7. Limites connues
 
@@ -98,15 +116,15 @@ Le navigateur traite **tout code d'erreur** comme un retour au moteur local : la
 
 ```bash
 cd worker
-npm test                     # 53 tests, Node 22
+npm test                     # 85 tests, Node 22
 npm run check:case-ids       # vérifie que case-ids.js correspond à cases_202.js
 node scripts/build-case-ids.mjs   # régénère case-ids.js si cases_202.js change
 ```
 
 | Fichier | Couvre |
 |---|---|
-| `test/quota-limiter.test.mjs` | Atomicité (100 réservations simultanées), plafonds, libération, changement de mois, débit |
-| `test/patient-worker.test.mjs` | Jetons (signature, `alg: none`, émetteur, audience, expiration), email, quotas en concurrence, Premium, plafond de messages, identifiants inventés, échec fermé, origine, débit par IP, rotation des clés |
+| `test/quota-limiter.test.mjs` | Atomicité (100 réservations simultanées), plafonds, libération par identifiant (idempotente), confirmation, expiration après 90 s, mois monotone, débit |
+| `test/patient-worker.test.mjs` | Jetons (signature, `alg: none`, émetteur, audience, expiration), email, quotas en concurrence, Premium, plafond de messages, identifiants inventés, échec fermé, origine, débit par IP (avant lecture), taille du corps (413), version du contrat (426, avertissement), date limite absente (503), délai de l'IA (502 et libération), CORS, rotation des clés, JWKS indisponible (503) |
 | `test/validation.test.mjs` | Validation stricte, et acceptation des **302 cas réels** au format du navigateur |
 | `test/client-static.test.mjs` | Adresse du Worker figée, mode debug supprimé, jeton envoyé à un seul endroit, syntaxe des scripts |
 

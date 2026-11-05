@@ -40,6 +40,10 @@ const MAX_PERSONA = 600;
 const MAX_CASE_ID = 80;
 const ALLOWED_STEPS = ["Anamnèse", "Examen clinique", "Paraclinique", "Conclusion"];
 const CONTROL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/;
+const MAX_BODY_BYTES = 65536;   // corps de requête maximal, lu avant validation (F5)
+export const CLIENT_PROTOCOL = 2;  // version du contrat navigateur ↔ Worker (en-tête X-SDG-Protocol)
+export const AI_TIMEOUT_MS = 60000;   // délai maximal de l'IA avant libération
+export const PENDING_TTL_MS = 90000;  // au-delà, une réservation non confirmée est libérée (F7)
 
 // Politique des quotas (révisée le 4 novembre 2026, voir docs/quotas-politique.md).
 // Ne pas modifier sans validation. Un test (test/policy.test.mjs) vérifie que la documentation concorde.
@@ -145,8 +149,10 @@ export function readConfig(env) {
   const msgCap = parseIntEnv(env.MAX_MESSAGES_PER_CASE, DEFAULT_MESSAGES_PER_CASE);
   const userRpm = parseIntEnv(env.USER_REQUESTS_PER_MINUTE, DEFAULT_USER_RPM);
   const ipRpm = parseIntEnv(env.IP_REQUESTS_PER_MINUTE, DEFAULT_IP_RPM);
-  if (msgCap === null || userRpm === null || ipRpm === null) return null;
-  return { msgCap, userRpm, ipRpm };
+  // Fin de la période de transition des anciens navigateurs (date ISO). Obligatoire : sinon échec fermé.
+  const cutoffMs = typeof env.PROTOCOL_CUTOFF === "string" ? Date.parse(env.PROTOCOL_CUTOFF) : NaN;
+  if (msgCap === null || userRpm === null || ipRpm === null || Number.isNaN(cutoffMs)) return null;
+  return { msgCap, userRpm, ipRpm, protocolCutoffMs: cutoffMs };
 }
 
 /* ---------- Jetons Firebase ---------- */
@@ -181,9 +187,15 @@ async function findKey(kid, fetchImpl, nowMs, cache) {
   const mayRefetch = cache.keys === null || !fresh || nowMs - cache.lastFetch >= JWKS_REFRESH_COOLDOWN_MS;
   if (!mayRefetch) throw new Error("invalid_token");
 
-  const res = await fetchImpl(JWKS_URL);
+  let res;
+  try {
+    res = await fetchImpl(JWKS_URL);
+  } catch (e) {
+    throw new Error("jwks_unavailable");   // panne réseau : pas une erreur d'authentification
+  }
   if (!res.ok) throw new Error("jwks_unavailable");
-  const body = await res.json();
+  let body;
+  try { body = await res.json(); } catch (e) { throw new Error("jwks_invalid"); }
   if (!body || !Array.isArray(body.keys)) throw new Error("jwks_invalid");
   cache.keys = body.keys;
   cache.expiresAt = nowMs + JWKS_TTL_MS;
@@ -254,6 +266,20 @@ function minuteKey(nowMs) {
   return Math.floor(nowMs / 60000);
 }
 
+/** Mois effectif : un mois antérieur au mois stocké est ramené au mois stocké (F6). */
+function effectiveMonth(stored, requested) {
+  if (!stored) return requested;
+  return requested < stored ? stored : requested;
+}
+
+/** Retire un message du cas (ou supprime le cas s'il n'en reste aucun). */
+function decrementCase(msgs, caseId) {
+  if (Object.prototype.hasOwnProperty.call(msgs, caseId)) {
+    if (msgs[caseId] <= 1) delete msgs[caseId];
+    else msgs[caseId] -= 1;
+  }
+}
+
 /* ---------- Durable Object : quotas atomiques ---------- */
 
 /**
@@ -286,11 +312,28 @@ export class QuotaLimiter {
     return true;
   }
 
-  async rollMonth(month) {
-    if ((await this.storage.get("month")) !== month) {
+  async rollMonth(requested) {
+    const stored = await this.storage.get("month");
+    const month = effectiveMonth(stored, requested);   // F6 : le mois ne recule jamais
+    if (stored !== month) {
       await this.storage.deleteAll();
       await this.storage.put("month", month);
     }
+    return month;
+  }
+
+  /** Libère les réservations non confirmées depuis plus de PENDING_TTL_MS (F7). */
+  async sweepPending(nowMs) {
+    const pend = (await this.storage.get("pend")) || {};
+    const expired = Object.keys(pend).filter(rid => nowMs - pend[rid].at > PENDING_TTL_MS);
+    if (expired.length === 0) return;
+    const msgs = { ...((await this.storage.get("msgs")) || {}) };
+    for (const rid of expired) {
+      decrementCase(msgs, pend[rid].caseId);
+      delete pend[rid];
+    }
+    await this.storage.put("msgs", msgs);
+    await this.storage.put("pend", pend);
   }
 
   /** Limite de débit seule (utilisée pour les adresses IP). */
@@ -299,12 +342,15 @@ export class QuotaLimiter {
   }
 
   /**
-   * Réserve une consultation (un message IA).
+   * Réserve une consultation (un message IA), identifiée par rid.
    * Refuse si : débit dépassé, quota de cas atteint pour un nouveau cas, ou plafond de messages du cas atteint.
+   * La réservation reste « en attente » jusqu'à confirm (réponse livrée) ou release (échec), sinon elle expire.
    */
-  reserve({ month, caseId, minute, rpm, quotaLimit, msgCap }) {
+  reserve({ month, caseId, minute, rpm, quotaLimit, msgCap, rid, nowMs }) {
     return this.run(async () => {
-      await this.rollMonth(month);
+      const now = nowMs ?? Date.now();
+      const current = await this.rollMonth(month);
+      await this.sweepPending(now);
       if (!(await this.takeRateToken(minute, rpm))) return { ok: false, reason: "rate" };
 
       const msgs = (await this.storage.get("msgs")) || {};
@@ -316,22 +362,80 @@ export class QuotaLimiter {
       if (count >= msgCap) return { ok: false, reason: "messages", used, msgs: count };
 
       await this.storage.put("msgs", { ...msgs, [caseId]: count + 1 });
-      return { ok: true, used: count === 0 ? used + 1 : used, msgs: count + 1 };
+      const pend = (await this.storage.get("pend")) || {};
+      const id = rid ?? crypto.randomUUID();
+      await this.storage.put("pend", { ...pend, [id]: { caseId, at: now } });
+      return { ok: true, rid: id, used: count === 0 ? used + 1 : used, msgs: count + 1, month: current };
     });
   }
 
-  /** Libère une réservation (l'IA a échoué). Un cas revenu à zéro message n'est plus compté. */
-  release({ month, caseId }) {
+  /**
+   * Confirme une réservation : la réponse est livrée, le message reste compté.
+   * Une réservation déjà expirée n'est jamais confirmée : elle est libérée et la réponse doit être refusée.
+   */
+  confirm({ rid, nowMs }) {
     return this.run(async () => {
-      if ((await this.storage.get("month")) !== month) return { ok: true, skipped: true };
-      const msgs = { ...((await this.storage.get("msgs")) || {}) };
-      if (!Object.prototype.hasOwnProperty.call(msgs, caseId)) return { ok: true, skipped: true };
-      if (msgs[caseId] <= 1) delete msgs[caseId];
-      else msgs[caseId] -= 1;
-      await this.storage.put("msgs", msgs);
+      const now = nowMs ?? Date.now();
+      const pend = { ...((await this.storage.get("pend")) || {}) };
+      if (!Object.prototype.hasOwnProperty.call(pend, rid)) return { ok: false, reason: "unknown" };
+      if (now - pend[rid].at > PENDING_TTL_MS) {
+        const msgs = { ...((await this.storage.get("msgs")) || {}) };
+        decrementCase(msgs, pend[rid].caseId);
+        delete pend[rid];
+        await this.storage.put("msgs", msgs);
+        await this.storage.put("pend", pend);
+        return { ok: false, reason: "expired" };
+      }
+      delete pend[rid];
+      await this.storage.put("pend", pend);
       return { ok: true };
     });
   }
+
+  /** Libère une réservation (l'IA a échoué). Idempotent : une seconde libération ne retire rien. */
+  release({ rid }) {
+    return this.run(async () => {
+      const pend = { ...((await this.storage.get("pend")) || {}) };
+      if (!Object.prototype.hasOwnProperty.call(pend, rid)) return { ok: true, skipped: true };
+      const msgs = { ...((await this.storage.get("msgs")) || {}) };
+      decrementCase(msgs, pend[rid].caseId);
+      delete pend[rid];
+      await this.storage.put("msgs", msgs);
+      await this.storage.put("pend", pend);
+      return { ok: true };
+    });
+  }
+}
+
+/** Lit le corps sans dépasser max octets. Retourne null si le corps est trop grand (F5). */
+async function readBoundedText(request, max) {
+  const declared = request.headers.get("Content-Length");
+  if (declared !== null && (!/^\d+$/.test(declared) || Number(declared) > max)) return null;
+  if (!request.body) return "";
+  const reader = request.body.getReader();
+  const chunks = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > max) {
+      try { await reader.cancel(); } catch (e) { /* ignoré */ }
+      return null;
+    }
+    chunks.push(value);
+  }
+  const all = new Uint8Array(total);
+  let offset = 0;
+  for (const c of chunks) { all.set(c, offset); offset += c.byteLength; }
+  return new TextDecoder().decode(all);
+}
+
+/** Délai maximal d'une promesse : l'IA ne peut pas bloquer une réservation au-delà de AI_TIMEOUT_MS. */
+function withTimeout(promise, ms) {
+  let timer;
+  const limit = new Promise((_, reject) => { timer = setTimeout(() => reject(new Error("ai_timeout")), ms); });
+  return Promise.race([promise, limit]).finally(() => clearTimeout(timer));
 }
 
 /* ---------- Gestionnaire HTTP ---------- */
@@ -340,6 +444,7 @@ export async function handleRequest(request, env, opts = {}) {
   const nowMs = opts.nowMs ?? Date.now();
   const fetchImpl = opts.fetchImpl ?? fetch;
   const jwksCache = opts.jwksCache ?? defaultJwksCache;
+  const aiTimeoutMs = opts.aiTimeoutMs ?? AI_TIMEOUT_MS;
   const projectId = env.FIREBASE_PROJECT_ID || DEFAULT_PROJECT_ID;
 
   const allowed = (env.ALLOWED_ORIGIN || DEFAULT_ORIGIN).split(",").map(s => s.trim());
@@ -347,7 +452,7 @@ export async function handleRequest(request, env, opts = {}) {
   const cors = {
     "Access-Control-Allow-Origin": allowed.includes(origin) ? origin : allowed[0],
     "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-SDG-Protocol",
     "Vary": "Origin"
   };
   if (request.method === "OPTIONS") return new Response(null, { headers: cors });
@@ -359,13 +464,7 @@ export async function handleRequest(request, env, opts = {}) {
   const cfg = readConfig(env);
   if (!cfg) return json({ error: "config" }, 503, cors);
 
-  let body;
-  try { body = await request.json(); } catch (e) { return json({ error: "json" }, 400, cors); }
-  const checked = validateContent(body);
-  if (!checked.ok) return json({ error: checked.error }, 400, cors);
-  const { caseId, persona, facts, step, hist, message } = checked.value;
-
-  // 1. Limite de débit par adresse IP (avant toute vérification de jeton)
+  // 1. Limite de débit par adresse IP, avant toute lecture du corps (F5).
   const ip = request.headers.get("CF-Connecting-IP") || "inconnu";
   try {
     const ipStub = env.QUOTA.get(env.QUOTA.idFromName("ip:" + ip));
@@ -375,18 +474,40 @@ export async function handleRequest(request, env, opts = {}) {
     return json({ error: "unavailable" }, 503, cors);
   }
 
-  // 2. Authentification
+  // 2. Corps borné, puis validation stricte (F5).
+  let text;
+  try { text = await readBoundedText(request, MAX_BODY_BYTES); } catch (e) { return json({ error: "json" }, 400, cors); }
+  if (text === null) return json({ error: "too_large" }, 413, cors);
+  let body;
+  try { body = JSON.parse(text); } catch (e) { return json({ error: "json" }, 400, cors); }
+  const checked = validateContent(body);
+  if (!checked.ok) return json({ error: checked.error }, 400, cors);
+  const { caseId, persona, facts, step, hist, message } = checked.value;
+
+  // 3. Authentification. Une panne des clés Google est une erreur technique (503), pas un refus (F4).
   const authz = request.headers.get("Authorization") || "";
   if (!authz.startsWith("Bearer ")) return json({ error: "auth" }, 401, cors);
   let user;
   try {
     user = await verifyIdToken(authz.slice(7).trim(), { projectId, nowMs, fetchImpl, jwksCache });
   } catch (e) {
+    if (e && (e.message === "jwks_unavailable" || e.message === "jwks_invalid")) {
+      return json({ error: "unavailable" }, 503, cors);
+    }
     return json({ error: "auth" }, 401, cors);
   }
   if (!user.emailVerified) return json({ error: "email_unverified" }, 403, cors);
 
-  // 3. Formule et quotas (réservation atomique)
+  // 4. Version du contrat navigateur. Période de transition (1.4-C) : avertissement, puis 426 après la date limite.
+  // Les quotas et la réservation ne dépendent pas de cet en-tête : ils s'appliquent dans tous les cas.
+  const clientProtocol = Number.parseInt(request.headers.get("X-SDG-Protocol") || "0", 10) || 0;
+  const compatible = clientProtocol >= CLIENT_PROTOCOL;
+  if (!compatible && nowMs >= cfg.protocolCutoffMs) {
+    return json({ error: "upgrade_required" }, 426, cors);
+  }
+  const extra = compatible ? {} : { "X-SDG-Upgrade": "requis" };
+
+  // 5. Formule et quotas (réservation atomique, identifiée par rid).
   let plan;
   try {
     plan = await getPlan(env.STATE, user.uid, nowMs);
@@ -396,11 +517,12 @@ export async function handleRequest(request, env, opts = {}) {
   const limit = plan === "premium" ? PREMIUM_CONSULTATIONS_PER_MONTH : FREE_CONSULTATIONS_PER_MONTH;
   const month = monthKey(nowMs);
   const stub = env.QUOTA.get(env.QUOTA.idFromName("uid:" + user.uid));
+  const rid = crypto.randomUUID();
 
   let reservation;
   try {
     reservation = await stub.reserve({
-      month, caseId, minute: minuteKey(nowMs), rpm: cfg.userRpm, quotaLimit: limit, msgCap: cfg.msgCap
+      month, caseId, minute: minuteKey(nowMs), rpm: cfg.userRpm, quotaLimit: limit, msgCap: cfg.msgCap, rid, nowMs
     });
   } catch (e) {
     return json({ error: "unavailable" }, 503, cors);
@@ -413,32 +535,39 @@ export async function handleRequest(request, env, opts = {}) {
     }, status, cors);
   }
 
-  // 4. Génération. En cas d'échec, la réservation de message est libérée.
-  const messages = [
-    { role: "system", content: buildSystem(persona, facts, step) },
-    ...hist,
-    { role: "user", content: message }
-  ];
-  const release = async () => {
-    try { await stub.release({ month, caseId }); } catch (e) { /* journalisé côté Cloudflare */ }
-  };
-
-  let text = null;
+  // 6. Génération. La réservation n'est confirmée qu'au moment où la réponse est livrée.
+  // Dans tous les autres cas (IA en échec, délai, exception, confirmation refusée), elle est libérée (F7).
+  let confirmed = false;
   try {
-    const out = await env.AI.run(MODEL, { messages, temperature: 0.9, max_tokens: 220 });
-    text = out && (out.response || out.result && out.result.response);
-  } catch (e) {
-    text = null;
-  }
-  if (!text || !String(text).trim()) {
-    await release();
-    return json({ error: "unavailable" }, 502, cors);
-  }
+    const messages = [
+      { role: "system", content: buildSystem(persona, facts, step) },
+      ...hist,
+      { role: "user", content: message }
+    ];
+    let reply = null;
+    try {
+      const out = await withTimeout(env.AI.run(MODEL, { messages, temperature: 0.9, max_tokens: 220 }), aiTimeoutMs);
+      reply = out && (out.response || out.result && out.result.response);
+    } catch (e) {
+      reply = null;
+    }
+    if (!reply || !String(reply).trim()) return json({ error: "unavailable" }, 502, cors);
 
-  return json({
-    reponse: String(text).trim().slice(0, 800),
-    quota: { plan, used: reservation.used, limit, msgs: reservation.msgs, msgCap: cfg.msgCap }
-  }, 200, cors);
+    const answer = String(reply).trim().slice(0, 800);
+    const done = await stub.confirm({ rid, nowMs });
+    if (!done || done.ok !== true) return json({ error: "unavailable" }, 503, cors);
+    confirmed = true;
+    return json({
+      reponse: answer,
+      quota: { plan, used: reservation.used, limit, msgs: reservation.msgs, msgCap: cfg.msgCap }
+    }, 200, { ...cors, ...extra });
+  } catch (e) {
+    return json({ error: "unavailable" }, 503, cors);
+  } finally {
+    if (!confirmed) {
+      try { await stub.release({ rid }); } catch (e) { /* la réservation expirera après PENDING_TTL_MS */ }
+    }
+  }
 }
 
 export default {

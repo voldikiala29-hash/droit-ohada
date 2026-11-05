@@ -91,6 +91,7 @@ export function makeNamespace(latencyMs = 3) {
       return {
         rateHit: async (a) => obj.rateHit(a),
         reserve: async (a) => obj.reserve(a),
+        confirm: async (a) => obj.confirm(a),
         release: async (a) => obj.release(a)
       };
     }
@@ -101,7 +102,7 @@ export function makeNamespace(latencyMs = 3) {
 /** Espace de noms dont le stub échoue toujours (Durable Object indisponible). */
 export function brokenNamespace() {
   const fail = async () => { throw new Error("durable_object_unavailable"); };
-  return { idFromName: n => n, get: () => ({ rateHit: fail, reserve: fail, release: fail }) };
+  return { idFromName: n => n, get: () => ({ rateHit: fail, reserve: fail, confirm: fail, release: fail }) };
 }
 
 /** IA simulée. fail = nombre d'appels qui échouent avant le premier succès. */
@@ -128,6 +129,7 @@ export async function makeCtx({ now = Date.now(), uid = "uid-A", env = {}, laten
     FIREBASE_PROJECT_ID: PROJECT,
     USER_REQUESTS_PER_MINUTE: "1000",
     IP_REQUESTS_PER_MINUTE: "1000",
+    PROTOCOL_CUTOFF: new Date(now + 30 * 24 * 3600 * 1000).toISOString(),
     ...env
   };
   const opts = { nowMs: now, fetchImpl, jwksCache: { keys: null, expiresAt: 0, lastFetch: 0 } };
@@ -146,8 +148,9 @@ export function bodyFor(caseId, message = "Depuis quand ?") {
   };
 }
 
-export function reqFor(body, { token, origin = ORIGIN, method = "POST", ip = "203.0.113.7" } = {}) {
+export function reqFor(body, { token, origin = ORIGIN, method = "POST", ip = "203.0.113.7", protocol = "2" } = {}) {
   const headers = { "Content-Type": "application/json", Origin: origin, "CF-Connecting-IP": ip };
+  if (protocol !== null) headers["X-SDG-Protocol"] = protocol;
   if (token) headers.Authorization = "Bearer " + token;
   return new Request("https://worker.test/", {
     method,

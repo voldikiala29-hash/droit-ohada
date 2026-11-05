@@ -5,7 +5,7 @@ import { handleRequest } from "../patient-worker.js";
 import CASE_IDS from "../case-ids.js";
 import {
   makeCtx, bodyFor, reqFor, sign, claims, makeKey, countingFetch, fakeAI,
-  brokenNamespace, FakeKV, makeNamespace, PROJECT
+  brokenNamespace, FakeKV, makeNamespace, PROJECT, ORIGIN
 } from "./helpers.mjs";
 
 const call = (ctx, body, extra = {}) =>
@@ -240,7 +240,8 @@ test("rotation des clés : un kid inconnu déclenche un rechargement et le jeton
   const fetchImpl = countingFetch(() => [newKey.jwk]);
   const env = {
     AI: fakeAI(), STATE: new FakeKV(), QUOTA: makeNamespace(0), FIREBASE_PROJECT_ID: PROJECT,
-    USER_REQUESTS_PER_MINUTE: "1000", IP_REQUESTS_PER_MINUTE: "1000"
+    USER_REQUESTS_PER_MINUTE: "1000", IP_REQUESTS_PER_MINUTE: "1000",
+    PROTOCOL_CUTOFF: new Date(now + 30 * 864e5).toISOString()
   };
   // Cache ancien (ne contient pas le nouveau kid), récemment rechargé il y a 10 minutes
   const jwksCache = { keys: [{ kid: "ancienne", kty: "RSA" }], expiresAt: now + 3600e3, lastFetch: now - 10 * 60e3 };
@@ -256,7 +257,8 @@ test("kid inconnu répété : Google n'est interrogé qu'une fois pendant le dé
   const fetchImpl = countingFetch(() => []);
   const env = {
     AI: fakeAI(), STATE: new FakeKV(), QUOTA: makeNamespace(0), FIREBASE_PROJECT_ID: PROJECT,
-    USER_REQUESTS_PER_MINUTE: "1000", IP_REQUESTS_PER_MINUTE: "1000"
+    USER_REQUESTS_PER_MINUTE: "1000", IP_REQUESTS_PER_MINUTE: "1000",
+    PROTOCOL_CUTOFF: new Date(now + 30 * 864e5).toISOString()
   };
   const jwksCache = { keys: null, expiresAt: 0, lastFetch: 0 };
   const statuses = [];
@@ -267,10 +269,97 @@ test("kid inconnu répété : Google n'est interrogé qu'une fois pendant le dé
   assert.equal(fetchImpl.calls, 1);
 });
 
-test("JWKS indisponible au premier appel : 401, pas de crash", async () => {
+test("JWKS indisponible au premier appel : 503 (panne technique, pas un refus d'authentification)", async () => {
   const c = await makeCtx();
   const down = async () => new Response("erreur", { status: 500 });
   const r = await handleRequest(reqFor(bodyFor(CASE_IDS[0]), { token: c.token }), c.env,
     { nowMs: c.now, fetchImpl: down, jwksCache: { keys: null, expiresAt: 0, lastFetch: 0 } });
-  assert.equal(r.status, 401);
+  assert.equal(r.status, 503);
+  assert.equal(c.ai.calls, 0);
+});
+
+/* ---------- 1.4c : taille du corps, limite IP avant lecture, version du contrat, délai IA ---------- */
+
+test("corps trop grand (65 Ko et plus) : 413, IA non appelée, aucune réservation", async () => {
+  const c = await makeCtx();
+  const huge = "x".repeat(70000);
+  const req = new Request("https://worker.test/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Origin: ORIGIN, "CF-Connecting-IP": "203.0.113.20",
+      "X-SDG-Protocol": "2", Authorization: "Bearer " + c.token },
+    body: huge
+  });
+  const r = await handleRequest(req, c.env, c.opts);
+  assert.equal(r.status, 413);
+  assert.equal(c.ai.calls, 0);
+  assert.equal(c.env.QUOTA.instances.has("uid:uid-A"), false);
+});
+
+test("limite IP déclenchée avant la lecture du corps : 429, le corps n'est pas lu", async () => {
+  const c = await makeCtx({ env: { IP_REQUESTS_PER_MINUTE: "1" } });
+  await handleRequest(reqFor(bodyFor(CASE_IDS[0]), { token: c.token, ip: "203.0.113.30" }), c.env, c.opts);
+  let reads = 0;
+  const stream = new ReadableStream({
+    pull(controller) { reads++; controller.enqueue(new TextEncoder().encode("{}")); controller.close(); }
+  }, { highWaterMark: 0 });
+  const req = new Request("https://worker.test/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Origin: ORIGIN, "CF-Connecting-IP": "203.0.113.30",
+      "X-SDG-Protocol": "2", Authorization: "Bearer " + c.token },
+    body: stream, duplex: "half"
+  });
+  const r = await handleRequest(req, c.env, c.opts);
+  assert.equal(r.status, 429);
+  assert.equal(reads, 0);
+});
+
+test("avant la date limite, sans X-SDG-Protocol : 200 avec avertissement X-SDG-Upgrade", async () => {
+  const c = await makeCtx();
+  const r = await call(c, bodyFor(CASE_IDS[0]), { protocol: null });
+  assert.equal(r.status, 200);
+  assert.equal(r.headers.get("X-SDG-Upgrade"), "requis");
+});
+
+test("après la date limite, sans X-SDG-Protocol : 426, sans consommation de quota ni appel IA", async () => {
+  const c = await makeCtx({ env: { PROTOCOL_CUTOFF: new Date(Date.now() - 1000).toISOString() } });
+  const r = await call(c, bodyFor(CASE_IDS[0]), { protocol: null });
+  assert.equal(r.status, 426);
+  assert.equal(c.ai.calls, 0);
+  assert.equal(c.env.QUOTA.instances.has("uid:uid-A"), false);
+});
+
+test("protocole à jour : pas d'avertissement, même après la date limite", async () => {
+  const c = await makeCtx({ env: { PROTOCOL_CUTOFF: new Date(Date.now() - 1000).toISOString() } });
+  const r = await call(c, bodyFor(CASE_IDS[0]));
+  assert.equal(r.status, 200);
+  assert.equal(r.headers.get("X-SDG-Upgrade"), null);
+});
+
+test("date limite absente ou invalide : 503 (échec fermé), aucune réservation", async () => {
+  const c = await makeCtx({ env: { PROTOCOL_CUTOFF: "REMPLACER_PAR_DATE_DE_DEPLOIEMENT_PLUS_30_JOURS" } });
+  const r = await call(c, bodyFor(CASE_IDS[0]));
+  assert.equal(r.status, 503);
+  assert.equal(c.ai.calls, 0);
+});
+
+test("CORS : l'en-tête X-SDG-Protocol est autorisé", async () => {
+  const c = await makeCtx();
+  const r = await handleRequest(new Request("https://worker.test/", {
+    method: "OPTIONS", headers: { Origin: ORIGIN }
+  }), c.env, c.opts);
+  assert.match(r.headers.get("Access-Control-Allow-Headers"), /X-SDG-Protocol/);
+});
+
+test("IA qui ne répond pas dans le délai : 502, réservation libérée (le quota revient)", async () => {
+  const c = await makeCtx();
+  c.env.AI = { calls: 0, run: () => { c.env.AI.calls++; return new Promise(() => {}); } };
+  const opts = { ...c.opts, aiTimeoutMs: 20 };
+  const r = await handleRequest(reqFor(bodyFor(CASE_IDS[0]), { token: c.token }), c.env, opts);
+  assert.equal(r.status, 502);
+  // Le message suivant doit voir un compteur à 1 (et non 2)
+  c.env.AI = fakeAI();
+  const ok = await handleRequest(reqFor(bodyFor(CASE_IDS[0]), { token: c.token }), c.env, c.opts);
+  assert.equal(ok.status, 200);
+  const data = await ok.json();
+  assert.equal(data.quota.msgs, 1);
 });

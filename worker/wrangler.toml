@@ -33,3 +33,7 @@ FIREBASE_PROJECT_ID = "salledegarde-89dae"
 MAX_MESSAGES_PER_CASE = "40"
 USER_REQUESTS_PER_MINUTE = "20"
 IP_REQUESTS_PER_MINUTE = "20"
+# Date limite de la période de transition (1.4-C) : après cette date, un navigateur sans en-tête X-SDG-Protocol
+# reçoit 426. Tant que la valeur n'est pas une date ISO valide, le Worker répond 503 à toute demande (échec fermé).
+# À fixer AU déploiement, à la date de déploiement + 30 jours. Ne pas laisser le placeholder en production.
+PROTOCOL_CUTOFF = "REMPLACER_PAR_DATE_DE_DEPLOIEMENT_PLUS_30_JOURS"
