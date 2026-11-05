@@ -2,6 +2,7 @@
 // Limite : la simulation sérialise les appels comme un Durable Object, mais ne remplace pas
 // un test sur le runtime Cloudflare réel (voir docs/securite-phase-1.md).
 import { QuotaLimiter } from "../patient-worker.js";
+import { randomBytes } from "node:crypto";
 
 export const PROJECT = "salledegarde-89dae";
 export const ORIGIN = "https://salledegarde.online";
@@ -148,9 +149,18 @@ export function bodyFor(caseId, message = "Depuis quand ?") {
   };
 }
 
-export function reqFor(body, { token, origin = ORIGIN, method = "POST", ip = "203.0.113.7", protocol = "2" } = {}) {
+/** Identifiant de requête UUID version 7 dont les 48 premiers bits sont l'heure ms (comme le navigateur). */
+export function uuidV7(ms, seed = randomBytes(10)) {
+  const hex = ms.toString(16).padStart(12, "0");
+  const rnd = seed.toString("hex"); // 20 caractères hexadécimaux
+  const variant = (parseInt(rnd[0], 16) & 0x3 | 0x8).toString(16);
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-7${rnd.slice(1, 4)}-${variant}${rnd.slice(5, 8)}-${rnd.slice(8, 20)}`;
+}
+
+export function reqFor(body, { token, origin = ORIGIN, method = "POST", ip = "203.0.113.7", protocol = "2", requestId } = {}) {
   const headers = { "Content-Type": "application/json", Origin: origin, "CF-Connecting-IP": ip };
   if (protocol !== null) headers["X-SDG-Protocol"] = protocol;
+  if (requestId !== undefined) headers["X-SDG-Request-Id"] = requestId;
   if (token) headers.Authorization = "Bearer " + token;
   return new Request("https://worker.test/", {
     method,

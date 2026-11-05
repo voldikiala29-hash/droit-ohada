@@ -1,6 +1,7 @@
 # Spécification 1.4b : identifiant de requête et idempotence
 
-Statut : **spécification. Non implémentée.** Elle sera exécutée seulement après autorisation explicite.
+Statut : **implémentée sur la branche `securite/phase-1-cases-worker-scores`** (Worker : `patient-worker.js` ;
+navigateur : `patient-client.js`). Non déployée. Voir la section 7 pour les écarts avec la rédaction initiale.
 Décisions reprises : 1.4-A (comptage unique), 1.4-B (durée de vie de 48 heures), D-P3-bis (secours très limité).
 
 ## 1. Problème (F2)
@@ -66,3 +67,25 @@ répond, et si l'étudiant renvoie le même message, un second message est conso
 - Anciens navigateurs : sans `requestId`, pas d'idempotence pendant la transition (30 jours, décision 1.4-C).
 - Un `requestId` ne protège pas contre un étudiant qui obtient deux UUID différents : c'est la limite des comptes multiples
   (voir `docs/quotas-politique.md`, section 9).
+
+## 7. Mise en œuvre et écarts avec la spécification
+
+Mise en œuvre : `QuotaLimiter.reserve`, `confirm`, `release`, `sweepAll` (Durable Object) ; `handleRequest` (Worker) ;
+`sendMessage`, `classify`, `uuidV7` (navigateur, `patient-client.js`).
+
+| Point | Spécification | Mise en œuvre | Raison |
+|---|---|---|---|
+| Statut d'une requête | `GET /message/status` | **Pas d'endpoint.** La reprise renvoie le même `POST` avec le même identifiant : réponse mémorisée (`replay`), « en cours » (409), ou nouvelle réservation si la précédente a été libérée | Un seul chemin, aucun état à deux endroits à synchroniser. Le résultat est le même : rien n'est compté deux fois |
+| Expiration (48 h) | Mesurée à partir de la première réservation | **Mesurée à partir de l'heure encodée dans l'identifiant** (UUID version 7, créé par le navigateur) | Une requête ancienne ne peut jamais redevenir « nouvelle », même si son enregistrement a disparu. Aucune table de « requêtes périmées » à conserver |
+| Décalage d'horloge | non prévu | Le navigateur recale son horloge sur l'en-tête `Date` du Worker. Une demande neuve refusée pour horloge décalée (410 ou 400) est recréée une seule fois : elle n'avait jamais été acceptée | Un téléphone à l'heure fausse ne doit pas être bloqué |
+| Tolérance vers le futur | non prévue | 5 minutes ; au-delà, 400 | Empêche les identifiants « du futur » qui repousseraient l'expiration |
+| Changement de mois | non prévu | Les compteurs sont remis à zéro, les identifiants de requête sont conservés 48 h | Une réponse confirmée juste avant minuit reste rejouable après minuit, sans nouveau décompte |
+| Requête sans identifiant | « pendant la transition » | Comportement sans idempotence (limite documentée). Le navigateur à jour envoie toujours un identifiant | Transition : anciens navigateurs en cache |
+| Libération | non prévue | Une libération retire aussi l'identifiant : une nouvelle tentative réserve de nouveau, une seule fois au total | Sinon une panne d'IA bloquerait la question pendant 48 h |
+
+Tests : `worker/test/request-id.test.mjs` (19 tests dont double clic simultané, réservation orpheline, bornes de 48 h,
+renouvellement mensuel) ; mutation vérifiée : sans la mémorisation des requêtes, 5 tests échouent.
+
+Limites : la fenêtre de 90 secondes et l'expiration de 48 heures reposent sur l'horloge du Worker et sur celle du
+navigateur (recalée). Pas encore vérifié sur Cloudflare réel. Un étudiant qui crée deux questions identiques reçoit
+deux identifiants et paie deux fois : c'est voulu (chaque question est un message).

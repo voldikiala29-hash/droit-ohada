@@ -68,13 +68,17 @@ Le Worker lit cet enregistrement à chaque requête. Un changement peut mettre e
 7. Validation stricte du contenu (400).
 8. Vérification du jeton Firebase (401 ; clés Google indisponibles : 503) puis de l'email (403).
 9. Version du contrat (en-tête `X-SDG-Protocol`) : sans version à jour après la date limite, 426 **avant toute réservation** ; avant la date, réponse 200 avec l'en-tête `X-SDG-Upgrade: requis`.
-10. Réservation atomique (`QUOTA`, objet `uid:<uid>`), identifiée par un `rid` : débit (429), quota de cas (402), plafond de messages (409). La réservation reste « en attente ».
-11. Appel à l'IA, limité à 60 secondes (`AI_TIMEOUT_MS`). Délai, erreur ou réponse vide : 502.
-12. Quand la réponse est prête, la réservation est **confirmée** ; si la confirmation échoue, 503 et aucune réponse n'est livrée.
-13. Dans tous les cas où la réservation n'est pas confirmée, elle est **libérée** (`finally`). Une réservation non confirmée depuis plus de 90 secondes (`PENDING_TTL_MS`) est libérée automatiquement par le Durable Object (filet de sécurité si le Worker s'arrête entre deux étapes).
+10. Identifiant de requête (`X-SDG-Request-Id`, 1.4-B) : format UUID version 7 strict (400), expiration par l'heure encodée dans l'identifiant (410, sans stockage ni appel IA), tolérance de 5 minutes vers le futur (400).
+11. Réservation atomique (`QUOTA`, objet `uid:<uid>`), identifiée par un `rid` : débit (429), quota de cas (402), plafond de messages (409). La réservation reste « en attente ».
+    Avec un identifiant de requête : une requête déjà confirmée renvoie sa réponse mémorisée (`replay: true`, aucun appel IA, aucun décompte) ; une requête en cours renvoie 409 `in_progress` ; un contenu différent sous le même identifiant renvoie 409 `request_conflict`.
+12. Appel à l'IA, limité à 60 secondes (`AI_TIMEOUT_MS`). Délai, erreur ou réponse vide : 502.
+13. Quand la réponse est prête, la réservation est **confirmée** et la réponse est mémorisée pendant 48 heures si la requête porte un identifiant ; si la confirmation échoue, 503 et aucune réponse n'est livrée.
+14. Dans tous les cas où la réservation n'est pas confirmée, elle est **libérée** (`finally`), et l'identifiant de requête associé est retiré : une nouvelle tentative peut alors réserver de nouveau, une seule fois au total. Une réservation non confirmée depuis plus de 90 secondes (`PENDING_TTL_MS`) est libérée automatiquement par le Durable Object (filet de sécurité si le Worker s'arrête entre deux étapes).
 
 **Mois de décompte** : le Durable Object ne revient jamais à un mois antérieur à celui qu'il a déjà enregistré. Une requête
-datée d'un mois précédent est traitée dans le mois en cours, sans remise à zéro des compteurs.
+datée d'un mois précédent est traitée dans le mois en cours, sans remise à zéro des compteurs. Au changement de mois, les
+compteurs et les réservations en attente sont remis à zéro, mais les identifiants de requête sont conservés 48 heures :
+une réponse confirmée en novembre reste rejouable après le 1er décembre, sans nouveau décompte.
 
 ## 6. Codes de réponse
 
@@ -85,6 +89,10 @@ datée d'un mois précédent est traitée dans le mois en cours, sans remise à 
 | 401 | `auth` | Jeton absent, invalide, expiré ou d'un autre projet |
 | 402 | `quota` | Quota de cas atteint |
 | 409 | `messages` | Plafond de 40 messages pour ce cas atteint |
+| 409 | `in_progress` | Requête identique déjà en cours de traitement : attendre, puis renvoyer le même identifiant |
+| 409 | `request_conflict` | Même identifiant mais contenu différent : la question ne peut pas être reprise telle quelle |
+| 410 | `request_expired` | Identifiant de plus de 48 heures : jamais réservé, jamais envoyé à l'IA, jamais traité comme une nouvelle requête |
+| 400 | `request_id` | Identifiant absent du format UUID version 7, ou situé plus de 5 minutes dans le futur |
 | 413 | `too_large` | Corps supérieur à 64 Ko ; aucune lecture au-delà, aucune réservation |
 | 426 | `upgrade_required` | Navigateur sans version à jour, après la date limite ; aucune réservation |
 | 403 | `origin` / `email_unverified` | Origine non autorisée ou email non vérifié |
@@ -95,12 +103,15 @@ datée d'un mois précédent est traitée dans le mois en cours, sans remise à 
 
 En-tête de succès : `X-SDG-Upgrade: requis` (200) signale qu'un navigateur doit être mis à jour avant la date limite.
 
-**Contrat navigateur** : `X-SDG-Protocol` (version actuelle : 2, constante `CLIENT_PROTOCOL`), autorisé dans les
-en-têtes CORS. **Configuration** : `PROTOCOL_CUTOFF` (dans `wrangler.toml`) doit être fixée au déploiement, à la date
+**Contrat navigateur** : `X-SDG-Protocol` (version actuelle : 2, constante `CLIENT_PROTOCOL`) et `X-SDG-Request-Id`
+(UUID version 7, un par question) sont autorisés dans les en-têtes CORS ; `Date` et `X-SDG-Upgrade` sont exposés. Le navigateur
+recale son horloge sur `Date` pour créer des identifiants valides, même si son horloge est décalée. **Configuration** : `PROTOCOL_CUTOFF` (dans `wrangler.toml`) doit être fixée au déploiement, à la date
 de déploiement plus 30 jours. Tant qu'elle est un placeholder, toutes les demandes reçoivent 503.
 
-**Ce que le navigateur fait d'un code d'erreur** : cette partie est **non corrigée** côté navigateur. Tant que la
-correction 1.4a n'est pas livrée, le moteur local peut encore répondre après un refus. Le serveur ne peut pas l'empêcher.
+**Ce que le navigateur fait d'un code d'erreur** (1.4a) : aucune réponse locale. Un refus (400, 401, 402, 403, 409, 413, 426,
+429) retire la question du journal et la restitue dans la saisie. Une panne (5xx, délai, réseau) garde la question en
+attente : « Réessayer » renvoie le même identifiant et le même contenu. Le moteur de règles ne sert qu'en développement,
+quand `LLM_URL` est vide.
 
 ## 7. Limites connues
 
@@ -116,7 +127,8 @@ correction 1.4a n'est pas livrée, le moteur local peut encore répondre après 
 
 ```bash
 cd worker
-npm test                     # 85 tests, Node 22
+npm test                     # 134 tests, Node 22 (environ une minute : stockage simulé à 3 ms par opération)
+npm run test:browser         # 15 scénarios Chromium du chat patient (Playwright pré-installé)
 npm run check:case-ids       # vérifie que case-ids.js correspond à cases_202.js
 node scripts/build-case-ids.mjs   # régénère case-ids.js si cases_202.js change
 ```
@@ -125,6 +137,9 @@ node scripts/build-case-ids.mjs   # régénère case-ids.js si cases_202.js chan
 |---|---|
 | `test/quota-limiter.test.mjs` | Atomicité (100 réservations simultanées), plafonds, libération par identifiant (idempotente), confirmation, expiration après 90 s, mois monotone, débit |
 | `test/patient-worker.test.mjs` | Jetons (signature, `alg: none`, émetteur, audience, expiration), email, quotas en concurrence, Premium, plafond de messages, identifiants inventés, échec fermé, origine, débit par IP (avant lecture), taille du corps (413), version du contrat (426, avertissement), date limite absente (503), délai de l'IA (502 et libération), CORS, rotation des clés, JWKS indisponible (503) |
+| `test/request-id.test.mjs` | Identifiant de requête (1.4-B) : rejeu, double clic simultané, conflit de contenu, réservation orpheline, expiration aux bornes de 48 h, quotas gratuits et Premium, renouvellement mensuel, codes 401/402/409/429, erreur de stockage |
+| `test/patient-client.test.mjs` | Logique d'envoi du navigateur (1.4a) : classement de chaque code, reprise à l'identique, refus sans reprise, doubles envois, hors ligne, horloge décalée ; compatibilité des identifiants avec le validateur du Worker |
+| `test-browser/patient-chat.cjs` | Chromium : 401, 402, 409, 429, 426, 503, délai, double clic, hors ligne, rechargement, replay, horloge décalée ; aucune réponse locale dans aucun cas |
 | `test/validation.test.mjs` | Validation stricte, et acceptation des **302 cas réels** au format du navigateur |
 | `test/client-static.test.mjs` | Adresse du Worker figée, mode debug supprimé, jeton envoyé à un seul endroit, syntaxe des scripts |
 

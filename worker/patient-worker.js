@@ -44,6 +44,8 @@ const MAX_BODY_BYTES = 65536;   // corps de requête maximal, lu avant validatio
 export const CLIENT_PROTOCOL = 2;  // version du contrat navigateur ↔ Worker (en-tête X-SDG-Protocol)
 export const AI_TIMEOUT_MS = 60000;   // délai maximal de l'IA avant libération
 export const PENDING_TTL_MS = 90000;  // au-delà, une réservation non confirmée est libérée (F7)
+export const REQUEST_RETENTION_MS = 48 * 60 * 60 * 1000;  // 1.4-B : durée de vie d'un X-SDG-Request-Id (48 h)
+export const MAX_REQUEST_FUTURE_MS = 5 * 60 * 1000;      // tolérance d'horloge du navigateur vers le futur
 
 // Politique des quotas (révisée le 4 novembre 2026, voir docs/quotas-politique.md).
 // Ne pas modifier sans validation. Un test (test/policy.test.mjs) vérifie que la documentation concorde.
@@ -272,6 +274,32 @@ function effectiveMonth(stored, requested) {
   return requested < stored ? stored : requested;
 }
 
+function hasOwn(obj, key) {
+  return Object.prototype.hasOwnProperty.call(obj, key);
+}
+
+/**
+ * Identifiant de requête (1.4-B) : UUID version 7 généré par le navigateur. Les 48 premiers bits sont l'heure de
+ * création en millisecondes : l'expiration se calcule sans stockage, donc une requête ancienne ne peut jamais
+ * être prise pour une nouvelle, même si son enregistrement a disparu.
+ */
+const UUID_V7 = /^([0-9a-f]{8})-([0-9a-f]{4})-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+export function parseRequestId(raw) {
+  if (typeof raw !== "string") return null;
+  const m = UUID_V7.exec(raw);
+  if (!m) return null;
+  return { id: raw, ts: parseInt(m[1] + m[2], 16) };
+}
+
+/** Empreinte du contenu validé : une même requête doit toujours avoir la même empreinte. */
+export async function requestFingerprint(value) {
+  const bytes = new TextEncoder().encode(JSON.stringify([
+    value.caseId, value.persona, value.facts, value.step, value.hist, value.message
+  ]));
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, "0")).join("");
+}
+
 /** Retire un message du cas (ou supprime le cas s'il n'en reste aucun). */
 function decrementCase(msgs, caseId) {
   if (Object.prototype.hasOwnProperty.call(msgs, caseId)) {
@@ -316,24 +344,43 @@ export class QuotaLimiter {
     const stored = await this.storage.get("month");
     const month = effectiveMonth(stored, requested);   // F6 : le mois ne recule jamais
     if (stored !== month) {
-      await this.storage.deleteAll();
+      // Changement de mois : les compteurs et les réservations en attente sont remis à zéro.
+      // Les requêtes idempotentes (« req ») sont conservées : elles expirent seulement par leur âge (48 h).
+      await this.storage.delete("msgs");
+      await this.storage.delete("pend");
       await this.storage.put("month", month);
     }
     return month;
   }
 
-  /** Libère les réservations non confirmées depuis plus de PENDING_TTL_MS (F7). */
-  async sweepPending(nowMs) {
-    const pend = (await this.storage.get("pend")) || {};
-    const expired = Object.keys(pend).filter(rid => nowMs - pend[rid].at > PENDING_TTL_MS);
-    if (expired.length === 0) return;
+  /**
+   * Maintenance, exécutée avant chaque opération :
+   *  - libère les réservations non confirmées depuis plus de PENDING_TTL_MS (F7) ;
+   *  - supprime les requêtes idempotentes plus anciennes que REQUEST_RETENTION_MS (48 h) ;
+   *  - supprime les requêtes « en attente » orphelines (leur réservation n'existe plus).
+   */
+  async sweepAll(nowMs) {
+    const pend = { ...((await this.storage.get("pend")) || {}) };
+    const req = { ...((await this.storage.get("req")) || {}) };
     const msgs = { ...((await this.storage.get("msgs")) || {}) };
-    for (const rid of expired) {
-      decrementCase(msgs, pend[rid].caseId);
-      delete pend[rid];
+    let changedPend = false, changedReq = false, changedMsgs = false;
+
+    for (const rid of Object.keys(pend)) {
+      if (nowMs - pend[rid].at > PENDING_TTL_MS) {
+        decrementCase(msgs, pend[rid].caseId);
+        delete pend[rid];
+        changedPend = changedMsgs = true;
+      }
     }
-    await this.storage.put("msgs", msgs);
-    await this.storage.put("pend", pend);
+    for (const key of Object.keys(req)) {
+      const rec = req[key];
+      const orphan = rec.s === "p" && !hasOwn(pend, rec.rid);
+      const old = rec.ts < nowMs - REQUEST_RETENTION_MS;
+      if (orphan || old) { delete req[key]; changedReq = true; }
+    }
+    if (changedMsgs) await this.storage.put("msgs", msgs);
+    if (changedPend) await this.storage.put("pend", pend);
+    if (changedReq) await this.storage.put("req", req);
   }
 
   /** Limite de débit seule (utilisée pour les adresses IP). */
@@ -342,68 +389,102 @@ export class QuotaLimiter {
   }
 
   /**
-   * Réserve une consultation (un message IA), identifiée par rid.
-   * Refuse si : débit dépassé, quota de cas atteint pour un nouveau cas, ou plafond de messages du cas atteint.
-   * La réservation reste « en attente » jusqu'à confirm (réponse livrée) ou release (échec), sinon elle expire.
+   * Réserve une consultation (un message IA).
+   * - Avec reqId (requête idempotente) : une requête déjà confirmée renvoie sa réponse mémorisée (« replay », aucun
+   *   décompte) ; une requête en cours renvoie « in_progress » ; un contenu différent renvoie « conflict ».
+   * - Sinon : refus si débit, quota de cas ou plafond de messages sont atteints (aucune trace, aucun décompte).
+   * La réservation reste « en attente » jusqu'à confirm (réponse livrée) ou release (échec).
    */
-  reserve({ month, caseId, minute, rpm, quotaLimit, msgCap, rid, nowMs }) {
+  reserve({ month, caseId, minute, rpm, quotaLimit, msgCap, rid, nowMs, reqId, reqTs, fp }) {
     return this.run(async () => {
       const now = nowMs ?? Date.now();
       const current = await this.rollMonth(month);
-      await this.sweepPending(now);
-      if (!(await this.takeRateToken(minute, rpm))) return { ok: false, reason: "rate" };
+      await this.sweepAll(now);
 
       const msgs = (await this.storage.get("msgs")) || {};
-      const known = Object.prototype.hasOwnProperty.call(msgs, caseId);
-      const count = known ? msgs[caseId] : 0;
       const used = Object.keys(msgs).length;
 
+      if (reqId) {
+        const req = (await this.storage.get("req")) || {};
+        if (hasOwn(req, reqId)) {
+          const rec = req[reqId];
+          if (rec.fp !== fp) return { ok: false, reason: "conflict" };
+          if (rec.s === "c") {
+            return { ok: true, replay: true, answer: rec.answer, used, msgs: msgs[rec.caseId] || 0, month: current };
+          }
+          return { ok: false, reason: "in_progress" };
+        }
+      }
+
+      if (!(await this.takeRateToken(minute, rpm))) return { ok: false, reason: "rate" };
+
+      const count = hasOwn(msgs, caseId) ? msgs[caseId] : 0;
       if (count === 0 && used >= quotaLimit) return { ok: false, reason: "quota", used, msgs: 0 };
       if (count >= msgCap) return { ok: false, reason: "messages", used, msgs: count };
 
+      const id = rid ?? crypto.randomUUID();
       await this.storage.put("msgs", { ...msgs, [caseId]: count + 1 });
       const pend = (await this.storage.get("pend")) || {};
-      const id = rid ?? crypto.randomUUID();
       await this.storage.put("pend", { ...pend, [id]: { caseId, at: now } });
+      if (reqId) {
+        const req = (await this.storage.get("req")) || {};
+        await this.storage.put("req", { ...req, [reqId]: { s: "p", rid: id, fp, caseId, ts: reqTs, at: now } });
+      }
       return { ok: true, rid: id, used: count === 0 ? used + 1 : used, msgs: count + 1, month: current };
     });
   }
 
   /**
    * Confirme une réservation : la réponse est livrée, le message reste compté.
-   * Une réservation déjà expirée n'est jamais confirmée : elle est libérée et la réponse doit être refusée.
+   * Une réservation expirée n'est jamais confirmée : elle est libérée et la réponse doit être refusée.
    */
-  confirm({ rid, nowMs }) {
+  confirm({ rid, reqId, fp, reqTs, answer, nowMs }) {
     return this.run(async () => {
       const now = nowMs ?? Date.now();
       const pend = { ...((await this.storage.get("pend")) || {}) };
-      if (!Object.prototype.hasOwnProperty.call(pend, rid)) return { ok: false, reason: "unknown" };
+      if (!hasOwn(pend, rid)) return { ok: false, reason: "unknown" };
       if (now - pend[rid].at > PENDING_TTL_MS) {
-        const msgs = { ...((await this.storage.get("msgs")) || {}) };
-        decrementCase(msgs, pend[rid].caseId);
-        delete pend[rid];
-        await this.storage.put("msgs", msgs);
-        await this.storage.put("pend", pend);
+        await this._releaseRid(rid, reqId);
         return { ok: false, reason: "expired" };
       }
+      const caseId = pend[rid].caseId;
       delete pend[rid];
       await this.storage.put("pend", pend);
+      if (reqId) {
+        const req = { ...((await this.storage.get("req")) || {}) };
+        req[reqId] = { s: "c", rid, fp, caseId, ts: reqTs, at: now, answer };
+        await this.storage.put("req", req);
+      }
       return { ok: true };
     });
   }
 
   /** Libère une réservation (l'IA a échoué). Idempotent : une seconde libération ne retire rien. */
-  release({ rid }) {
-    return this.run(async () => {
-      const pend = { ...((await this.storage.get("pend")) || {}) };
-      if (!Object.prototype.hasOwnProperty.call(pend, rid)) return { ok: true, skipped: true };
+  release({ rid, reqId }) {
+    return this.run(async () => this._releaseRid(rid, reqId));
+  }
+
+  /** Version interne de release, appelée déjà dans la file d'attente (ne pas appeler run ici). */
+  async _releaseRid(rid, reqId) {
+    const pend = { ...((await this.storage.get("pend")) || {}) };
+    const req = { ...((await this.storage.get("req")) || {}) };
+    let result = { ok: true };
+    if (hasOwn(pend, rid)) {
       const msgs = { ...((await this.storage.get("msgs")) || {}) };
       decrementCase(msgs, pend[rid].caseId);
       delete pend[rid];
       await this.storage.put("msgs", msgs);
       await this.storage.put("pend", pend);
-      return { ok: true };
-    });
+    } else {
+      result = { ok: true, skipped: true };
+    }
+    // La requête idempotente n'est retirée que si elle attend encore cette réservation : une nouvelle tentative
+    // pourra alors réserver de nouveau, sans double décompte puisque la première réservation est annulée.
+    if (reqId && hasOwn(req, reqId) && req[reqId].s === "p" && req[reqId].rid === rid) {
+      delete req[reqId];
+      await this.storage.put("req", req);
+    }
+    return result;
   }
 }
 
@@ -452,7 +533,8 @@ export async function handleRequest(request, env, opts = {}) {
   const cors = {
     "Access-Control-Allow-Origin": allowed.includes(origin) ? origin : allowed[0],
     "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-SDG-Protocol",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-SDG-Protocol, X-SDG-Request-Id",
+    "Access-Control-Expose-Headers": "Date, X-SDG-Upgrade",
     "Vary": "Origin"
   };
   if (request.method === "OPTIONS") return new Response(null, { headers: cors });
@@ -507,7 +589,22 @@ export async function handleRequest(request, env, opts = {}) {
   }
   const extra = compatible ? {} : { "X-SDG-Upgrade": "requis" };
 
-  // 5. Formule et quotas (réservation atomique, identifiée par rid).
+  // 5. Identifiant de requête (1.4-B). Absent : comportement de transition, sans idempotence.
+  // Présent : format strict, expiration par l'heure encodée (jamais de réservation, jamais d'appel IA), et tolérance
+  // limitée vers le futur.
+  let reqId = null;
+  let reqTs = null;
+  const rawReqId = request.headers.get("X-SDG-Request-Id");
+  if (rawReqId !== null) {
+    const parsed = parseRequestId(rawReqId);
+    if (!parsed) return json({ error: "request_id" }, 400, cors);
+    if (parsed.ts < nowMs - REQUEST_RETENTION_MS) return json({ error: "request_expired" }, 410, cors);
+    if (parsed.ts > nowMs + MAX_REQUEST_FUTURE_MS) return json({ error: "request_id" }, 400, cors);
+    reqId = parsed.id;
+    reqTs = parsed.ts;
+  }
+
+  // 6. Formule et quotas (réservation atomique, identifiée par rid).
   let plan;
   try {
     plan = await getPlan(env.STATE, user.uid, nowMs);
@@ -518,24 +615,31 @@ export async function handleRequest(request, env, opts = {}) {
   const month = monthKey(nowMs);
   const stub = env.QUOTA.get(env.QUOTA.idFromName("uid:" + user.uid));
   const rid = crypto.randomUUID();
+  const fp = reqId ? await requestFingerprint(checked.value) : null;
 
   let reservation;
   try {
     reservation = await stub.reserve({
-      month, caseId, minute: minuteKey(nowMs), rpm: cfg.userRpm, quotaLimit: limit, msgCap: cfg.msgCap, rid, nowMs
+      month, caseId, minute: minuteKey(nowMs), rpm: cfg.userRpm, quotaLimit: limit, msgCap: cfg.msgCap,
+      rid, nowMs, reqId, reqTs, fp
     });
   } catch (e) {
     return json({ error: "unavailable" }, 503, cors);
   }
+  const quota = (r) => ({ plan, used: r.used, limit, msgs: r.msgs, msgCap: cfg.msgCap });
+
+  // Requête déjà confirmée : on renvoie la réponse mémorisée, sans appel IA ni nouveau décompte.
+  if (reservation.ok && reservation.replay) {
+    return json({ reponse: reservation.answer, quota: quota(reservation), replay: true }, 200, { ...cors, ...extra });
+  }
   if (!reservation.ok) {
+    if (reservation.reason === "conflict") return json({ error: "request_conflict" }, 409, cors);
+    if (reservation.reason === "in_progress") return json({ error: "in_progress" }, 409, cors);
     const status = reservation.reason === "rate" ? 429 : reservation.reason === "messages" ? 409 : 402;
-    return json({
-      error: reservation.reason,
-      quota: { plan, used: reservation.used, limit, msgs: reservation.msgs, msgCap: cfg.msgCap }
-    }, status, cors);
+    return json({ error: reservation.reason, quota: quota(reservation) }, status, cors);
   }
 
-  // 6. Génération. La réservation n'est confirmée qu'au moment où la réponse est livrée.
+  // 7. Génération. La réservation n'est confirmée qu'au moment où la réponse est livrée.
   // Dans tous les autres cas (IA en échec, délai, exception, confirmation refusée), elle est libérée (F7).
   let confirmed = false;
   try {
@@ -554,24 +658,26 @@ export async function handleRequest(request, env, opts = {}) {
     if (!reply || !String(reply).trim()) return json({ error: "unavailable" }, 502, cors);
 
     const answer = String(reply).trim().slice(0, 800);
-    const done = await stub.confirm({ rid, nowMs });
+    const done = await stub.confirm({ rid, reqId, fp, reqTs, answer, nowMs });
     if (!done || done.ok !== true) return json({ error: "unavailable" }, 503, cors);
     confirmed = true;
-    return json({
-      reponse: answer,
-      quota: { plan, used: reservation.used, limit, msgs: reservation.msgs, msgCap: cfg.msgCap }
-    }, 200, { ...cors, ...extra });
+    return json({ reponse: answer, quota: quota(reservation) }, 200, { ...cors, ...extra });
   } catch (e) {
     return json({ error: "unavailable" }, 503, cors);
   } finally {
     if (!confirmed) {
-      try { await stub.release({ rid }); } catch (e) { /* la réservation expirera après PENDING_TTL_MS */ }
+      try { await stub.release({ rid, reqId }); } catch (e) { /* la réservation expirera après PENDING_TTL_MS */ }
     }
   }
 }
 
 export default {
-  fetch(request, env) {
-    return handleRequest(request, env);
+  async fetch(request, env) {
+    const nowMs = Date.now();
+    const res = await handleRequest(request, env, { nowMs });
+    // Le navigateur lit l'heure du Worker pour calculer les identifiants de requête (exposée en CORS).
+    const headers = new Headers(res.headers);
+    headers.set("Date", new Date(nowMs).toUTCString());
+    return new Response(res.body, { status: res.status, headers });
   }
 };
