@@ -114,14 +114,14 @@ test("plan illisible dans KV : formule gratuite", async () => {
 
 /* ---------- Plafond de messages ---------- */
 
-test("40 messages sur un même cas acceptés, le 41e refusé (402, reason messages)", async () => {
+test("40 messages sur un même cas acceptés, le 41e refusé (409, reason messages)", async () => {
   const c = await makeCtx();
   for (let i = 0; i < 40; i++) {
     const r = await call(c, bodyFor(CASE_IDS[0], "message " + i));
     assert.equal(r.status, 200, "message " + (i + 1));
   }
   const r = await call(c, bodyFor(CASE_IDS[0], "de trop"));
-  assert.equal(r.status, 402);
+  assert.equal(r.status, 409);
   const j = await r.json();
   assert.equal(j.error, "messages");
   assert.equal(j.quota.msgCap, 40);
@@ -131,7 +131,7 @@ test("40 messages sur un même cas acceptés, le 41e refusé (402, reason messag
 test("MAX_MESSAGES_PER_CASE configurable : 3 messages puis refus", async () => {
   const c = await makeCtx({ env: { MAX_MESSAGES_PER_CASE: "3" } });
   for (let i = 0; i < 3; i++) assert.equal((await call(c, bodyFor(CASE_IDS[0]))).status, 200);
-  assert.equal((await call(c, bodyFor(CASE_IDS[0]))).status, 402);
+  assert.equal((await call(c, bodyFor(CASE_IDS[0]))).status, 409);
 });
 
 test("une réponse IA en échec ne consomme pas de message", async () => {
@@ -139,7 +139,7 @@ test("une réponse IA en échec ne consomme pas de message", async () => {
   c.env.AI = fakeAI({ fail: 1 });
   assert.equal((await call(c, bodyFor(CASE_IDS[0]))).status, 502);
   for (let i = 0; i < 40; i++) assert.equal((await call(c, bodyFor(CASE_IDS[0]))).status, 200, "msg " + i);
-  assert.equal((await call(c, bodyFor(CASE_IDS[0]))).status, 402);
+  assert.equal((await call(c, bodyFor(CASE_IDS[0]))).status, 409);
 });
 
 test("une réponse IA vide est traitée comme un échec et libérée", async () => {

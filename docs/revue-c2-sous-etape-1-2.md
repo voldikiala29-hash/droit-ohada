@@ -68,15 +68,13 @@ Classement : **haut** = peut faire perdre un quota ou un droit ; **moyen** = inc
   côté serveur pendant quelques minutes. Une requête rejouée renvoie la même réponse sans nouvelle réservation. À décider
   avec D-P3 (sous-étape 1.4).
 
-### F3 — Codes de réponse incohérents entre le code, les tests et la documentation (moyen)
+### F3 — Codes de réponse incohérents (moyen) — **résolu**
 
-- **Code et tests** : plafond de messages atteint = **402** (`reason: "messages"`, ligne 409 : tout refus autre que
-  `rate` renvoie 402).
-- **Documentation** (`docs/architecture-espace-jeux.md`, `docs/audit-phase-1.md`) : plafond de messages = **409**.
-- **Impact** : le client, s'il suit la documentation, ne reconnaîtrait pas le code réellement renvoyé.
-- **Correction** : décider entre 402 et 409 pour le plafond de messages, puis aligner le code, les tests et la
-  documentation. Recommandation : 409 pour le plafond de messages (conflit avec l'état du cas), 402 pour le quota de
-  cas (paiement requis). Changement à faire en 1.4 avec tests.
+- **Constat initial** : code et tests renvoyaient 402 pour le plafond de messages, la documentation disait 409.
+- **Décision** : D-P3-ter, plafond de messages en **409**. Appliqué dans `worker/patient-worker.js` (ligne 409 :
+  `messages` → 409, `quota` → 402, `rate` → 429), dans les tests `patient-worker.test.mjs` (trois assertions) et dans
+  `worker/README.md`, `docs/quotas-politique.md`, `docs/plan-deploiement-c2.md`, `docs/durable-objects-plan-tests.md`.
+- **Reste à faire (1.4)** : le navigateur doit afficher un message dédié pour 409 et ne pas basculer sur le moteur local.
 
 ### F4 — Panne de la clé Google classée comme erreur d'authentification (moyen)
 

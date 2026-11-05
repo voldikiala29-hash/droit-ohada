@@ -20,7 +20,7 @@
  *   body { persona, facts, step, history, message, question, cas: { id } }
  *   -> 200 { reponse, quota: { plan, used, limit, msgs, msgCap } }
  *   -> 400 contenu invalide (validation stricte) | 401 jeton absent ou invalide
- *   -> 402 quota de cas ou plafond de messages atteint | 403 origine ou email non vérifié
+ *   -> 402 quota de cas atteint | 409 plafond de messages du cas atteint | 403 origine ou email non vérifié
  *   -> 429 trop de requêtes | 503 configuration ou stockage indisponible (échec fermé)
  *   -> 502 l'IA n'a pas répondu (le décompte est libéré)
  *
@@ -406,7 +406,7 @@ export async function handleRequest(request, env, opts = {}) {
     return json({ error: "unavailable" }, 503, cors);
   }
   if (!reservation.ok) {
-    const status = reservation.reason === "rate" ? 429 : 402;
+    const status = reservation.reason === "rate" ? 429 : reservation.reason === "messages" ? 409 : 402;
     return json({
       error: reservation.reason,
       quota: { plan, used: reservation.used, limit, msgs: reservation.msgs, msgCap: cfg.msgCap }

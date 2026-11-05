@@ -51,7 +51,7 @@ voir `docs/impact-financier-ia.md`).
 5. Appel à l'IA.
 6. En cas d'échec de l'IA ou de réponse vide : **libération** de la réservation.
 
-Un refus (402, 429) n'entame ni quota de cas ni plafond de messages.
+Un refus (402, 409, 429) n'entame ni quota de cas ni plafond de messages.
 
 ## 6. Formule Premium
 
@@ -62,7 +62,7 @@ Un refus (402, 429) n'entame ni quota de cas ni plafond de messages.
 
 ## 7. Ce qui se passe au refus
 
-Quand le Worker refuse (402, 429, 401, 503), le navigateur **continue avec le moteur local**, sans IA et sans quota.
+Quand le Worker refuse (402, 409, 429, 401, 503), le navigateur **continue avec le moteur local** (à supprimer pour les refus en 1.4), sans IA et sans quota.
 **Le médecin n'est pas informé** que son quota est atteint. C'est une incohérence avec la politique affichée :
 l'utilisateur croit avoir droit à l'IA alors qu'il ne l'a plus. Un message clair est à ajouter côté frontend
 (modification à autoriser, non faite).

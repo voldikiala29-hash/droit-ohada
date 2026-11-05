@@ -114,7 +114,7 @@ Préparer trois comptes de test (email vérifié) : `test-gratuit-1`, `test-grat
 | Test | Attendu |
 |---|---|
 | Connexion email, consultation, 5 cas distincts | Les 5 réussissent ; le 6e est refusé (402) |
-| 40 messages sur un même cas | Les 40 réussissent ; le 41e est refusé (402) |
+| 40 messages sur un même cas | Les 40 réussissent ; le 41e est refusé (409) |
 | Compte `test-premium` avec `plan:<uid>` valide | Le 6e cas réussit |
 | Connexion Google | Même comportement qu'avec un email |
 | Email non vérifié | Refusé (403) ; moteur local |

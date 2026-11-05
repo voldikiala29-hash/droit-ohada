@@ -64,7 +64,7 @@ Le Worker lit cet enregistrement à chaque requête. Un changement peut mettre e
    quatre étapes, `history` = `d` ou `p`, `cas.id` parmi les **302 identifiants** autorisés, pas de caractères de contrôle.
 4. Limite de débit par IP (429), via le Durable Object `ip:<adresse>`.
 5. Vérification du jeton Firebase (401) puis de l'email (403).
-6. Réservation atomique (`QUOTA`, objet `uid:<uid>`) : débit (429), quota de cas (402), plafond de messages (402).
+6. Réservation atomique (`QUOTA`, objet `uid:<uid>`) : débit (429), quota de cas (402), plafond de messages (409).
 7. Appel à l'IA. Si l'IA échoue ou répond vide, la réservation est **libérée** (502).
 
 ## 6. Codes de réponse
@@ -74,7 +74,8 @@ Le Worker lit cet enregistrement à chaque requête. Un changement peut mettre e
 | 200 | — | Réponse du patient, avec le détail du quota |
 | 400 | `message`, `persona`, `facts`, `step`, `history`, `cas`, `json` | Contenu refusé par la validation |
 | 401 | `auth` | Jeton absent, invalide, expiré ou d'un autre projet |
-| 402 | `quota` / `messages` | Quota de cas ou plafond de messages atteint |
+| 402 | `quota` | Quota de cas atteint |
+| 409 | `messages` | Plafond de 40 messages pour ce cas atteint |
 | 403 | `origin` / `email_unverified` | Origine non autorisée ou email non vérifié |
 | 405 | `method` | Méthode autre que POST |
 | 429 | `rate` | Trop de requêtes (IP ou utilisateur) |

@@ -117,7 +117,7 @@ consultation comptée. Une note sans consultation comptée est refusée.
 | 403 `email_unverified` | Authentification | Adresse non vérifiée | Inviter à vérifier l'adresse | **Non** |
 | 403 `origin` | Sécurité | Origine non autorisée | Erreur, aucun nouvel essai automatique | **Non** |
 | 402 | Quota | Quota de consultations épuisé | Message clair avec date de renouvellement | **Non** |
-| 409 (ou 402, voir F3 de la revue) | Quota | Plafond de messages du cas atteint | Message clair | **Non** |
+| 409 | Quota | Plafond de messages du cas atteint (décision D-P3-ter) | Message clair | **Non** |
 | 429 | Débit | Trop de requêtes | Attendre, réessayer après un délai | **Non** |
 | 503 `config` ou `unavailable` | Panne technique | Stockage ou configuration indisponible | Message « service momentanément indisponible » | **Oui, sous conditions (§3.3)** |
 | 502 | Panne technique | L'IA n'a pas répondu | Réessayer | **Oui, sous conditions (§3.3)** |
@@ -264,6 +264,6 @@ Aujourd'hui : `plan:<uid>` dans KV, écrit à la main.
 | **D-P1-bis** | Acceptez-vous que le contenu clinique reste lisible dans le navigateur après α, en attendant β ? |
 | **D-P2-bis** | Acceptez-vous des freins de plausibilité sur les transcripts (durée minimale, cohérence) plutôt qu'une garantie ? |
 | **D-P3-bis** | Secours en cas de panne limité aux consultations déjà comptées (§3.3), ou suppression complète du secours ? |
-| **D-P3-ter** | Plafond de messages : code 409 ou 402 ? (recommandation : 409) |
+| ~~D-P3-ter~~ | Résolu : plafond de messages en 409 (décision du 5 novembre 2026, appliquée dans le code, les tests et la documentation). |
 | **D-P4-bis** | Rétention des transcripts : 90 jours ? |
 | **D-P4-ter** | Création de la base D1 dans un environnement séparé : quand l'autorisez-vous ? |

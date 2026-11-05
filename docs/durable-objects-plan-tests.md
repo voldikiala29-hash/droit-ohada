@@ -80,7 +80,7 @@ sans libération (voir `docs/quotas-politique.md`, limite 7).
 Pour isoler le quota, régler `USER_REQUESTS_PER_MINUTE` à 1000 en préproduction.
 
 **Test B** : 100 requêtes simultanées, `uid-B`, même cas valide.
-**Attendu** : exactement **40** réponses 200 ; le reste en 402 (`reason: messages`).
+**Attendu** : exactement **40** réponses 200 ; le reste en 409 (`reason: messages`).
 
 **Test C** : 100 requêtes simultanées mêlant cas distincts et répétés.
 **Attendu** : `quota.used` final ≤ 5 et `msgs` par cas ≤ 40 ; aucun dépassement.

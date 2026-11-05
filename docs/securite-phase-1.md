@@ -58,7 +58,7 @@ Les 302 cas réels, mis au format du navigateur, sont tous acceptés (test autom
 |---|---|---|
 | Visiteur non connecté | Refusé (401) | Refusé (401), moteur local |
 | Quota de cas atteint | Refusé (402), moteur local | Idem, avec `reason` |
-| Plafond de messages atteint | Pas de plafond | 402, moteur local |
+| Plafond de messages atteint | Pas de plafond | 409, moteur local (à supprimer en 1.4) |
 | IA en panne | Moteur local | Idem, réservation libérée |
 | Identifiant de cas inconnu | Accepté | 400, moteur local |
 | Contenu hors format | Accepté | 400, moteur local |
