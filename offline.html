@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="dark light">
+<title>Hors ligne | Salle de Garde</title>
+<style>
+  :root{ --bg:#F6F8F9; --fg:#0A1518; --muted:#4B5D62; --accent:#0E7C6B; --surface:#FFFFFF; }
+  :root[data-theme="dark"], :root:not([data-theme="light"]){ --bg:#0A1518; --fg:#E8F0F1; --muted:#9FB3B7; --accent:#2BB59C; --surface:#111E22; }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0A1518; --fg:#E8F0F1; --muted:#9FB3B7; --accent:#2BB59C; --surface:#111E22; } }
+  html,body{ margin:0; min-height:100%; background:var(--bg); color:var(--fg); }
+  body{ font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif; display:flex; align-items:center; justify-content:center; min-height:100vh; padding:16px; box-sizing:border-box; }
+  main{ max-width:420px; width:100%; background:var(--surface); border-radius:16px; padding:28px 24px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,.12); }
+  .pulse{ width:56px; height:56px; margin:0 auto 16px; color:var(--accent); }
+  h1{ font-size:1.25rem; margin:0 0 8px; }
+  p{ margin:0 0 12px; color:var(--muted); }
+  button{ margin-top:8px; font:inherit; font-weight:600; color:#fff; background:var(--accent); border:0; border-radius:10px; padding:12px 20px; min-height:44px; cursor:pointer; }
+  button:focus-visible{ outline:3px solid var(--accent); outline-offset:3px; }
+</style>
+</head>
+<body>
+<main>
+  <svg class="pulse" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+    <path d="M6 32h14l6-14 8 28 6-18 4 4h14" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <h1>Vous êtes hors ligne</h1>
+  <p>Salle de Garde a besoin d'une connexion pour charger l'application la première fois.</p>
+  <p>Une fois chargée, l'application reste disponible hors ligne. Vos données seront synchronisées au retour de la connexion.</p>
+  <button type="button" onclick="location.reload()">Réessayer</button>
+</main>
+</body>
+</html>
