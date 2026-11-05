@@ -62,10 +62,12 @@ Un refus (402, 409, 429) n'entame ni quota de cas ni plafond de messages.
 
 ## 7. Ce qui se passe au refus
 
-Quand le Worker refuse (402, 409, 429, 401, 503), le navigateur **continue avec le moteur local** (à supprimer pour les refus en 1.4), sans IA et sans quota.
-**Le médecin n'est pas informé** que son quota est atteint. C'est une incohérence avec la politique affichée :
-l'utilisateur croit avoir droit à l'IA alors qu'il ne l'a plus. Un message clair est à ajouter côté frontend
-(modification à autoriser, non faite).
+Depuis la sous-étape 1.4a, le navigateur **ne répond plus jamais localement** à une question posée au patient IA. Un refus
+(401, 402, 409, 413, 426, 429) retire la question du journal, la restitue dans la saisie et affiche le motif (quota atteint,
+plafond de 40 messages, connexion requise, etc.). Une panne (5xx, délai, réseau) garde la question en attente et propose
+« Réessayer », qui renvoie le même identifiant : la question n'est comptée qu'une fois. Hors ligne, le patient IA n'est pas
+disponible ; le reste du simulateur fonctionne.
+Conséquence pour l'étudiant : sans connexion ou sans quota, il n'y a plus de réponse de secours du patient.
 
 ## 8. Incohérences relevées
 
@@ -73,6 +75,7 @@ l'utilisateur croit avoir droit à l'IA alors qu'il ne l'a plus. Un message clai
 |---|---|---|
 | `index.html` ligne ~638 : « Gratuit, illimité » | Contredit les 5 consultations gratuites | À corriger (frontend, à autoriser) |
 | `index.html` ligne ~582 : « 0 $ gratuit pour les étudiants » | Vrai pour l'offre gratuite, mais ne mentionne pas les limites | À reformuler (frontend, à autoriser) |
+| Message au médecin quand son quota est atteint | Absent avant 1.4a | **Fait (1.4a)** : message de refus affiché dans le chat |
 | `conditions-utilisation.html` article 2 : « jusqu'à 50 nouveaux cas générés par IA par jour » | Aucune génération de cas n'existe dans le code ; pas de quota correspondant | Juridique : à valider ou retirer. Non modifié |
 | Frontend : pas d'affichage du quota | L'utilisateur ne voit pas sa consommation | Fonctionnalité à prévoir (frontend, à autoriser) |
 | Bibliothèque et corrections différenciées | Non appliquées | Dépend de C1 |

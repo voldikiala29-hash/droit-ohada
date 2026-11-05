@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test test/*.test.mjs",
-    "check:case-ids": "node scripts/build-case-ids.mjs --check"
+    "check:case-ids": "node scripts/build-case-ids.mjs --check",
+    "test:browser": "node test-browser/patient-chat.cjs"
   }
 }

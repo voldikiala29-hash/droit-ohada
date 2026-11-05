@@ -102,6 +102,6 @@ test("index.html : balises d'installation iOS et icône Apple 180 px", () => {
 
 test("index.html : bandeau hors ligne sans formulation de quota", () => {
   const html = read("index.html");
-  assert.match(html, /Hors ligne : mode local actif/);
+  assert.match(html, /Hors ligne : les réponses du patient demandent une connexion/);
   assert.equal(/consultations? IA/i.test(html), false);
 });

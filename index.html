@@ -1181,6 +1181,7 @@ document.getElementById('avatar-file-input')?.addEventListener('change', window.
 
 </script>
 
+<script src="patient-client.js"></script>
 <script>
 // === CODE ORIGINAL DE TON APP (avec patch Firebase) ===
 
@@ -1550,32 +1551,35 @@ function guardLLM(S,text){
   if(/je ne (te |vous )?comprends? pas|pas compris|comprends pas|intelligence artificielle|\bia\b|modele de langage/.test(n))return reformulate(d);
   return text;
 }
-async function answerPatient(S,t){
-  if(LLM_URL){
-    var ctrl=new AbortController(),tm=setTimeout(function(){ctrl.abort();},15000);
-    try{
-      /* Phase 1 : le Worker exige le jeton Firebase de l'utilisateur connecté. Sans jeton, il répond 401 et le moteur local prend le relais. */
-      var hdrs={"Content-Type":"application/json"};
-      try{
-        var fbUser=window._fbAuth&&window._fbAuth.currentUser;
-        if(fbUser){hdrs["Authorization"]="Bearer "+await fbUser.getIdToken();}
-      }catch(e){console.warn("Jeton indisponible:",e&&e.message);}
-      var res=await fetch(LLM_URL,{method:"POST",headers:hdrs,signal:ctrl.signal,
-        body:JSON.stringify({persona:buildPersona(S),facts:buildFacts(S),step:STEPS[S.stage],history:S.chat.slice(0,-1).slice(-12),message:t,question:t,cas:casPublic(S)})});
-      if(res.ok){
-        var j=await res.json();
-        var rep=j&&(j.reponse||j.reply);
-        if(rep&&j.source!=="error"){
-          var txt=String(rep).replace(/^\s*(patient|patiente|mère|mere)\s*:\s*/i,"").trim();
-          return {text:guardLLM(S,txt),ids:[]};
-        }
-      }
-    }catch(e){console.warn("LLM fallback:",e && e.message);}finally{clearTimeout(tm);}
-  }
-  return patientReply(S,t);
+/* Cava : le patient virtuel. Le Worker répond seul (1.4a) : aucune réponse locale n'est donnée à une question posée au patient IA.
+   Le moteur de règles ne sert qu'en développement, quand aucun Worker n'est configuré (LLM_URL vide). */
+var chatNotice=null;   /* {kind:"info"|"error", text} : message sous le journal, non persisté */
+var UPGRADE_NOTICE="Une nouvelle version de l'application est disponible. Recharge la page avant la date annoncée.";
+/* Envoi HTTP seul : toute la décision est prise dans patient-client.js. */
+async function postPatient(rid,bodyStr){
+  var ctrl=new AbortController(),tm=setTimeout(function(){ctrl.abort();},SDGPatient.CLIENT_TIMEOUT_MS);
+  try{
+    var hdrs={"Content-Type":"application/json","X-SDG-Protocol":"2","X-SDG-Request-Id":rid};
+    var fbUser=window._fbAuth&&window._fbAuth.currentUser;
+    if(fbUser){hdrs["Authorization"]="Bearer "+await fbUser.getIdToken();}
+    var res=await fetch(LLM_URL,{method:"POST",headers:hdrs,signal:ctrl.signal,body:bodyStr});
+    var body=null;
+    try{body=await res.json();}catch(e){body=null;}
+    return {status:res.status,headers:res.headers,body:body};
+  }finally{clearTimeout(tm);}
 }
-/* Cava : le patient virtuel. Worker d'abord, moteur local si le Worker ne répond pas. */
-function smartPatientReply(question){ return answerPatient(S,question); }
+/* question = null : reprise de la question en attente, avec le même identifiant et le même contenu. */
+async function askPatientWorker(question){
+  if(!LLM_URL){var r=patientReply(S,question);return {outcome:"answer",text:r.text,ids:r.ids||[]};}
+  var o=await SDGPatient.sendMessage({
+    state:S.chatPending||null,text:question,online:navigator.onLine!==false,nowMs:Date.now(),
+    buildBody:function(t){return {persona:buildPersona(S),facts:buildFacts(S),step:STEPS[S.stage],history:S.chat.slice(0,-1).slice(-12),message:t,question:t,cas:casPublic(S)};},
+    post:postPatient,
+    onState:function(st){S.chatPending=st;save(KEY,S);}
+  });
+  if(o.outcome==="answer")o.text=guardLLM(S,o.text);
+  return o;
+}
 
 /* Le patient ne dit jamais « je ne comprends pas » ni ne sort du contexte : il reformule et rappelle sa plainte */
 function patientReply(S,q){
@@ -2110,16 +2114,42 @@ function chatPanel(){
     h("h2",null,"Interrogatoire"),
     h("p",{class:"small muted"},"Écris tes questions librement, comme en consultation. Le patient repère les mots-clés (fièvre, toux, depuis quand, médicaments, antécédents…) et répond en conséquence. Pose une ou deux questions à la fois."),
     log,
-    composer("chat-in","chat","Pose ta question au patient…","Ta question",sendChat,CHAT_CHIPS),
+    chatNotice?h("p",{class:"small",role:"status",style:{color:chatNotice.kind==="error"?"#B42318":"#0E7C6B",margin:"8px 0"}},chatNotice.text):null,
+    S.chatPending
+      ?h("div",{class:"field",id:"compose"},
+          h("p",{class:"small muted"},"Ta question « "+S.chatPending.text+" » attend encore une réponse. Elle ne sera comptée qu'une fois, même si tu la renvoies."),
+          h("div",{class:"row"},h("button",{class:"btn",type:"button",disabled:busy,onclick:retryChat},"Réessayer")))
+      :composer("chat-in","chat","Pose ta question au patient…","Ta question",sendChat,CHAT_CHIPS),
     navRow("Examen clinique"));
 }
 async function sendChat(){
-  var t=draft.chat.trim();if(!t||busy)return;
+  var t=draft.chat.trim();if(!t||busy||S.chatPending)return;
   S.chat.push({r:"d",t:t});draft.chat="";save(KEY,S);
+  chatNotice=null;
+  await runChatTurn(t);
+}
+async function retryChat(){
+  if(busy||!S.chatPending)return;
+  chatNotice=null;
+  await runChatTurn(null);
+}
+async function runChatTurn(question){
   pending="chat";busy=true;render();afterSend();
   await delay(450);
-  var r=await smartPatientReply(t);
-  S.chat.push({r:"p",t:r.text});S.asked=uniq((S.asked||[]).concat(r.ids));
+  var o=await askPatientWorker(question);
+  if(o.outcome==="answer"){
+    S.chat.push({r:"p",t:o.text});S.asked=uniq((S.asked||[]).concat(o.ids||[]));
+    chatNotice=o.upgrade?{kind:"info",text:UPGRADE_NOTICE}:null;
+  }else if(o.outcome==="refused"||o.outcome==="reset"){
+    /* Rien n'a été compté : la question disparaît du journal et revient dans la zone de saisie. */
+    var last=S.chat[S.chat.length-1];
+    if(last&&last.r==="d"&&last.t===o.text)S.chat.pop();
+    draft.chat=o.text||"";
+    chatNotice={kind:"error",text:o.message};
+  }else{
+    var info=(o.outcome==="busy"||o.outcome==="retry_later");
+    chatNotice={kind:info?"info":"error",text:o.message||"Ta question est déjà en cours d'envoi."};
+  }
   pending=null;busy=false;save(KEY,S);render();afterSend();
 }
 
@@ -2521,7 +2551,7 @@ showLanding();
     var net=document.createElement("div");
     net.setAttribute("role","status"); net.setAttribute("aria-live","polite");
     net.style.cssText="position:fixed;left:0;right:0;bottom:0;z-index:9999;display:none;padding:6px 12px calc(6px + env(safe-area-inset-bottom));background:#0A1518;color:#E8F0F1;font:13px/1.3 system-ui,-apple-system,'Segoe UI',sans-serif;text-align:center;border-top:1px solid #2BB59C;";
-    net.textContent="Hors ligne : mode local actif. Les réponses avancées reviennent au retour de la connexion.";
+    net.textContent="Hors ligne : les réponses du patient demandent une connexion. Le reste du simulateur fonctionne.";
     function majNet(){ net.style.display=(navigator.onLine===false)?"block":"none"; }
     window.addEventListener("online",majNet); window.addEventListener("offline",majNet);
     (document.body||document.documentElement).appendChild(net); majNet();

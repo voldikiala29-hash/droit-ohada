@@ -1,7 +1,11 @@
 # Plan de correction, sous-étape 1.4 : F1 à F7 et secours en panne
 
-Statut : **plan à valider. Aucune modification de code dans ce document.** La correction sera exécutée sur la branche
-`securite/phase-1-cases-worker-scores` après votre autorisation explicite.
+Statut : **état d'avancement.**
+- 1.4c et 1.4d (serveur) : commit `a7133c4`, poussé sur `securite/phase-1-cases-worker-scores`.
+- 1.4a (navigateur, refus, pannes, en-tête de version, avertissement) et 1.4b (identifiant de requête, idempotence) :
+  implémentés sur la même branche, non déployés. Voir `docs/specification-1-4b-request-id.md` (section 7) pour les écarts.
+- Décision de conception : aucune réponse locale au chat patient, y compris hors ligne (le bandeau hors ligne le dit).
+- `PROTOCOL_CUTOFF` reste à son placeholder : **ne pas la fixer avant la mise en production du client 1.4a**.
 
 Décisions appliquées : D-P3 (aucun secours après refus), D-P3-bis (secours en panne très limité, idempotence),
 D-P3-ter (plafond de messages en 409, **déjà appliqué** sur la branche, commit `5bb2151`).
