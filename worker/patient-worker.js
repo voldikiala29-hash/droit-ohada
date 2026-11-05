@@ -10,7 +10,8 @@
  * Variables (optionnelles) :
  *   ALLOWED_ORIGIN         "https://salledegarde.online"
  *   FIREBASE_PROJECT_ID    "salledegarde-89dae"
- *   MAX_MESSAGES_PER_CASE  40 (plafond de messages IA par cas et par mois)
+ *   MAX_MESSAGES_PER_CASE  40 (plafond de messages IA par utilisateur, par cas et par mois)
+ *   Quotas de cas : gratuit 5, Premium 150 par mois (constantes FREE_/PREMIUM_CONSULTATIONS_PER_MONTH)
  *   USER_REQUESTS_PER_MINUTE  20
  *   IP_REQUESTS_PER_MINUTE    20
  *
@@ -40,11 +41,12 @@ const MAX_CASE_ID = 80;
 const ALLOWED_STEPS = ["Anamnèse", "Examen clinique", "Paraclinique", "Conclusion"];
 const CONTROL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/;
 
-// Quotas commerciaux : ne pas modifier sans validation (voir docs/securite-phase-1.md).
-const FREE_CONSULTATIONS_PER_MONTH = 5;
-const PREMIUM_CONSULTATIONS_PER_MONTH = 60;
+// Politique des quotas (révisée le 4 novembre 2026, voir docs/quotas-politique.md).
+// Ne pas modifier sans validation. Un test (test/policy.test.mjs) vérifie que la documentation concorde.
+export const FREE_CONSULTATIONS_PER_MONTH = 5;
+export const PREMIUM_CONSULTATIONS_PER_MONTH = 150;
 
-const DEFAULT_MESSAGES_PER_CASE = 40;
+export const DEFAULT_MESSAGES_PER_CASE = 40;
 const DEFAULT_USER_RPM = 20;
 const DEFAULT_IP_RPM = 20;
 const CLOCK_SKEW_SECONDS = 300;

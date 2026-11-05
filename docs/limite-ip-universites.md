@@ -15,7 +15,7 @@ Le quota doit reposer sur l'**identité** (compte Firebase), pas sur l'adresse r
 
 | Couche | Clé | Rôle | Valeur proposée (à valider) |
 |---|---|---|---|
-| 1. Quota métier | `uid` Firebase | Cases distincts (5 / 60), plafond de 40 messages par cas, débit par utilisateur | Inchangé : 5 / 60 / 40 ; débit utilisateur 20/min |
+| 1. Quota métier | `uid` Firebase | Cas distincts (5 gratuit / 150 Premium), plafond de 40 messages par cas, débit par utilisateur | Politique révisée : 5 / 150 / 40 ; débit utilisateur 20/min |
 | 2. Filet anonyme | IP | Bloque les requêtes **sans jeton valide** (bots, scripts) | 30 par minute |
 | 3. Plafond authentifié | IP | Borne un abus massif depuis une même adresse, sans bloquer un campus | 300 par minute |
 | 4. Périmètre Cloudflare | IP, en amont du Worker | Attaques volumétriques et bots, hors Worker | Règle de limitation à définir dans le tableau de bord (non appliquée) |

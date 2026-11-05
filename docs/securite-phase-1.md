@@ -135,7 +135,7 @@ Ces points demandent un environnement réel. Ils ne sont **pas** validés :
 
 1. **Plafond de 40 messages par cas et par mois** (choix d'un identifiant serveur plutôt que de consultation client).
 2. **Remise à zéro des quotas au premier déploiement** (les anciens compteurs KV ne sont pas migrés).
-3. **Quotas 5 / 60** : inchangés, à valider commercialement.
+3. **Quotas 5 / 150 / 40** (gratuit / Premium / messages par cas) : politique révisée le 4 novembre 2026, appliquée dans le code et les tests ; à valider commercialement. Voir `docs/quotas-politique.md`.
 4. **Ordre de déploiement** : Worker d'abord, puis client (voir `worker/README.md`, section 9). Une courte coupure de l'IA est inévitable.
 
 ## 8. Fichiers modifiés

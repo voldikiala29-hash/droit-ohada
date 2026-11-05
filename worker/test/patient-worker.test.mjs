@@ -84,17 +84,17 @@ test("avec la limite de débit par défaut (20/min) : jamais plus de 5 réussite
   assert.equal(c.ai.calls, 5);
 });
 
-test("formule Premium (KV plan:<uid> valide) : 60 cas distincts acceptés, le 61e refusé", async () => {
+test("formule Premium (KV plan:<uid> valide) : 150 cas distincts acceptés, le 151e refusé", async () => {
   const c = await makeCtx();
   const until = new Date(c.now + 30 * 24 * 3600 * 1000).toISOString();
   await c.kv.put("plan:" + c.uid, JSON.stringify({ plan: "premium", until }));
   let last;
-  for (let i = 0; i < 61; i++) {
+  for (let i = 0; i < 151; i++) {
     last = await call(c, bodyFor(CASE_IDS[i]));
-    if (i < 60) assert.equal(last.status, 200, "cas " + i);
+    if (i < 150) assert.equal(last.status, 200, "cas " + i);
   }
   assert.equal(last.status, 402);
-  assert.equal((await last.json()).quota.limit, 60);
+  assert.equal((await last.json()).quota.limit, 150);
 });
 
 test("Premium expiré : retour à la formule gratuite", async () => {

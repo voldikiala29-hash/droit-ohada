@@ -29,7 +29,7 @@ L'ancienne liaison `RATE` (KV, par IP) n'est plus utilisée : la limite par IP e
 Une variable présente mais invalide (par exemple `MAX_MESSAGES_PER_CASE=abc`) fait répondre **503** : le Worker ne
 retombe pas silencieusement sur une valeur par défaut. Valeurs acceptées : entiers de 1 à 1000.
 
-Quotas commerciaux (dans le code, `patient-worker.js`) : 5 cas distincts par mois en gratuit, 60 en Premium.
+Quotas commerciaux (dans le code, `patient-worker.js`) : 5 cas distincts par mois en gratuit, 150 en Premium, 40 messages maximum par utilisateur et par cas et par mois.
 **Ne pas modifier sans validation.**
 
 ## 3. Configuration Durable Objects

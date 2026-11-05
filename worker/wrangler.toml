@@ -25,6 +25,9 @@ tag = "v1"
 new_sqlite_classes = ["QuotaLimiter"]
 
 [vars]
+# Politique des quotas (4 novembre 2026, voir docs/quotas-politique.md) :
+# gratuit 5 cas par mois, Premium 150 cas par mois (constantes dans patient-worker.js),
+# 40 messages par utilisateur et par cas et par mois (MAX_MESSAGES_PER_CASE ci-dessous).
 ALLOWED_ORIGIN = "https://salledegarde.online"
 FIREBASE_PROJECT_ID = "salledegarde-89dae"
 MAX_MESSAGES_PER_CASE = "40"
