@@ -5,7 +5,7 @@ import { handleRequest } from "../patient-worker.js";
 import CASE_IDS from "../case-ids.js";
 import {
   makeCtx, bodyFor, reqFor, sign, claims, makeKey, countingFetch, fakeAI,
-  brokenNamespace, FakeKV, makeNamespace, PROJECT, ORIGIN
+  brokenNamespace, FakeKV, makeNamespace, PROJECT, ORIGIN, cutoffIso
 } from "./helpers.mjs";
 
 const call = (ctx, body, extra = {}) =>
@@ -241,7 +241,7 @@ test("rotation des clés : un kid inconnu déclenche un rechargement et le jeton
   const env = {
     AI: fakeAI(), STATE: new FakeKV(), QUOTA: makeNamespace(0), FIREBASE_PROJECT_ID: PROJECT,
     USER_REQUESTS_PER_MINUTE: "1000", IP_REQUESTS_PER_MINUTE: "1000",
-    PROTOCOL_CUTOFF: new Date(now + 30 * 864e5).toISOString()
+    PROTOCOL_CUTOFF: cutoffIso(now + 30 * 864e5)
   };
   // Cache ancien (ne contient pas le nouveau kid), récemment rechargé il y a 10 minutes
   const jwksCache = { keys: [{ kid: "ancienne", kty: "RSA" }], expiresAt: now + 3600e3, lastFetch: now - 10 * 60e3 };
@@ -258,7 +258,7 @@ test("kid inconnu répété : Google n'est interrogé qu'une fois pendant le dé
   const env = {
     AI: fakeAI(), STATE: new FakeKV(), QUOTA: makeNamespace(0), FIREBASE_PROJECT_ID: PROJECT,
     USER_REQUESTS_PER_MINUTE: "1000", IP_REQUESTS_PER_MINUTE: "1000",
-    PROTOCOL_CUTOFF: new Date(now + 30 * 864e5).toISOString()
+    PROTOCOL_CUTOFF: cutoffIso(now + 30 * 864e5)
   };
   const jwksCache = { keys: null, expiresAt: 0, lastFetch: 0 };
   const statuses = [];
@@ -321,7 +321,7 @@ test("avant la date limite, sans X-SDG-Protocol : 200 avec avertissement X-SDG-U
 });
 
 test("après la date limite, sans X-SDG-Protocol : 426, sans consommation de quota ni appel IA", async () => {
-  const c = await makeCtx({ env: { PROTOCOL_CUTOFF: new Date(Date.now() - 1000).toISOString() } });
+  const c = await makeCtx({ env: { PROTOCOL_CUTOFF: cutoffIso(Date.now() - 1000) } });
   const r = await call(c, bodyFor(CASE_IDS[0]), { protocol: null });
   assert.equal(r.status, 426);
   assert.equal(c.ai.calls, 0);
@@ -329,7 +329,7 @@ test("après la date limite, sans X-SDG-Protocol : 426, sans consommation de quo
 });
 
 test("protocole à jour : pas d'avertissement, même après la date limite", async () => {
-  const c = await makeCtx({ env: { PROTOCOL_CUTOFF: new Date(Date.now() - 1000).toISOString() } });
+  const c = await makeCtx({ env: { PROTOCOL_CUTOFF: cutoffIso(Date.now() - 1000) } });
   const r = await call(c, bodyFor(CASE_IDS[0]));
   assert.equal(r.status, 200);
   assert.equal(r.headers.get("X-SDG-Upgrade"), null);

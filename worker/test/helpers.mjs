@@ -3,6 +3,7 @@
 // un test sur le runtime Cloudflare réel (voir docs/securite-phase-1.md).
 import { QuotaLimiter } from "../patient-worker.js";
 import { randomBytes } from "node:crypto";
+import { DatabaseSync } from "node:sqlite";
 
 export const PROJECT = "salledegarde-89dae";
 export const ORIGIN = "https://salledegarde.online";
@@ -65,37 +66,76 @@ export class FakeKV {
 const clone = v => (v === undefined ? v : JSON.parse(JSON.stringify(v)));
 
 /**
- * Stockage simulé. latencyMs > 0 ajoute une vraie attente (macrotâche) à chaque opération,
- * comme un stockage distant : c'est ce qui permet à deux requêtes de se chevaucher.
+ * Stockage SQLite simulé avec node:sqlite (SQLite réel en mémoire), exposé avec la même forme que
+ * ctx.storage.sql des Durable Objects : exec(sql, ...liaisons).toArray(). Les transactions passent par
+ * transactionSync, comme dans le runtime. failNext permet d'injecter une panne de stockage au prochain
+ * ordre SQL qui correspond à l'expression donnée (tests de panne et d'atomicité).
  */
-export class FakeStorage {
-  constructor(latencyMs = 0) { this.m = new Map(); this.latencyMs = latencyMs; }
-  async tick() { if (this.latencyMs > 0) await new Promise(r => setTimeout(r, this.latencyMs)); }
-  async get(k) { await this.tick(); return this.m.has(k) ? clone(this.m.get(k)) : undefined; }
-  async put(k, v) { await this.tick(); this.m.set(k, clone(v)); }
-  async delete(k) { await this.tick(); return this.m.delete(k); }
-  async deleteAll() { await this.tick(); this.m.clear(); }
+export class FakeSql {
+  constructor() { this.db = new DatabaseSync(":memory:"); this.failNext = null; this.statements = 0; }
+  exec(sql, ...args) {
+    if (this.failNext && this.failNext.test(sql)) {
+      this.failNext = null;
+      throw new Error("storage_fault");
+    }
+    this.statements++;
+    const stmt = this.db.prepare(sql);
+    const rows = /^\s*(SELECT|PRAGMA)/i.test(sql) ? stmt.all(...args) : (stmt.run(...args), []);
+    return { toArray: () => rows, one: () => rows[0] };
+  }
+}
+
+/** État d'un Durable Object simulé : storage.sql et transactionSync (synchrone, avec annulation en cas d'erreur). */
+export function makeDoState() {
+  const sql = new FakeSql();
+  return {
+    sql,
+    storage: {
+      sql,
+      transactionSync(fn) {
+        sql.db.exec("BEGIN");
+        try {
+          const r = fn();
+          sql.db.exec("COMMIT");
+          return r;
+        } catch (e) {
+          sql.db.exec("ROLLBACK");
+          throw e;
+        }
+      }
+    }
+  };
 }
 
 /**
- * Espace de noms de Durable Objects simulé : un objet par nom, avec une latence de stockage.
- * Chaque appel passe par la classe réelle QuotaLimiter.
+ * Espace de noms de Durable Objects simulé : un objet par nom, chacun avec son propre stockage SQLite.
+ * Chaque appel passe par la classe réelle QuotaLimiter. Le paramètre latencyMs est conservé pour compatibilité :
+ * le stockage des Durable Objects est synchrone, donc la latence n'a plus d'effet ici.
  */
-export function makeNamespace(latencyMs = 3) {
+export function makeNamespace(_latencyMs = 0) {
   const instances = new Map();
+  const objects = new Map();
   const ns = {
     instances,
     idFromName: n => n,
     get(name) {
-      if (!instances.has(name)) instances.set(name, new QuotaLimiter({ storage: new FakeStorage(latencyMs) }));
+      if (!instances.has(name)) {
+        const state = makeDoState();
+        objects.set(name, state);
+        instances.set(name, new QuotaLimiter(state));
+      }
       const obj = instances.get(name);
       return {
         rateHit: async (a) => obj.rateHit(a),
         reserve: async (a) => obj.reserve(a),
         confirm: async (a) => obj.confirm(a),
-        release: async (a) => obj.release(a)
+        release: async (a) => obj.release(a),
+        sweepAll: async (t) => obj.sweepAll(t),
+        stats: () => obj.stats()
       };
-    }
+    },
+    /** Accès direct au stockage SQL (tests de capacité, de panne et de purge). */
+    sqlOf(name) { return objects.get(name)?.sql; }
   };
   return ns;
 }
@@ -130,7 +170,7 @@ export async function makeCtx({ now = Date.now(), uid = "uid-A", env = {}, laten
     FIREBASE_PROJECT_ID: PROJECT,
     USER_REQUESTS_PER_MINUTE: "1000",
     IP_REQUESTS_PER_MINUTE: "1000",
-    PROTOCOL_CUTOFF: new Date(now + 30 * 24 * 3600 * 1000).toISOString(),
+    PROTOCOL_CUTOFF: cutoffIso(now + 30 * 24 * 3600 * 1000),
     ...env
   };
   const opts = { nowMs: now, fetchImpl, jwksCache: { keys: null, expiresAt: 0, lastFetch: 0 } };
@@ -167,4 +207,9 @@ export function reqFor(body, { token, origin = ORIGIN, method = "POST", ip = "20
     headers,
     body: method === "POST" && body !== undefined ? JSON.stringify(body) : undefined
   });
+}
+
+/** Date de transition au format strict exigé par le Worker (AAAA-MM-JJTHH:MM:SSZ, sans millisecondes). */
+export function cutoffIso(ms) {
+  return new Date(ms).toISOString().replace(/\.\d{3}Z$/, "Z");
 }

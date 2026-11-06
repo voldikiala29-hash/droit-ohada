@@ -28,6 +28,7 @@
  * La validation réduit la surface (format, taille, caractères), mais ne rend pas le patient inviolable.
  */
 import CASE_IDS from "./case-ids.js";
+import { parseStrictCutoff } from "./protocol-cutoff.js";
 
 const MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const MAX_MSG = 600;            // taille d'un message (utilisateur ou patient)
@@ -151,10 +152,12 @@ export function readConfig(env) {
   const msgCap = parseIntEnv(env.MAX_MESSAGES_PER_CASE, DEFAULT_MESSAGES_PER_CASE);
   const userRpm = parseIntEnv(env.USER_REQUESTS_PER_MINUTE, DEFAULT_USER_RPM);
   const ipRpm = parseIntEnv(env.IP_REQUESTS_PER_MINUTE, DEFAULT_IP_RPM);
-  // Fin de la période de transition des anciens navigateurs (date ISO). Obligatoire : sinon échec fermé.
-  const cutoffMs = typeof env.PROTOCOL_CUTOFF === "string" ? Date.parse(env.PROTOCOL_CUTOFF) : NaN;
-  if (msgCap === null || userRpm === null || ipRpm === null || Number.isNaN(cutoffMs)) return null;
-  return { msgCap, userRpm, ipRpm, protocolCutoffMs: cutoffMs };
+  // Fin de la période de transition des anciens navigateurs (ISO 8601 UTC strict, voir protocol-cutoff.js).
+  // Obligatoire : une valeur absente, placeholder ou mal formée provoque un échec fermé (503) pour toutes les requêtes.
+  // Une date passée n'est PAS refusée ici : c'est le contrôle avant déploiement qui la refuse.
+  const cutoff = parseStrictCutoff(env.PROTOCOL_CUTOFF);
+  if (msgCap === null || userRpm === null || ipRpm === null || !cutoff.ok) return null;
+  return { msgCap, userRpm, ipRpm, protocolCutoffMs: cutoff.ms };
 }
 
 /* ---------- Jetons Firebase ---------- */
@@ -274,10 +277,6 @@ function effectiveMonth(stored, requested) {
   return requested < stored ? stored : requested;
 }
 
-function hasOwn(obj, key) {
-  return Object.prototype.hasOwnProperty.call(obj, key);
-}
-
 /**
  * Identifiant de requête (1.4-B) : UUID version 7 généré par le navigateur. Les 48 premiers bits sont l'heure de
  * création en millisecondes : l'expiration se calcule sans stockage, donc une requête ancienne ne peut jamais
@@ -300,30 +299,54 @@ export async function requestFingerprint(value) {
   return Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, "0")).join("");
 }
 
-/** Retire un message du cas (ou supprime le cas s'il n'en reste aucun). */
-function decrementCase(msgs, caseId) {
-  if (Object.prototype.hasOwnProperty.call(msgs, caseId)) {
-    if (msgs[caseId] <= 1) delete msgs[caseId];
-    else msgs[caseId] -= 1;
-  }
-}
-
-/* ---------- Durable Object : quotas atomiques ---------- */
+/* ---------- Durable Object : quotas atomiques (stockage SQLite structuré, correction B3) ---------- */
 
 /**
- * Un objet par utilisateur (et un par adresse IP). Les appels sont exécutés l'un après l'autre :
- * deux requêtes simultanées ne peuvent plus lire le même état et l'écraser.
+ * Schéma du stockage (un objet par utilisateur, et un par adresse IP). Version 1.
  *
- * Stockage :
- *   "month"  : mois en cours (AAAA-MM). Changer de mois efface les compteurs du mois précédent.
- *   "msgs"   : { [caseId]: nombre de messages IA réservés pour ce cas }.
- *              Les cas consommés sont les clés de cet objet ; un cas à 0 message n'est pas compté.
- *   "rate"   : { minute, n } pour la limite de débit.
+ *   meta    : (k, v). k = "month" (mois effectif, AAAA-MM) et "schema" (version du schéma).
+ *   rate    : une seule ligne (id = 1) : minute courante et nombre de jetons utilisés.
+ *   ledger  : UNE LIGNE PAR RÉSERVATION (rid). Sert au décompte : seules les lignes du mois en cours comptent.
+ *             state "p" = en attente de réponse ; "c" = réponse livrée, message compté.
+ *   idem    : UNE LIGNE PAR X-SDG-Request-Id (req_id, clé primaire). Mémorise la réponse confirmée pendant 48 h
+ *             à partir de la première réception par le Worker (colonne at). Ne compte pas.
+ *
+ * Pourquoi des lignes et non une valeur par utilisateur : une valeur SQLite est limitée à 2 Mo et réécrire toute
+ * la liste à chaque requête coûte de plus en plus cher. Une ligne par requête, indexée, reste petite et se purge
+ * par requête SQL.
+ *
+ * Migration : aucune donnée de production ne dépend de ce stockage (la classe n'est pas encore déployée). Si une
+ * version future modifie le schéma, elle doit ajouter un numéro de version dans "meta" et une migration explicite.
+ */
+export const SCHEMA_VERSION = 1;
+export const STORAGE_SCHEMA = [
+  "CREATE TABLE IF NOT EXISTS meta (k TEXT PRIMARY KEY, v TEXT NOT NULL)",
+  "CREATE TABLE IF NOT EXISTS rate (id INTEGER PRIMARY KEY CHECK (id = 1), minute INTEGER NOT NULL, n INTEGER NOT NULL)",
+  "CREATE TABLE IF NOT EXISTS ledger (rid TEXT PRIMARY KEY, month TEXT NOT NULL, case_id TEXT NOT NULL, " +
+    "state TEXT NOT NULL CHECK (state IN ('p', 'c')), at INTEGER NOT NULL)",
+  "CREATE INDEX IF NOT EXISTS ledger_month_case ON ledger (month, case_id)",
+  "CREATE INDEX IF NOT EXISTS ledger_state_at ON ledger (state, at)",
+  "CREATE TABLE IF NOT EXISTS idem (req_id TEXT PRIMARY KEY, rid TEXT NOT NULL, fp TEXT NOT NULL, " +
+    "state TEXT NOT NULL CHECK (state IN ('p', 'c')), case_id TEXT NOT NULL, ts INTEGER NOT NULL, " +
+    "at INTEGER NOT NULL, answer TEXT)",
+  "CREATE INDEX IF NOT EXISTS idem_state_at ON idem (state, at)",
+  "CREATE INDEX IF NOT EXISTS idem_rid ON idem (rid)"
+];
+
+/** Marge au-delà des 48 h avant purge d'une réponse : garantit qu'un identifiant purgé est toujours refusé (voir reserveSync). */
+export const RETENTION_PURGE_MARGIN_MS = MAX_REQUEST_FUTURE_MS;
+
+/**
+ * Un objet par utilisateur (et un par adresse IP). Les appels sont exécutés l'un après l'autre (file "run") et
+ * chacun s'exécute dans une transaction SQLite synchrone : une erreur au milieu annule tout (aucun décompte partiel).
  */
 export class QuotaLimiter {
   constructor(state) {
-    this.storage = state.storage;
+    this.state = state;
+    this.sql = state.storage.sql;
     this.queue = Promise.resolve();
+    for (const stmt of STORAGE_SCHEMA) this.sql.exec(stmt).toArray();
+    this.sql.exec("INSERT OR IGNORE INTO meta (k, v) VALUES ('schema', ?)", String(SCHEMA_VERSION)).toArray();
   }
 
   run(job) {
@@ -332,159 +355,180 @@ export class QuotaLimiter {
     return result;
   }
 
-  async takeRateToken(minute, rpm) {
-    const cur = await this.storage.get("rate");
+  tx(fn) {
+    return this.state.storage.transactionSync(fn);
+  }
+
+  one(sql, ...args) {
+    return this.sql.exec(sql, ...args).toArray()[0];
+  }
+
+  exec(sql, ...args) {
+    this.sql.exec(sql, ...args).toArray();
+  }
+
+  /** Limite de débit : un jeton par requête, dans la minute courante. Synchrone (appelé dans une transaction). */
+  takeRate(minute, rpm) {
+    const cur = this.one("SELECT minute, n FROM rate WHERE id = 1");
     const n = cur && cur.minute === minute ? cur.n : 0;
     if (n >= rpm) return false;
-    await this.storage.put("rate", { minute, n: n + 1 });
+    this.exec(
+      "INSERT INTO rate (id, minute, n) VALUES (1, ?, ?) ON CONFLICT (id) DO UPDATE SET minute = excluded.minute, n = excluded.n",
+      minute, n + 1
+    );
     return true;
   }
 
-  async rollMonth(requested) {
-    const stored = await this.storage.get("month");
-    const month = effectiveMonth(stored, requested);   // F6 : le mois ne recule jamais
+  /** Mois effectif (monotone, F6). Ne supprime que les décomptes des mois passés, jamais une réservation en attente. */
+  rollMonth(requested) {
+    const row = this.one("SELECT v FROM meta WHERE k = 'month'");
+    const stored = row ? row.v : null;
+    const month = effectiveMonth(stored, requested);
     if (stored !== month) {
-      // Changement de mois : les compteurs et les réservations en attente sont remis à zéro.
-      // Les requêtes idempotentes (« req ») sont conservées : elles expirent seulement par leur âge (48 h).
-      await this.storage.delete("msgs");
-      await this.storage.delete("pend");
-      await this.storage.put("month", month);
+      this.exec("DELETE FROM ledger WHERE month < ? AND state = 'c'", month);
+      this.exec("INSERT INTO meta (k, v) VALUES ('month', ?) ON CONFLICT (k) DO UPDATE SET v = excluded.v", month);
     }
     return month;
   }
 
-  /**
-   * Maintenance, exécutée avant chaque opération :
-   *  - libère les réservations non confirmées depuis plus de PENDING_TTL_MS (F7) ;
-   *  - supprime les requêtes idempotentes plus anciennes que REQUEST_RETENTION_MS (48 h) ;
-   *  - supprime les requêtes « en attente » orphelines (leur réservation n'existe plus).
-   */
-  async sweepAll(nowMs) {
-    const pend = { ...((await this.storage.get("pend")) || {}) };
-    const req = { ...((await this.storage.get("req")) || {}) };
-    const msgs = { ...((await this.storage.get("msgs")) || {}) };
-    let changedPend = false, changedReq = false, changedMsgs = false;
+  usedCount(month) {
+    return this.one("SELECT COUNT(DISTINCT case_id) AS n FROM ledger WHERE month = ?", month).n;
+  }
 
-    for (const rid of Object.keys(pend)) {
-      if (nowMs - pend[rid].at > PENDING_TTL_MS) {
-        decrementCase(msgs, pend[rid].caseId);
-        delete pend[rid];
-        changedPend = changedMsgs = true;
-      }
-    }
-    for (const key of Object.keys(req)) {
-      const rec = req[key];
-      const orphan = rec.s === "p" && !hasOwn(pend, rec.rid);
-      const old = rec.ts < nowMs - REQUEST_RETENTION_MS;
-      if (orphan || old) { delete req[key]; changedReq = true; }
-    }
-    if (changedMsgs) await this.storage.put("msgs", msgs);
-    if (changedPend) await this.storage.put("pend", pend);
-    if (changedReq) await this.storage.put("req", req);
+  caseCount(month, caseId) {
+    return this.one("SELECT COUNT(*) AS n FROM ledger WHERE month = ? AND case_id = ?", month, caseId).n;
+  }
+
+  /**
+   * Maintenance, exécutée avant chaque opération.
+   *  - libère les réservations non confirmées depuis plus de PENDING_TTL_MS (F7) ;
+   *  - supprime les requêtes « en attente » sans réservation (orphelines) ;
+   *  - supprime les réponses mémorisées plus anciennes que REQUEST_RETENTION_MS + marge (48 h, heure de réception).
+   * Ne supprime jamais une réservation encore active (moins de PENDING_TTL_MS).
+   */
+  sweepSync(nowMs) {
+    this.exec("DELETE FROM ledger WHERE state = 'p' AND at < ?", nowMs - PENDING_TTL_MS);
+    this.exec(
+      "DELETE FROM idem WHERE state = 'p' AND at < ? AND rid NOT IN (SELECT rid FROM ledger)",
+      nowMs - PENDING_TTL_MS
+    );
+    this.exec("DELETE FROM idem WHERE state = 'c' AND at + ? < ?", REQUEST_RETENTION_MS + RETENTION_PURGE_MARGIN_MS, nowMs);
   }
 
   /** Limite de débit seule (utilisée pour les adresses IP). */
   rateHit({ minute, rpm }) {
-    return this.run(async () => ({ ok: await this.takeRateToken(minute, rpm) }));
+    return this.run(() => this.tx(() => ({ ok: this.takeRate(minute, rpm) })));
   }
 
   /**
-   * Réserve une consultation (un message IA).
-   * - Avec reqId (requête idempotente) : une requête déjà confirmée renvoie sa réponse mémorisée (« replay », aucun
-   *   décompte) ; une requête en cours renvoie « in_progress » ; un contenu différent renvoie « conflict ».
-   * - Sinon : refus si débit, quota de cas ou plafond de messages sont atteints (aucune trace, aucun décompte).
-   * La réservation reste « en attente » jusqu'à confirm (réponse livrée) ou release (échec).
+   * Réserve une consultation (un message IA), dans une seule transaction.
+   *
+   * Ordre des vérifications (correction B2) :
+   *  1. Si l'identifiant de requête est connu, son enregistrement est consulté AVANT tout contrôle d'horodatage :
+   *     - contenu différent : « conflict » (409) ;
+   *     - réponse confirmée encore conservée (moins de 48 h depuis la première réception) : « replay » (200), sans
+   *       appel IA et sans décompte ;
+   *     - réponse confirmée mais conservation terminée : « expired » (410) ;
+   *     - réservation en cours : « in_progress » (409).
+   *  2. Identifiant inconnu : trop ancien (plus de 48 h, heure encodée) → « expired » (410) ; trop loin dans le futur
+   *     → « future » (400). Aucune trace n'est écrite dans ces deux cas.
+   *  3. Débit, quota de cas, plafond de messages, puis réservation (lignes « ledger » et « idem » dans la transaction).
+   *
+   * Pourquoi l'ordre 2 après 1 : un identifiant est « expiré » pour l'idempotence quand il est inconnu ET trop ancien.
+   * Un identifiant connu dont la réponse est encore conservée doit être rejoué, même si son heure encodée est ancienne.
    */
-  reserve({ month, caseId, minute, rpm, quotaLimit, msgCap, rid, nowMs, reqId, reqTs, fp }) {
-    return this.run(async () => {
-      const now = nowMs ?? Date.now();
-      const current = await this.rollMonth(month);
-      await this.sweepAll(now);
+  reserve(a) {
+    return this.run(() => this.tx(() => this.reserveSync(a)));
+  }
 
-      const msgs = (await this.storage.get("msgs")) || {};
-      const used = Object.keys(msgs).length;
+  reserveSync({ month, caseId, minute, rpm, quotaLimit, msgCap, rid, nowMs, reqId, reqTs, fp }) {
+    const now = nowMs ?? Date.now();
+    const current = this.rollMonth(month);
+    this.sweepSync(now);
 
-      if (reqId) {
-        const req = (await this.storage.get("req")) || {};
-        if (hasOwn(req, reqId)) {
-          const rec = req[reqId];
-          if (rec.fp !== fp) return { ok: false, reason: "conflict" };
-          if (rec.s === "c") {
-            return { ok: true, replay: true, answer: rec.answer, used, msgs: msgs[rec.caseId] || 0, month: current };
-          }
-          return { ok: false, reason: "in_progress" };
+    if (reqId) {
+      const rec = this.one("SELECT rid, fp, state, case_id, at, answer FROM idem WHERE req_id = ?", reqId);
+      if (rec) {
+        if (rec.fp !== fp) return { ok: false, reason: "conflict" };
+        if (rec.state === "c") {
+          if (rec.at + REQUEST_RETENTION_MS <= now) return { ok: false, reason: "expired" };
+          return {
+            ok: true, replay: true, answer: rec.answer,
+            used: this.usedCount(current), msgs: this.caseCount(current, rec.case_id), month: current
+          };
         }
+        return { ok: false, reason: "in_progress" };
       }
+      if (reqTs < now - REQUEST_RETENTION_MS) return { ok: false, reason: "expired" };
+      if (reqTs > now + MAX_REQUEST_FUTURE_MS) return { ok: false, reason: "future" };
+    }
 
-      if (!(await this.takeRateToken(minute, rpm))) return { ok: false, reason: "rate" };
+    if (!this.takeRate(minute, rpm)) return { ok: false, reason: "rate" };
 
-      const count = hasOwn(msgs, caseId) ? msgs[caseId] : 0;
-      if (count === 0 && used >= quotaLimit) return { ok: false, reason: "quota", used, msgs: 0 };
-      if (count >= msgCap) return { ok: false, reason: "messages", used, msgs: count };
+    const used = this.usedCount(current);
+    const count = this.caseCount(current, caseId);
+    if (count === 0 && used >= quotaLimit) return { ok: false, reason: "quota", used, msgs: 0 };
+    if (count >= msgCap) return { ok: false, reason: "messages", used, msgs: count };
 
-      const id = rid ?? crypto.randomUUID();
-      await this.storage.put("msgs", { ...msgs, [caseId]: count + 1 });
-      const pend = (await this.storage.get("pend")) || {};
-      await this.storage.put("pend", { ...pend, [id]: { caseId, at: now } });
-      if (reqId) {
-        const req = (await this.storage.get("req")) || {};
-        await this.storage.put("req", { ...req, [reqId]: { s: "p", rid: id, fp, caseId, ts: reqTs, at: now } });
-      }
-      return { ok: true, rid: id, used: count === 0 ? used + 1 : used, msgs: count + 1, month: current };
-    });
+    const id = rid ?? crypto.randomUUID();
+    this.exec("INSERT INTO ledger (rid, month, case_id, state, at) VALUES (?, ?, ?, 'p', ?)", id, current, caseId, now);
+    if (reqId) {
+      this.exec(
+        "INSERT INTO idem (req_id, rid, fp, state, case_id, ts, at, answer) VALUES (?, ?, ?, 'p', ?, ?, ?, NULL)",
+        reqId, id, fp, caseId, reqTs, now
+      );
+    }
+    return { ok: true, rid: id, used: count === 0 ? used + 1 : used, msgs: count + 1, month: current };
   }
 
   /**
    * Confirme une réservation : la réponse est livrée, le message reste compté.
    * Une réservation expirée n'est jamais confirmée : elle est libérée et la réponse doit être refusée.
    */
-  confirm({ rid, reqId, fp, reqTs, answer, nowMs }) {
-    return this.run(async () => {
-      const now = nowMs ?? Date.now();
-      const pend = { ...((await this.storage.get("pend")) || {}) };
-      if (!hasOwn(pend, rid)) return { ok: false, reason: "unknown" };
-      if (now - pend[rid].at > PENDING_TTL_MS) {
-        await this._releaseRid(rid, reqId);
-        return { ok: false, reason: "expired" };
-      }
-      const caseId = pend[rid].caseId;
-      delete pend[rid];
-      await this.storage.put("pend", pend);
-      if (reqId) {
-        const req = { ...((await this.storage.get("req")) || {}) };
-        req[reqId] = { s: "c", rid, fp, caseId, ts: reqTs, at: now, answer };
-        await this.storage.put("req", req);
-      }
-      return { ok: true };
-    });
+  confirm({ rid, reqId, answer, nowMs }) {
+    return this.run(() => this.tx(() => this.confirmSync({ rid, reqId, answer, nowMs })));
+  }
+
+  confirmSync({ rid, reqId, answer, nowMs }) {
+    const now = nowMs ?? Date.now();
+    const row = this.one("SELECT state, at FROM ledger WHERE rid = ?", rid);
+    if (!row || row.state !== "p") return { ok: false, reason: "unknown" };
+    if (now - row.at > PENDING_TTL_MS) {
+      this.releaseSync(rid, reqId);
+      return { ok: false, reason: "expired" };
+    }
+    this.exec("UPDATE ledger SET state = 'c' WHERE rid = ?", rid);
+    // at (première réception) n'est pas modifié : la conservation de 48 h court depuis la première réception.
+    if (reqId) this.exec("UPDATE idem SET state = 'c', answer = ? WHERE req_id = ? AND rid = ?", answer, reqId, rid);
+    return { ok: true };
   }
 
   /** Libère une réservation (l'IA a échoué). Idempotent : une seconde libération ne retire rien. */
   release({ rid, reqId }) {
-    return this.run(async () => this._releaseRid(rid, reqId));
+    return this.run(() => this.tx(() => this.releaseSync(rid, reqId)));
   }
 
-  /** Version interne de release, appelée déjà dans la file d'attente (ne pas appeler run ici). */
-  async _releaseRid(rid, reqId) {
-    const pend = { ...((await this.storage.get("pend")) || {}) };
-    const req = { ...((await this.storage.get("req")) || {}) };
-    let result = { ok: true };
-    if (hasOwn(pend, rid)) {
-      const msgs = { ...((await this.storage.get("msgs")) || {}) };
-      decrementCase(msgs, pend[rid].caseId);
-      delete pend[rid];
-      await this.storage.put("msgs", msgs);
-      await this.storage.put("pend", pend);
-    } else {
-      result = { ok: true, skipped: true };
-    }
+  releaseSync(rid, reqId) {
+    const row = this.one("SELECT state FROM ledger WHERE rid = ?", rid);
+    if (!row || row.state !== "p") return { ok: true, skipped: true };
+    this.exec("DELETE FROM ledger WHERE rid = ?", rid);
     // La requête idempotente n'est retirée que si elle attend encore cette réservation : une nouvelle tentative
     // pourra alors réserver de nouveau, sans double décompte puisque la première réservation est annulée.
-    if (reqId && hasOwn(req, reqId) && req[reqId].s === "p" && req[reqId].rid === rid) {
-      delete req[reqId];
-      await this.storage.put("req", req);
-    }
-    return result;
+    if (reqId) this.exec("DELETE FROM idem WHERE req_id = ? AND rid = ? AND state = 'p'", reqId, rid);
+    return { ok: true };
+  }
+
+  /** Maintenance explicite (tests et capacité). En service, elle est déjà appelée à chaque réservation. */
+  sweepAll(nowMs) {
+    return this.run(() => this.tx(() => this.sweepSync(nowMs ?? Date.now())));
+  }
+
+  /** Taille du stockage (tests de capacité uniquement). */
+  stats() {
+    return {
+      ledger: this.one("SELECT COUNT(*) AS n FROM ledger").n,
+      idem: this.one("SELECT COUNT(*) AS n FROM idem").n
+    };
   }
 }
 
@@ -541,6 +585,12 @@ export async function handleRequest(request, env, opts = {}) {
   if (request.method !== "POST") return json({ error: "method" }, 405, cors);
   if (!allowed.includes(origin)) return json({ error: "origin" }, 403, cors);
 
+  // Observation des anciens navigateurs (migration, voir docs/migration-anciens-clients.md). Ne journalise ni uid ni IP :
+  // seulement la présence d'un jeton et l'heure, pour mesurer combien d'anciens clients restent actifs.
+  if (request.headers.get("X-SDG-Protocol") === null) {
+    console.log(JSON.stringify({ evt: "sans_protocole", avec_jeton: (request.headers.get("Authorization") || "") !== "", at: nowMs }));
+  }
+
   // Échec fermé : sans stockage des quotas, aucune réponse IA.
   if (!env.STATE || !env.QUOTA) return json({ error: "config" }, 503, cors);
   const cfg = readConfig(env);
@@ -590,16 +640,15 @@ export async function handleRequest(request, env, opts = {}) {
   const extra = compatible ? {} : { "X-SDG-Upgrade": "requis" };
 
   // 5. Identifiant de requête (1.4-B). Absent : comportement de transition, sans idempotence.
-  // Présent : format strict, expiration par l'heure encodée (jamais de réservation, jamais d'appel IA), et tolérance
-  // limitée vers le futur.
+  // Présent : seul le FORMAT est vérifié ici. L'expiration n'est jugée qu'après consultation de l'enregistrement
+  // (correction B2, voir QuotaLimiter.reserveSync) : une réponse encore conservée se rejoue même si l'heure encodée
+  // dans l'identifiant est ancienne.
   let reqId = null;
   let reqTs = null;
   const rawReqId = request.headers.get("X-SDG-Request-Id");
   if (rawReqId !== null) {
     const parsed = parseRequestId(rawReqId);
     if (!parsed) return json({ error: "request_id" }, 400, cors);
-    if (parsed.ts < nowMs - REQUEST_RETENTION_MS) return json({ error: "request_expired" }, 410, cors);
-    if (parsed.ts > nowMs + MAX_REQUEST_FUTURE_MS) return json({ error: "request_id" }, 400, cors);
     reqId = parsed.id;
     reqTs = parsed.ts;
   }
@@ -635,6 +684,8 @@ export async function handleRequest(request, env, opts = {}) {
   if (!reservation.ok) {
     if (reservation.reason === "conflict") return json({ error: "request_conflict" }, 409, cors);
     if (reservation.reason === "in_progress") return json({ error: "in_progress" }, 409, cors);
+    if (reservation.reason === "expired") return json({ error: "request_expired" }, 410, cors);
+    if (reservation.reason === "future") return json({ error: "request_id" }, 400, cors);
     const status = reservation.reason === "rate" ? 429 : reservation.reason === "messages" ? 409 : 402;
     return json({ error: reservation.reason, quota: quota(reservation) }, status, cors);
   }

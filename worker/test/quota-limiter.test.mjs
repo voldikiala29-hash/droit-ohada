@@ -2,10 +2,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { QuotaLimiter } from "../patient-worker.js";
-import { FakeStorage } from "./helpers.mjs";
+import { makeDoState } from "./helpers.mjs";
 
 function newLimiter() {
-  return new QuotaLimiter({ storage: new FakeStorage(1) });
+  return new QuotaLimiter(makeDoState());
 }
 
 const base = { month: "2026-11", minute: 100, rpm: 1000, quotaLimit: 5, msgCap: 40 };

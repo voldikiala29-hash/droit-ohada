@@ -128,14 +128,15 @@ test("réservation orpheline (arrêt entre réservation et confirmation) : en at
   assert.equal((await apres.json()).quota.msgs, 1);
 });
 
-test("requête expirée (plus de 48 h) : 410, aucune réservation, aucun appel IA, aucun compteur créé", async () => {
+test("requête inconnue et expirée (plus de 48 h) : 410, aucune réservation, aucun appel IA, aucune ligne de stockage", async () => {
   const c = await makeCtx({ now: T0 });
   const rid = uuidV7(T0 - REQUEST_RETENTION_MS - 60_000);
   const r = await send(c, bodyFor(CASE_IDS[0]), rid, T0);
   assert.equal(r.status, 410);
   assert.equal((await r.json()).error, "request_expired");
   assert.equal(c.env.AI.calls, 0);
-  assert.equal(c.env.QUOTA.instances.has("uid:uid-A"), false);
+  // Correction B2 : l'enregistrement est consulté avant le rejet ; un identifiant inconnu n'écrit rien.
+  assert.deepEqual(c.env.QUOTA.get("uid:uid-A").stats(), { ledger: 0, idem: 0 });
 });
 
 test("frontière d'expiration : 47 h 59 acceptée, 48 h 01 refusée", async () => {
@@ -158,7 +159,7 @@ test("requestId trop loin dans le futur : 400 ; format invalide ou UUID v4 : 400
   const v4 = await send(c, bodyFor(CASE_IDS[0]), crypto.randomUUID(), T0);
   assert.equal(v4.status, 400);
   assert.equal(c.env.AI.calls, 0);
-  assert.equal(c.env.QUOTA.instances.has("uid:uid-A"), false);
+  assert.deepEqual(c.env.QUOTA.get("uid:uid-A").stats(), { ledger: 0, idem: 0 });
 });
 
 test("requête refusée pour quota : rien n'est mémorisé ; la même requête refusée de nouveau reste refusée", async () => {
