@@ -12,7 +12,7 @@
  *
  * À CHAQUE modification de ce fichier ou de la coquille : changer VERSION (sinon les anciens fichiers restent).
  */
-var VERSION = "sdg-pwa-2026-11-05b";
+var VERSION = "sdg-pwa-2026-11-06a";
 var SHELL_CACHE = VERSION + "-shell";
 var LIB_CACHE = VERSION + "-lib";
 var NET_TIMEOUT_MS = 4000;

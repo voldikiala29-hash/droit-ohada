@@ -258,6 +258,47 @@ function expect(cond, msg) { if (!cond) throw new Error(msg); }
     await ctx.close();
   });
 
+  await scenario("abandon d'une question bloquée : aucune requête, bulle retirée, texte restitué, explication affichée", async () => {
+    const ctx = await newCtx(); const calls = workerMock(ctx, base, [{ status: 503, body: { error: "unavailable" } }]);
+    const p = await openChat(ctx, base);
+    const sBefore = await studentBubbles(p);
+    await ask(p, "Depuis quand ?"); await settle(p);
+    expect(await retryVisible(p) === true, "question en attente");
+    await p.click("#compose button:has-text('Abandonner la question')"); await settle(p);
+    expect(calls.length === 1, "aucune requête supplémentaire à l'abandon, reçu " + calls.length);
+    expect(await studentBubbles(p) === sBefore, "bulle de la question retirée du journal");
+    expect(await p.inputValue("#chat-in") === "Depuis quand ?", "texte restitué dans la saisie");
+    expect(await retryVisible(p) === false, "plus de blocage");
+    expect((await notice(p)).includes("Question abandonnée"), "explication affichée");
+    await ctx.close();
+  });
+
+  await scenario("reprise identique après abandon : même identifiant et même contenu, réponse affichée, pas de recomptage", async () => {
+    const ctx = await newCtx(); const calls = workerMock(ctx, base, [{ status: 503, body: { error: "unavailable" } }, { status: 200, body: { reponse: "Oui." } }]);
+    const p = await openChat(ctx, base);
+    const before = await patientBubbles(p);
+    await ask(p, "Depuis quand ?"); await settle(p);
+    await p.click("#compose button:has-text('Abandonner la question')"); await settle(p);
+    await p.click("#compose button:has-text('Envoyer')"); await settle(p);
+    expect(calls.length === 2, "deux requêtes, reçu " + calls.length);
+    expect(calls[0].headers["x-sdg-request-id"] === calls[1].headers["x-sdg-request-id"], "même identifiant");
+    expect(calls[0].body === calls[1].body, "même contenu");
+    expect(await patientBubbles(p) === before + 1, "réponse affichée une seule fois");
+    await ctx.close();
+  });
+
+  await scenario("question modifiée après abandon : nouvel identifiant (elle sera comptée à nouveau, et l'écran le dit)", async () => {
+    const ctx = await newCtx(); const calls = workerMock(ctx, base, [{ status: 503, body: { error: "unavailable" } }, { status: 200, body: { reponse: "Oui." } }]);
+    const p = await openChat(ctx, base);
+    await ask(p, "Depuis quand ?"); await settle(p);
+    await p.click("#compose button:has-text('Abandonner la question')"); await settle(p);
+    await p.fill("#chat-in", "Depuis quand exactement ?");
+    await p.click("#compose button:has-text('Envoyer')"); await settle(p);
+    expect(calls.length === 2, "deux requêtes, reçu " + calls.length);
+    expect(calls[0].headers["x-sdg-request-id"] !== calls[1].headers["x-sdg-request-id"], "nouvel identifiant");
+    await ctx.close();
+  });
+
   await browser.close();
   server.close();
   const failed = results.filter(r => r[0] === "fail");

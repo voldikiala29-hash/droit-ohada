@@ -105,7 +105,8 @@ test("le module de décision est chargé avant le script principal", () => {
 test("service worker : le module est précaché et la version a changé", () => {
   const sw = readFileSync(resolve(root, "sw.js"), "utf8");
   assert.match(sw, /"patient-client\.js"/);
-  assert.match(sw, /var VERSION = "sdg-pwa-2026-11-05b"/);
+  // La cohérence entre VERSION et le contenu de la coquille est vérifiée par sw-update.test.mjs.
+  assert.match(sw, /var VERSION = "sdg-pwa-[^"]+"/);
 });
 
 test("patient-client.js : aucune réponse de secours ni texte de moteur local", () => {

@@ -7,7 +7,9 @@
  *  - une panne (5xx, délai, réseau) ne donne pas non plus de réponse locale : la même question est reprise
  *    avec le MÊME identifiant et le MÊME contenu, et le Worker garantit qu'elle n'est comptée qu'une fois ;
  *  - une question en attente est toujours renvoyée à l'identique ; elle ne peut pas être remplacée silencieusement ;
- *  - une requête expirée (plus de 48 h) n'est jamais renvoyée : elle devient une nouvelle question, à la demande.
+ *  - l'expiration est décidée par le Worker, jamais par l'horloge de l'appareil (correction B2) : une question en
+ *    attente est toujours renvoyée ; si le Worker répond 410, elle devient une demande explicite ;
+ *  - une question abandonnée (opts.resume) n'est renvoyée avec le même identifiant que si le texte est identique.
  *
  * Aucune réponse n'est jamais produite ici : ce fichier décide seulement de ce qui est affiché et de ce qui reste en
  * attente. Le texte de la réponse vient du Worker.
@@ -103,6 +105,7 @@
    * Envoie une question (ou reprend la question en attente).
    * opts :
    *  - state : question en attente { rid, body, text } ou null ;
+   *  - resume : question abandonnée { rid, body, text } ou null (reprise seulement si le texte est identique) ;
    *  - text : la question, si nouvelle ;
    *  - buildBody(text) : construit le contenu (appelé seulement pour une nouvelle question) ;
    *  - post(rid, bodyString) : envoie la requête, renvoie { status, headers, body } ou lève une exception ;
@@ -117,16 +120,19 @@
     var pending = opts.state || null;
     var created = false;
 
-    if (!pending) {
+    if (!pending && opts.resume && opts.text && opts.resume.text === opts.text) {
+      // Question abandonnée puis renvoyée à l'identique : même identifiant et même contenu. Le Worker ne la recompte pas.
+      pending = { rid: opts.resume.rid, body: opts.resume.body, text: opts.resume.text };
+      opts.onState(pending);
+    } else if (!pending) {
       pending = { rid: uuidV7(serverNow(now)), body: JSON.stringify(opts.buildBody(opts.text)), text: opts.text };
       created = true;
       opts.onState(pending);   // avant tout envoi : une fermeture de page ne fait pas perdre la question
     }
     if (inFlight[pending.rid]) return { outcome: "busy", state: pending };
-    if (isExpired(pending.rid, now)) {
-      opts.onState(null);
-      return { outcome: "reset", message: MSG_EXPIRED, restoreDraft: true, text: pending.text, state: null };
-    }
+    // Correction B2 : l'horloge de l'appareil ne décide PAS de l'expiration d'une question en attente. Le Worker
+    // consulte sa réponse mémorisée (48 h à partir de la première réception) avant de refuser l'identifiant ;
+    // une réponse encore conservée est donc rejouée, même si l'heure encodée paraît ancienne.
     if (opts.online === false) {
       return { outcome: "technical", message: MSG_TECHNICAL, state: pending };
     }

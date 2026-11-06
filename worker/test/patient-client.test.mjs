@@ -199,24 +199,66 @@ test("409 request_conflict : question non reprise, texte restitué pour une nouv
 
 /* ---------- Expiration ---------- */
 
-test("question en attente de plus de 48 h : jamais renvoyée, devient une demande explicite", async () => {
+test("question en attente de plus de 48 h selon l'horloge locale : envoyée, le Worker décide (B2)", async () => {
+  // Une question de plus de 48 h peut avoir une réponse encore conservée : le client ne la juge pas.
   const vieille = { rid: SDG.uuidV7(T0 - 48 * HOUR - 60_000), body: "{}", text: "Ancienne question" };
-  const h = harness();
+  const h = harness(resp(200, { reponse: "Oui, depuis hier." }));
+  const out = await SDG.sendMessage(h.opts({ state: vieille, text: null, nowMs: T0 }));
+  assert.equal(h.calls.length, 1, "un envoi, avec le même identifiant");
+  assert.equal(h.calls[0].rid, vieille.rid);
+  assert.equal(out.outcome, "answer");
+});
+
+test("réponse conservée après expiration apparente : rejouée telle quelle (200 replay) sans nouveau décompte", async () => {
+  const ancienne = { rid: SDG.uuidV7(T0 - 47 * HOUR), body: "{}", text: "a" };
+  const h = harness(resp(200, { reponse: "Oui.", replay: true }));
+  const out = await SDG.sendMessage(h.opts({ state: ancienne, text: null, nowMs: T0 + 2 * HOUR }));
+  assert.equal(out.outcome, "answer");
+  assert.equal(h.calls.length, 1, "une seule requête, identifiant inchangé");
+});
+
+test("réponse plus conservée (410) : demande explicite, aucune seconde tentative", async () => {
+  const vieille = { rid: SDG.uuidV7(T0 - 49 * HOUR), body: "{}", text: "Ancienne question" };
+  const h = harness(resp(410, { error: "request_expired" }));
   const out = await SDG.sendMessage(h.opts({ state: vieille, text: null, nowMs: T0 }));
   assert.equal(out.outcome, "reset");
-  assert.equal(h.calls.length, 0, "aucun envoi");
+  assert.equal(h.calls.length, 1);
   assert.equal(out.text, "Ancienne question");
   assert.equal(h.states.at(-1), null);
 });
 
-test("frontière côté navigateur : 47 h 59 reprise possible, 48 h 01 refusée sans envoi", async () => {
-  const ok = { rid: SDG.uuidV7(T0 - 48 * HOUR + 60_000), body: "{}", text: "a" };
-  const h1 = harness(resp(200, { reponse: "Oui." }));
-  assert.equal((await SDG.sendMessage(h1.opts({ state: ok, text: null, nowMs: T0 }))).outcome, "answer");
-  const ko = { rid: SDG.uuidV7(T0 - 48 * HOUR - 60_000), body: "{}", text: "b" };
-  const h2 = harness();
-  assert.equal((await SDG.sendMessage(h2.opts({ state: ko, text: null, nowMs: T0 }))).outcome, "reset");
-  assert.equal(h2.calls.length, 0);
+test("saut d'horloge de l'appareil (+49 h) entre l'envoi et la reprise : pas de réinitialisation locale, identifiant conservé", async () => {
+  const pending = { rid: SDG.uuidV7(T0), body: "{}", text: "Depuis quand ?" };
+  const h = harness(resp(200, { reponse: "Depuis quatre jours." }));
+  const out = await SDG.sendMessage(h.opts({ state: pending, text: null, nowMs: T0 + 49 * HOUR }));
+  assert.equal(out.outcome, "answer");
+  assert.equal(h.calls[0].rid, pending.rid, "même identifiant : le Worker ne compte pas une seconde fois");
+});
+
+test("question abandonnée renvoyée à l'identique : même identifiant et même contenu, aucun contenu reconstruit", async () => {
+  const abandonnee = { rid: SDG.uuidV7(T0), body: '{"message":"Depuis quand ?"}', text: "Depuis quand ?" };
+  const h = harness(resp(200, { reponse: "Oui." }));
+  const out = await SDG.sendMessage(h.opts({ resume: abandonnee, text: "Depuis quand ?" }));
+  assert.equal(out.outcome, "answer");
+  assert.equal(h.calls[0].rid, abandonnee.rid);
+  assert.equal(h.calls[0].body, abandonnee.body);
+  assert.equal(h.built.length, 0, "buildBody non appelé");
+});
+
+test("question abandonnée modifiée : nouvelle question, nouvel identifiant (elle sera comptée)", async () => {
+  const abandonnee = { rid: SDG.uuidV7(T0), body: '{"message":"Depuis quand ?"}', text: "Depuis quand ?" };
+  const h = harness(resp(200, { reponse: "Oui." }));
+  await SDG.sendMessage(h.opts({ resume: abandonnee, text: "Depuis quand exactement ?" }));
+  assert.notEqual(h.calls[0].rid, abandonnee.rid);
+  assert.equal(h.built.length, 1);
+});
+
+test("question abandonnée renvoyée puis 410 : pas de recréation automatique (elle n'est pas nouvelle)", async () => {
+  const abandonnee = { rid: SDG.uuidV7(T0 - 49 * HOUR), body: "{}", text: "Depuis quand ?" };
+  const h = harness(resp(410, { error: "request_expired" }));
+  const out = await SDG.sendMessage(h.opts({ resume: abandonnee, text: "Depuis quand ?" }));
+  assert.equal(out.outcome, "reset");
+  assert.equal(h.calls.length, 1);
 });
 
 test("410 sur une demande créée à l'instant (horloge de l'appareil en retard) : recréée une seule fois, sans double décompte", async () => {

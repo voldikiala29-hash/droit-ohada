@@ -1572,12 +1572,14 @@ async function postPatient(rid,bodyStr){
 async function askPatientWorker(question){
   if(!LLM_URL){var r=patientReply(S,question);return {outcome:"answer",text:r.text,ids:r.ids||[]};}
   var o=await SDGPatient.sendMessage({
-    state:S.chatPending||null,text:question,online:navigator.onLine!==false,nowMs:Date.now(),
+    state:S.chatPending||null,resume:S.chatAbandoned||null,text:question,online:navigator.onLine!==false,nowMs:Date.now(),
     buildBody:function(t){return {persona:buildPersona(S),facts:buildFacts(S),step:STEPS[S.stage],history:S.chat.slice(0,-1).slice(-12),message:t,question:t,cas:casPublic(S)};},
     post:postPatient,
     onState:function(st){S.chatPending=st;save(KEY,S);}
   });
   if(o.outcome==="answer")o.text=guardLLM(S,o.text);
+  /* Question tranchée (réponse, refus ou expiration) : l'identifiant abandonné n'a plus lieu d'être. */
+  if(o.outcome==="answer"||o.outcome==="refused"||o.outcome==="reset")S.chatAbandoned=null;
   return o;
 }
 
@@ -2118,12 +2120,17 @@ function chatPanel(){
     S.chatPending
       ?h("div",{class:"field",id:"compose"},
           h("p",{class:"small muted"},"Ta question « "+S.chatPending.text+" » attend encore une réponse. Elle ne sera comptée qu'une fois, même si tu la renvoies."),
-          h("div",{class:"row"},h("button",{class:"btn",type:"button",disabled:busy,onclick:retryChat},"Réessayer")))
+          h("p",{class:"small muted"},"Si la réponse ne vient pas, « Réessayer » reprend la même question. « Abandonner » la retire du journal : elle peut déjà avoir été comptée, et reste donc comptée si tu la renvoies à l'identique (sans nouveau décompte). Si tu la modifies, elle sera comptée à nouveau."),
+          h("div",{class:"row"},
+            h("button",{class:"btn",type:"button",disabled:busy,onclick:retryChat},"Réessayer"),
+            h("button",{class:"btn ghost",type:"button",disabled:busy,onclick:abandonChat},"Abandonner la question")))
       :composer("chat-in","chat","Pose ta question au patient…","Ta question",sendChat,CHAT_CHIPS),
     navRow("Examen clinique"));
 }
 async function sendChat(){
   var t=draft.chat.trim();if(!t||busy||S.chatPending)return;
+  /* Une question abandonnée n'est reprise avec son identifiant que si le texte est identique (correction B5). */
+  if(S.chatAbandoned&&S.chatAbandoned.text!==t)S.chatAbandoned=null;
   S.chat.push({r:"d",t:t});draft.chat="";save(KEY,S);
   chatNotice=null;
   await runChatTurn(t);
@@ -2132,6 +2139,19 @@ async function retryChat(){
   if(busy||!S.chatPending)return;
   chatNotice=null;
   await runChatTurn(null);
+}
+/* Sortie d'une consultation bloquée (correction B5). Aucune nouvelle requête : la question est retirée du journal,
+   son texte revient dans la zone de saisie, et son identifiant est gardé pour une reprise identique. */
+function abandonChat(){
+  if(busy||!S.chatPending)return;
+  var p=S.chatPending;
+  S.chatAbandoned={rid:p.rid,body:p.body,text:p.text};
+  S.chatPending=null;
+  var last=S.chat[S.chat.length-1];
+  if(last&&last.r==="d"&&last.t===p.text)S.chat.pop();
+  draft.chat=p.text||"";
+  chatNotice={kind:"info",text:"Question abandonnée. Elle peut déjà avoir été comptée : renvoyée à l'identique, elle ne sera pas recomptée ; modifiée, elle le sera à nouveau."};
+  save(KEY,S);render();afterSend();
 }
 async function runChatTurn(question){
   pending="chat";busy=true;render();afterSend();
