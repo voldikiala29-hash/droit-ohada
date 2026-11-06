@@ -188,3 +188,11 @@ au moteur local. Une courte coupure de l'IA est donc inévitable à la bascule ;
 3. **Ne pas supprimer** le Durable Object `QuotaLimiter` ni la migration `v1`. Les compteurs restent en place et sont
    ignorés par l'ancien Worker.
 4. Les réservations en cours au moment du retour arrière ne sont pas rejouées : au pire, un utilisateur perd une consultation IA du mois.
+
+## Contrôle avant déploiement et tests (6 novembre 2026)
+
+- Contrôle de configuration (ne déploie rien) : `node scripts/check-deploy.mjs production` ou `node scripts/check-deploy.mjs test`. Il refuse le placeholder, une date mal formée (« 05/12/2026 » compris), une date passée, un identifiant de KV placeholder, et, pour la cible test, tout lien avec la production.
+- Tests unitaires : `npm test` (183 tests). Les tests du stockage utilisent SQLite via `node:sqlite` : Node 22.5 ou plus est requis.
+- Tests navigateur : `npm run test:browser` (18 scénarios, Playwright Chromium).
+- Empreinte de la coquille du service worker : après toute modification de `index.html`, `patient-client.js` ou d'un autre fichier de la coquille, augmenter `VERSION` dans `sw.js`, puis lancer `node scripts/sw-shell-hash.mjs --write`.
+- Les limites réelles de Cloudflare (taille et débit des Durable Objects, journaux) ne sont pas validées par ces tests : voir `docs/migration-anciens-clients.md` et le rapport de revue.

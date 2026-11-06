@@ -89,3 +89,16 @@ renouvellement mensuel) ; mutation vérifiée : sans la mémorisation des requê
 Limites : la fenêtre de 90 secondes et l'expiration de 48 heures reposent sur l'horloge du Worker et sur celle du
 navigateur (recalée). Pas encore vérifié sur Cloudflare réel. Un étudiant qui crée deux questions identiques reçoit
 deux identifiants et paie deux fois : c'est voulu (chaque question est un message).
+
+## 8. Révision du 6 novembre 2026 (corrections B2 à B5)
+
+- **Ordre des vérifications** : format de l'identifiant (400), puis authentification, protocole, et enfin le Durable Object. Dans le Durable Object, l'enregistrement de l'identifiant est consulté **avant** tout contrôle d'horodatage :
+  - contenu différent : 409 `request_conflict` ;
+  - réponse confirmée encore conservée : rejeu (200 `replay`), sans appel IA ni décompte, même si l'heure encodée est ancienne ;
+  - réponse confirmée dont la conservation est terminée : 410 `request_expired` ;
+  - réservation en cours : 409 `in_progress` ;
+  - identifiant inconnu : 410 si l'heure encodée a plus de 48 h, 400 si elle est plus de 5 min dans le futur.
+- **Conservation** : 48 h à partir de la première réception par le Worker (et non de l'heure encodée). La purge a lieu 5 min plus tard ; cette marge garantit qu'un identifiant purgé reste refusé (410), car tout identifiant accepté a une heure encodée au plus 5 min après sa réception.
+- **Stockage** : SQLite structuré (tables `ledger` pour le décompte et `idem` pour les requêtes idempotentes, une ligne par réservation ou par identifiant), transactions synchrones, purge par requête SQL. Voir `worker/patient-worker.js`, `STORAGE_SCHEMA`.
+- **Client** : l'horloge de l'appareil ne décide plus de l'expiration d'une question en attente. Une question peut être abandonnée ; renvoyée à l'identique, elle reprend son identifiant.
+- **Date de transition** : format ISO 8601 UTC strict obligatoire au démarrage (échec fermé sinon). Le refus des dates passées est fait par `worker/scripts/check-deploy.mjs`, pas au démarrage.
